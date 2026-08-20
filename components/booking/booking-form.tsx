@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useEffect, useState, useTransition } from "react";
+import { useFormState as useActionState } from "react-dom";
+import { useEffect, useState, useTransition } from "react";
 import { createBookingAction, type ActionResult } from "@/lib/booking/create-action";
 import { getAvailableSlotsAction } from "@/lib/booking/slots-action";
 import { Input } from "@/components/ui/input";
