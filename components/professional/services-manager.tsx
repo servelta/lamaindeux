@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
+import { useFormState as useActionState } from "react-dom";
+import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import {
   addProfessionalServiceAction,
