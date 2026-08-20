@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useFormState as useActionState } from "react-dom";
 import Link from "next/link";
 import { requestPasswordResetAction, type ActionResult } from "@/lib/auth/password-reset-actions";
 import { Input } from "@/components/ui/input";
