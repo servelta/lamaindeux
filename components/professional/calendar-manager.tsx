@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useTransition } from "react";
+import { useFormState as useActionState } from "react-dom";
+import { useTransition } from "react";
 import { X } from "lucide-react";
 import {
   addAvailabilitySlotAction,
