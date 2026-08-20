@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useFormState as useActionState } from "react-dom";
 import Link from "next/link";
 import { professionalSignUpAction, type ActionResult } from "@/lib/auth/actions";
 import { Input } from "@/components/ui/input";
