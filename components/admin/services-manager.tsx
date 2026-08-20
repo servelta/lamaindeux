@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useTransition } from "react";
+import { useFormState as useActionState } from "react-dom";
+import { useTransition } from "react";
 import { createServiceAction, toggleServiceActiveAction, type ActionResult } from "@/lib/admin/service-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
