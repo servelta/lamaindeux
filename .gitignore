@@ -19,3 +19,9 @@ next-env.d.ts
 .DS_Store
 *.log
 .vercel
+.env*
+!.env.example
+!.env.test.local.example
+
+# TypeScript incremental build cache
+tsconfig.tsbuildinfo

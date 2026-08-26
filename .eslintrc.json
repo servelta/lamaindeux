@@ -1,0 +1,11 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "rules": {
+    // The site's copy is French, where apostrophes are everywhere
+    // ("l'artisan", "d'un devis"). React escapes these correctly at
+    // runtime; the rule only exists to catch accidental stray quotes,
+    // so it is pure noise here and would force the copy to be written
+    // as "l&apos;artisan" throughout.
+    "react/no-unescaped-entities": "off"
+  }
+}
