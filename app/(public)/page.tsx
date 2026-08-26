@@ -5,6 +5,12 @@ import { Button } from "@/components/ui/button";
 import { SearchForm } from "@/components/search/search-form";
 import { getActiveCities, getActiveServices, getActiveTrades, getAllTrades } from "@/lib/queries/search";
 
+// This page reads the live catalog (trades/cities/services) that admins can
+// change at any time via the admin dashboard or direct SQL — it must never
+// be served from a stale cache, or newly activated trades/cities/services
+// silently fail to appear until the next deploy.
+export const dynamic = "force-dynamic";
+
 const HOW_IT_WORKS = [
   {
     title: "Recherchez",
