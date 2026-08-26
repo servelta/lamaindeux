@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  MonPlombier design tokens (Phase 2).
+  Palette: deep pipe-blue primary, copper-fitting accent, verified-green,
+  cool near-white background. Display type is geometric (Space Grotesk),
+  not serif-on-cream — numeric data (prices, booking numbers, postcodes)
+  is set in a mono face (IBM Plex Mono) to read like a technical spec sheet,
+  which is the trade's own vernacular.
+*/
+@layer base {
+  :root {
+    --background: 120 3% 96%;
+    --foreground: 200 22% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 200 22% 12%;
+    --primary: 193 51% 24%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 195 15% 93%;
+    --secondary-foreground: 200 22% 12%;
+    --muted: 195 15% 93%;
+    --muted-foreground: 200 10% 40%;
+    --accent: 28 48% 44%;
+    --accent-foreground: 0 0% 100%;
+    --verified: 150 39% 29%;
+    --verified-foreground: 0 0% 100%;
+    --destructive: 0 60% 42%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 195 15% 87%;
+    --input: 195 15% 87%;
+    --ring: 193 51% 24%;
+    --radius: 0.5rem;
+
+    --font-sans: var(--font-inter);
+    --font-display: var(--font-space-grotesk);
+    --font-mono: var(--font-plex-mono);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+}
+
+@layer utilities {
+  .font-mono-data {
+    font-family: var(--font-mono);
+    font-feature-settings: "tnum" 1;
+  }
+  .verified-badge {
+    @apply bg-verified text-verified-foreground;
+  }
+}
+
+/* Connector-line signature element: a connecting line with joint markers,
+   used in "How it works" and the hero. See components/marketing/connector-line.tsx */
+.connector-line {
+  stroke: hsl(var(--accent) / 0.35);
+  stroke-width: 2;
+  stroke-dasharray: 1 8;
+  stroke-linecap: round;
+}
+.connector-joint {
+  fill: hsl(var(--accent));
+}
