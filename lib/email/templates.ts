@@ -1,6 +1,6 @@
 import { wrapEmail, detailRow, detailTable, button } from "@/lib/email/wrapper";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 type BookingEmailData = {
   bookingNumber: string;

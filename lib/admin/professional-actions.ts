@@ -58,7 +58,7 @@ export async function approveProfessionalAction(professionalId: string): Promise
       const html = wrapEmail(`
         <p>Bonjour ${professional.firstName},</p>
         <p>Votre dossier a été vérifié et approuvé. Il ne reste que deux étapes avant l'activation de votre compte : la signature du contrat et le règlement de votre abonnement. Notre équipe va vous contacter pour ces étapes.</p>
-        ${button(`${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/dashboard`, "Accéder à mon tableau de bord")}
+        ${button(`${process.env.NEXT_PUBLIC_SITE_URL || ""}/dashboard`, "Accéder à mon tableau de bord")}
       `);
       await sendEmail(professional.email, "Votre dossier a été approuvé", html);
     }
@@ -195,7 +195,7 @@ export async function activateProfessionalAction(professionalId: string): Promis
       const html = wrapEmail(`
         <p>Bonjour ${contact.firstName},</p>
         <p>Votre compte est maintenant actif. Votre profil est désormais visible dans les résultats de recherche et vous pouvez recevoir des réservations.</p>
-        ${button(`${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/dashboard`, "Accéder à mon tableau de bord")}
+        ${button(`${process.env.NEXT_PUBLIC_SITE_URL || ""}/dashboard`, "Accéder à mon tableau de bord")}
       `);
       await sendEmail(contact.email, "Votre compte LaMainDeux est actif", html);
     }
