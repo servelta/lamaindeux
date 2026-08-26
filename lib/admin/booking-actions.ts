@@ -6,7 +6,7 @@ import { requireAdmin } from "@/lib/admin/queries";
 
 export type ActionResult = { error?: string; success?: string } | void;
 
-const NON_TERMINAL_STATUSES = ["PENDING", "CONFIRMED", "ACCEPTED", "DISPUTED"];
+const NON_TERMINAL_STATUSES = ["PENDING", "CONFIRMED", "ACCEPTED", "DISPUTED"] as const;
 
 export async function adminCancelBookingAction(bookingId: string, reason: string): Promise<ActionResult> {
   const adminId = await requireAdmin();

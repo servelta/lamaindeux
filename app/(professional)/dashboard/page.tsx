@@ -27,11 +27,13 @@ export default async function ProfessionalDashboardPage() {
     .eq("profile_id", user!.id)
     .single();
 
-  const { count: newBookingsCount } = await supabase
+  const { count: newBookingsCountRaw } = await supabase
     .from("bookings")
     .select("*", { count: "exact", head: true })
     .eq("professional_id", user!.id)
     .in("status", ["PENDING", "CONFIRMED"]);
+
+  const newBookingsCount = newBookingsCountRaw ?? 0;
 
   const isActive = professional?.status === "ACTIVE";
 

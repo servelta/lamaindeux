@@ -56,7 +56,9 @@ export function WeeklyAvailabilityManager({ slots }: { slots: Slot[] }) {
                 {s.start_time.slice(0, 5)}–{s.end_time.slice(0, 5)}
                 <button
                   type="button"
-                  onClick={() => startTransition(() => removeAvailabilitySlotAction(s.id))}
+                  onClick={() => startTransition(async () => {
+                    await removeAvailabilitySlotAction(s.id);
+                  })}
                   aria-label="Supprimer ce créneau"
                 >
                   <X className="h-3 w-3" />
@@ -113,7 +115,9 @@ export function BlockedDatesManager({ exceptions }: { exceptions: Exception[] })
             </span>
             <button
               type="button"
-              onClick={() => startTransition(() => removeAvailabilityExceptionAction(exc.id))}
+              onClick={() => startTransition(async () => {
+                await removeAvailabilityExceptionAction(exc.id);
+              })}
               className="text-muted-foreground hover:text-destructive"
               aria-label="Débloquer cette date"
             >

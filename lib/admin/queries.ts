@@ -1,5 +1,32 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import type { Database } from "@/types/database";
+
+type ProfessionalStatus = Database["public"]["Enums"]["professional_status"];
+type BookingStatus = Database["public"]["Enums"]["booking_status"];
+
+const PROFESSIONAL_STATUSES = [
+  "PENDING", "UNDER_REVIEW", "APPROVED", "ACTIVE", "SUSPENDED", "REJECTED",
+] as const satisfies readonly ProfessionalStatus[];
+
+const BOOKING_STATUSES = [
+  "PENDING", "CONFIRMED", "ACCEPTED", "COMPLETED",
+  "CANCELLED_BY_CUSTOMER", "CANCELLED_BY_PROFESSIONAL", "NO_SHOW", "DISPUTED",
+] as const satisfies readonly BookingStatus[];
+
+/**
+ * Both status filters arrive as raw query-string values, so narrow them
+ * before they reach the database instead of trusting whatever is in the
+ * URL. An unrecognised value drops the filter rather than erroring — the
+ * admin sees the unfiltered list, which is the harmless outcome.
+ */
+function isProfessionalStatus(value: string): value is ProfessionalStatus {
+  return (PROFESSIONAL_STATUSES as readonly string[]).includes(value);
+}
+
+function isBookingStatus(value: string): value is BookingStatus {
+  return (BOOKING_STATUSES as readonly string[]).includes(value);
+}
 
 /** Redirects away if the current user isn't an admin. Middleware already
  * blocks this at the route level; this is the defense-in-depth check
@@ -29,7 +56,7 @@ export async function listProfessionals(filters: ProfessionalListFilters) {
     .select("profile_id, company_name, slug, status, business_city, contract_status, payment_status, created_at, profiles(first_name, last_name)")
     .order("created_at", { ascending: false });
 
-  if (filters.status) query = query.eq("status", filters.status);
+  if (filters.status && isProfessionalStatus(filters.status)) query = query.eq("status", filters.status);
   if (filters.search) query = query.ilike("company_name", `%${filters.search}%`);
 
   const { data } = await query;
@@ -108,7 +135,7 @@ export async function listAllBookings(filters: AdminBookingFilters) {
     .order("scheduled_date", { ascending: false })
     .limit(100);
 
-  if (filters.status) query = query.eq("status", filters.status);
+  if (filters.status && isBookingStatus(filters.status)) query = query.eq("status", filters.status);
   if (filters.bookingNumber) query = query.ilike("booking_number", `%${filters.bookingNumber}%`);
   if (filters.city) query = query.ilike("city", `%${filters.city}%`);
 

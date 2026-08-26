@@ -27,7 +27,7 @@ async function getUserOrError(): Promise<{ userId: string } | { error: string }>
   return { userId: user.id };
 }
 
-const CANCELLABLE_BY_CUSTOMER = ["PENDING", "CONFIRMED", "ACCEPTED"];
+const CANCELLABLE_BY_CUSTOMER = ["PENDING", "CONFIRMED", "ACCEPTED"] as const;
 
 export async function customerCancelBookingAction(bookingId: string): Promise<TransitionResult> {
   const auth = await getUserOrError();
@@ -60,7 +60,7 @@ export async function customerCancelBookingAction(bookingId: string): Promise<Tr
   revalidatePath(`/mes-reservations/${bookingId}`);
 }
 
-const ACCEPTABLE_BY_PLUMBER = ["PENDING", "CONFIRMED"];
+const ACCEPTABLE_BY_PLUMBER = ["PENDING", "CONFIRMED"] as const;
 
 export async function professionalAcceptBookingAction(bookingId: string): Promise<TransitionResult> {
   const auth = await getUserOrError();
@@ -153,7 +153,7 @@ export async function professionalCompleteBookingAction(bookingId: string): Prom
   revalidatePath(`/reservations/${bookingId}`);
 }
 
-const CANCELLABLE_BY_PLUMBER = ["PENDING", "CONFIRMED", "ACCEPTED"];
+const CANCELLABLE_BY_PLUMBER = ["PENDING", "CONFIRMED", "ACCEPTED"] as const;
 
 export async function professionalCancelBookingAction(
   bookingId: string,

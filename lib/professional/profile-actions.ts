@@ -94,6 +94,12 @@ export async function uploadAvatarAction(formData: FormData): Promise<ActionResu
 
 const DOCUMENT_TYPES = ["identity", "qualification", "insurance", "other"] as const;
 
+type DocumentType = (typeof DOCUMENT_TYPES)[number];
+
+function isDocumentType(value: string): value is DocumentType {
+  return (DOCUMENT_TYPES as readonly string[]).includes(value);
+}
+
 export async function uploadDocumentAction(formData: FormData): Promise<ActionResult> {
   const professionalId = await requireUserId();
   const file = formData.get("document") as File | null;
@@ -105,7 +111,7 @@ export async function uploadDocumentAction(formData: FormData): Promise<ActionRe
   if (file.size > 10 * 1024 * 1024) {
     return { error: "Le fichier ne doit pas dépasser 10 Mo." };
   }
-  if (!docType || !DOCUMENT_TYPES.includes(docType as any)) {
+  if (!docType || !isDocumentType(docType)) {
     return { error: "Type de document invalide." };
   }
 

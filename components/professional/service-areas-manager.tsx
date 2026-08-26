@@ -43,7 +43,9 @@ export function ServiceAreasManager({ areas, cities }: { areas: Area[]; cities: 
               </span>
               <button
                 type="button"
-                onClick={() => startTransition(() => removeServiceAreaAction(area.id))}
+                onClick={() => startTransition(async () => {
+                  await removeServiceAreaAction(area.id);
+                })}
                 className="text-muted-foreground hover:text-destructive"
                 aria-label="Supprimer cette zone"
               >

@@ -161,14 +161,18 @@ export function ServiceList({ services }: { services: PlumberService[] }) {
                   type="checkbox"
                   checked={s.active}
                   onChange={(e) =>
-                    startTransition(() => toggleProfessionalServiceAction(s.id, e.target.checked))
+                    startTransition(async () => {
+                      await toggleProfessionalServiceAction(s.id, e.target.checked);
+                    })
                   }
                 />
                 Actif
               </label>
               <button
                 type="button"
-                onClick={() => startTransition(() => deleteProfessionalServiceAction(s.id))}
+                onClick={() => startTransition(async () => {
+                  await deleteProfessionalServiceAction(s.id);
+                })}
                 className="text-muted-foreground hover:text-destructive"
                 aria-label="Supprimer"
               >
