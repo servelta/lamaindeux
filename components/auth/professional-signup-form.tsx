@@ -42,7 +42,7 @@ export function ProfessionalSignUpForm({ trades }: { trades: Trade[] }) {
                 name="tradeSlug"
                 required
                 defaultValue={trades[0]?.slug_singular ?? ""}
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground"
               >
                 {trades.map((trade) => (
                   <option key={trade.slug_singular} value={trade.slug_singular}>

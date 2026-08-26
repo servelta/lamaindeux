@@ -32,16 +32,16 @@ export default async function AdminReservationsPage({ searchParams }: Props) {
           name="number"
           defaultValue={number}
           placeholder="Numéro de réservation"
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
         />
         <input
           type="text"
           name="city"
           defaultValue={city}
           placeholder="Ville"
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
         />
-        <select name="status" defaultValue={status ?? ""} className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+        <select name="status" defaultValue={status ?? ""} className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground">
           <option value="">Tous les statuts</option>
           {STATUS_OPTIONS.map((s) => (
             <option key={s} value={s}>{s}</option>

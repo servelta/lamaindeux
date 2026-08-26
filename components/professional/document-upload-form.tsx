@@ -41,7 +41,7 @@ export function DocumentUploadForm() {
           id="docType"
           value={docType}
           onChange={(e) => setDocType(e.target.value)}
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-10 rounded-md border border-input bg-background px-3 text-sm text-foreground"
         >
           {Object.entries(DOC_TYPE_LABELS).map(([value, label]) => (
             <option key={value} value={value}>{label}</option>

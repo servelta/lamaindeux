@@ -1,70 +1,75 @@
-import { createClient } from "@/lib/supabase/server";
-import { requireAdmin } from "@/lib/admin/queries";
-import { logoutAction } from "@/lib/auth/actions";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { requireAdmin, listProfessionals } from "@/lib/admin/queries";
+import { Badge } from "@/components/ui/badge";
 
-export const metadata = { title: "Administration" };
+export const metadata = { title: "Professionnels" };
 
-export default async function AdminHomePage() {
+const STATUS_LABELS: Record<string, string> = {
+  PENDING: "En attente",
+  UNDER_REVIEW: "En cours de vérification",
+  APPROVED: "Approuvé",
+  ACTIVE: "Actif",
+  SUSPENDED: "Suspendu",
+  REJECTED: "Rejeté",
+};
+
+const STATUS_FILTERS = ["PENDING", "UNDER_REVIEW", "APPROVED", "ACTIVE", "SUSPENDED", "REJECTED"];
+
+type Props = { searchParams: Promise<{ status?: string; q?: string }> };
+
+export default async function AdminProfessionalsPage({ searchParams }: Props) {
   await requireAdmin();
-  const supabase = await createClient();
-
-  const today = new Date().toISOString().slice(0, 10);
-  const startOfMonth = `${today.slice(0, 7)}-01`;
-
-  const [
-    { count: professionalCount },
-    { count: pendingCount },
-    { count: activeCount },
-    { count: customerCount },
-    { count: bookingsToday },
-    { count: bookingsThisMonth },
-  ] = await Promise.all([
-    supabase.from("professionals").select("*", { count: "exact", head: true }),
-    supabase.from("professionals").select("*", { count: "exact", head: true }).in("status", ["PENDING", "UNDER_REVIEW"]),
-    supabase.from("professionals").select("*", { count: "exact", head: true }).eq("status", "ACTIVE"),
-    supabase.from("customers").select("*", { count: "exact", head: true }),
-    supabase.from("bookings").select("*", { count: "exact", head: true }).eq("scheduled_date", today),
-    supabase.from("bookings").select("*", { count: "exact", head: true }).gte("scheduled_date", startOfMonth),
-  ]);
-
-  const stats = [
-    { label: "Professionnels total", value: professionalCount ?? 0 },
-    { label: "En attente de vérification", value: pendingCount ?? 0 },
-    { label: "Professionnels actifs", value: activeCount ?? 0 },
-    { label: "Clients", value: customerCount ?? 0 },
-    { label: "Réservations aujourd'hui", value: bookingsToday ?? 0 },
-    { label: "Réservations ce mois-ci", value: bookingsThisMonth ?? 0 },
-  ];
+  const { status, q } = await searchParams;
+  const professionals = await listProfessionals({ status, search: q });
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12">
-      <h1 className="font-display text-2xl font-bold">Administration LaMainDeux</h1>
+    <div className="mx-auto max-w-4xl px-4 py-10">
+      <h1 className="font-display text-2xl font-bold">Professionnels</h1>
 
-      <div className="mt-8 grid gap-4 sm:grid-cols-3">
-        {stats.map((s) => (
-          <div key={s.label} className="rounded-lg border border-border bg-card p-4">
-            <p className="text-sm text-muted-foreground">{s.label}</p>
-            <p className="font-mono-data text-2xl font-semibold">{s.value}</p>
-          </div>
-        ))}
-      </div>
-
-      {(pendingCount ?? 0) > 0 && (
-        <p className="mt-6 rounded-md bg-secondary p-4 text-sm">
-          <strong>{pendingCount}</strong> dossier{pendingCount! > 1 ? "s" : ""} de professionnel en attente de
-          vérification.{" "}
-          <a href="/admin/professionnels?status=PENDING" className="text-primary hover:underline">
-            Voir
-          </a>
-        </p>
-      )}
-
-      <form action={logoutAction} className="mt-8">
-        <Button variant="outline" type="submit">
-          Se déconnecter
-        </Button>
+      <form className="mt-6 flex flex-wrap gap-2">
+        <input
+          type="text"
+          name="q"
+          defaultValue={q}
+          placeholder="Rechercher par nom d'entreprise"
+          className="h-9 flex-1 rounded-md border border-input bg-background px-3 text-sm text-foreground"
+        />
+        <select name="status" defaultValue={status ?? ""} className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground">
+          <option value="">Tous les statuts</option>
+          {STATUS_FILTERS.map((s) => (
+            <option key={s} value={s}>
+              {STATUS_LABELS[s]}
+            </option>
+          ))}
+        </select>
+        <button type="submit" className="h-9 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
+          Filtrer
+        </button>
       </form>
+
+      <div className="mt-6 space-y-2">
+        {professionals.length === 0 && <p className="text-sm text-muted-foreground">Aucun professionnel trouvé.</p>}
+        {professionals.map((p) => {
+          const profile = Array.isArray(p.profiles) ? p.profiles[0] : p.profiles;
+          return (
+            <Link
+              key={p.profile_id}
+              href={`/admin/professionnels/${p.profile_id}`}
+              className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary"
+            >
+              <div className="min-w-0">
+                <p className="truncate font-medium">{p.company_name}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {profile?.first_name} {profile?.last_name} · {p.business_city ?? "—"}
+                </p>
+              </div>
+              <Badge variant={p.status === "ACTIVE" ? "verified" : p.status === "REJECTED" || p.status === "SUSPENDED" ? "destructive" : "outline"}>
+                {STATUS_LABELS[p.status] ?? p.status}
+              </Badge>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

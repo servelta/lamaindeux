@@ -92,7 +92,7 @@ export function BookingForm({
               onChange={(e) => setTime(e.target.value)}
               required
               disabled={!date || isPending}
-              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50"
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground disabled:opacity-50"
             >
               <option value="" disabled>
                 {!date ? "Choisissez d'abord une date" : isPending ? "Chargement..." : "Heure"}

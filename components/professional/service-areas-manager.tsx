@@ -58,7 +58,7 @@ export function ServiceAreasManager({ areas, cities }: { areas: Area[]; cities: 
         <select
           name="cityId"
           required
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm sm:w-48"
+          className="h-10 rounded-md border border-input bg-background px-3 text-sm text-foreground sm:w-48"
         >
           <option value="" disabled selected>
             Ville

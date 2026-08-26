@@ -3,7 +3,6 @@ import Image from "next/image";
 import { BadgeCheck, MapPin, CalendarCheck, ShieldCheck, Wrench, Zap, Paintbrush, Flame, Hammer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SearchForm } from "@/components/search/search-form";
-import { ConnectorLineHorizontal, ConnectorLineVertical } from "@/components/marketing/connector-line";
 import { getActiveCities, getActiveServices, getActiveTrades, getAllTrades } from "@/lib/queries/search";
 
 const HOW_IT_WORKS = [
@@ -200,12 +199,12 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* HOW IT WORKS — the one place numbering + the connector line earn their keep: a real sequence */}
+      {/* HOW IT WORKS */}
       <section className="container py-16">
         <h2 className="font-display text-2xl font-semibold">Comment ça marche</h2>
-        <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-4 sm:gap-4">
+        <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-4 sm:gap-6">
           {HOW_IT_WORKS.map((step, i) => (
-            <div key={step.title} className="relative flex sm:flex-col sm:items-start">
+            <div key={step.title} className="flex sm:flex-col sm:items-start">
               <div className="flex items-center gap-4 sm:mb-4 sm:block">
                 <span className="font-mono-data flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
                   {i + 1}
@@ -213,16 +212,8 @@ export default async function HomePage() {
                 <h3 className="font-display text-base font-semibold sm:mt-3">{step.title}</h3>
               </div>
               <p className="mt-1 text-sm text-muted-foreground sm:mt-2">{step.body}</p>
-              {i < HOW_IT_WORKS.length - 1 && (
-                <div className="pointer-events-none absolute right-0 top-4 hidden w-full translate-x-1/2 sm:block">
-                  <ConnectorLineHorizontal segments={1} />
-                </div>
-              )}
             </div>
           ))}
-        </div>
-        <div className="mt-2 sm:hidden">
-          <ConnectorLineVertical segments={HOW_IT_WORKS.length - 1} />
         </div>
       </section>
 

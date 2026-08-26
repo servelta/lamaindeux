@@ -43,7 +43,7 @@ export function AddServiceForm({ catalog }: { catalog: CatalogService[] }) {
           id="serviceId"
           name="serviceId"
           required
-          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+          className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground"
           onChange={(e) => {
             const opt = catalog.find((s) => s.id === e.target.value);
             if (opt) setPricingType(opt.default_pricing_type);

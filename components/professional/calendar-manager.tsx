@@ -70,7 +70,7 @@ export function WeeklyAvailabilityManager({ slots }: { slots: Slot[] }) {
       <form action={formAction} className="flex flex-wrap items-end gap-2 border-t border-border pt-4">
         <div className="space-y-1">
           <Label htmlFor="weekday" className="text-xs">Jour</Label>
-          <select id="weekday" name="weekday" required className="h-10 rounded-md border border-input bg-background px-3 text-sm">
+          <select id="weekday" name="weekday" required className="h-10 rounded-md border border-input bg-background px-3 text-sm text-foreground">
             {WEEKDAYS.map((day, i) => (
               <option key={i} value={i}>{day}</option>
             ))}
