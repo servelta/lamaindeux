@@ -7,7 +7,10 @@ export const metadata = { title: "Services" };
 export default async function AdminServicesPage() {
   await requireAdmin();
   const supabase = await createClient();
-  const { data: services } = await supabase.from("services").select("*").order("sort_order");
+  const [{ data: services }, { data: trades }] = await Promise.all([
+    supabase.from("services").select("*").order("sort_order"),
+    supabase.from("trades").select("id, name").eq("active", true).order("sort_order"),
+  ]);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
@@ -17,7 +20,7 @@ export default async function AdminServicesPage() {
       </p>
 
       <div className="mt-6">
-        <AddServiceForm />
+        <AddServiceForm trades={trades ?? []} />
       </div>
 
       <h2 className="mt-8 font-display text-lg font-semibold">Catalogue</h2>

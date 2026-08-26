@@ -18,12 +18,33 @@ type Service = {
   active: boolean;
 };
 
-export function AddServiceForm() {
+type Trade = { id: string; name: string };
+
+export function AddServiceForm({ trades }: { trades: Trade[] }) {
   const [state, formAction] = useActionState<ActionResult, FormData>(createServiceAction, undefined);
 
   return (
     <form action={formAction} className="space-y-3 rounded-lg border border-border bg-card p-5">
       <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1">
+          <Label htmlFor="tradeId">Métier</Label>
+          <select
+            id="tradeId"
+            name="tradeId"
+            required
+            defaultValue={trades.length === 1 ? trades[0].id : ""}
+            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground"
+          >
+            <option value="" disabled>
+              Choisissez un métier
+            </option>
+            {trades.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="space-y-1">
           <Label htmlFor="name">Nom du service</Label>
           <Input id="name" name="name" required />

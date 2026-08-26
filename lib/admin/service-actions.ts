@@ -18,6 +18,7 @@ function slugify(input: string): string {
 
 const serviceSchema = z.object({
   name: z.string().min(1, "Le nom est requis."),
+  tradeId: z.string().uuid("Le métier est requis."),
   description: z.string().optional().or(z.literal("")),
   category: z.string().optional().or(z.literal("")),
   defaultPricingType: z.enum(["fixed", "quote"]),
@@ -28,6 +29,7 @@ export async function createServiceAction(_prev: ActionResult, formData: FormDat
 
   const parsed = serviceSchema.safeParse({
     name: formData.get("name"),
+    tradeId: formData.get("tradeId"),
     description: formData.get("description") ?? "",
     category: formData.get("category") ?? "",
     defaultPricingType: formData.get("defaultPricingType"),
@@ -36,6 +38,7 @@ export async function createServiceAction(_prev: ActionResult, formData: FormDat
 
   const supabase = await createClient();
   const { error } = await supabase.from("services").insert({
+    trade_id: parsed.data.tradeId,
     name: parsed.data.name,
     slug: slugify(parsed.data.name),
     description: parsed.data.description || null,
