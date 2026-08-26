@@ -69,6 +69,7 @@ describe("professionalSignUpSchema", () => {
     email: "jean@plomberie.fr",
     phone: "0612345678",
     password: "password123",
+    tradeSlug: "plombier",
     companyName: "Jean Plomberie",
     siret: "12345678901234",
     businessCity: "Paris",
@@ -78,6 +79,12 @@ describe("professionalSignUpSchema", () => {
 
   it("accepts valid input", () => {
     expect(professionalSignUpSchema.safeParse(base).success).toBe(true);
+  });
+
+  it("rejects when no trade is selected", () => {
+    expect(
+      professionalSignUpSchema.safeParse({ ...base, tradeSlug: "" }).success
+    ).toBe(false);
   });
 
   it("rejects when terms are not accepted", () => {
