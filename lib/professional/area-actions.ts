@@ -6,6 +6,9 @@ import { requireUserId } from "@/lib/professional/queries";
 import { addServiceAreaSchema } from "@/lib/professional/validation";
 import type { ActionResult } from "@/lib/professional/profile-actions";
 
+// Re-exported so components can import the action and its result type together.
+export type { ActionResult };
+
 export async function addServiceAreaAction(
   _prev: ActionResult,
   formData: FormData
