@@ -68,12 +68,6 @@ export async function customerSignUpAction(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const ip = await getClientIp();
-  const ipOk = await checkRateLimit(`signup:ip:${ip}`, 5, 60 * 60);
-  if (!ipOk) {
-    return { error: "Trop de tentatives d'inscription. Merci de réessayer plus tard." };
-  }
-
   const parsed = customerSignUpSchema.safeParse({
     firstName: formData.get("firstName"),
     lastName: formData.get("lastName"),
@@ -85,6 +79,16 @@ export async function customerSignUpAction(
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide." };
+  }
+
+  // Rate-limit only well-formed attempts. A password that's too short or
+  // an unticked consent box is someone fixing their form, not an attack —
+  // counting those spends the five hourly attempts on honest mistakes and
+  // locks the person out of signing up at all.
+  const ip = await getClientIp();
+  const ipOk = await checkRateLimit(`signup:ip:${ip}`, 5, 60 * 60);
+  if (!ipOk) {
+    return { error: "Trop de tentatives d'inscription. Merci de réessayer plus tard." };
   }
 
   const supabase = await createClient();
@@ -124,12 +128,6 @@ export async function professionalSignUpAction(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const ip = await getClientIp();
-  const ipOk = await checkRateLimit(`signup:ip:${ip}`, 5, 60 * 60);
-  if (!ipOk) {
-    return { error: "Trop de tentatives d'inscription. Merci de réessayer plus tard." };
-  }
-
   const parsed = professionalSignUpSchema.safeParse({
     firstName: formData.get("firstName"),
     lastName: formData.get("lastName"),
@@ -146,6 +144,16 @@ export async function professionalSignUpAction(
 
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide." };
+  }
+
+  // Rate-limit only well-formed attempts. A password that's too short or
+  // an unticked consent box is someone fixing their form, not an attack —
+  // counting those spends the five hourly attempts on honest mistakes and
+  // locks the person out of signing up at all.
+  const ip = await getClientIp();
+  const ipOk = await checkRateLimit(`signup:ip:${ip}`, 5, 60 * 60);
+  if (!ipOk) {
+    return { error: "Trop de tentatives d'inscription. Merci de réessayer plus tard." };
   }
 
   const supabase = await createClient();
