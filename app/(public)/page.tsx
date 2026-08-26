@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { BadgeCheck, MapPin, CalendarCheck, ShieldCheck, Wrench, Zap, Paintbrush, Flame, Hammer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SearchForm } from "@/components/search/search-form";
@@ -41,6 +42,13 @@ const TRADE_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   Hammer,
 };
 
+// Real photos for the trades that have them. Trades without an entry here
+// (not yet photographed/launched) fall back to the icon-only card style.
+const TRADE_PHOTOS: Record<string, string> = {
+  plombier: "/images/trade-plombier.webp",
+  electricien: "/images/trade-electricien.jpg",
+};
+
 export default async function HomePage() {
   const [activeTrades, allTrades, cities, services] = await Promise.all([
     getActiveTrades(),
@@ -57,17 +65,30 @@ export default async function HomePage() {
     <>
       {/* HERO */}
       <section className="relative overflow-hidden bg-primary text-primary-foreground">
-        <div className="container relative py-16 sm:py-24">
-          <h1 className="max-w-2xl font-display text-4xl font-bold leading-tight sm:text-5xl">
-            Un artisan de confiance, près de chez vous.
-          </h1>
-          <p className="mt-4 max-w-xl text-lg text-primary-foreground/80">
-            Recherchez un service et réservez directement en ligne. Sans
-            commission sur l'intervention, sans frais pour vous.
-          </p>
+        <div className="container relative grid gap-10 py-16 sm:py-24 lg:grid-cols-2 lg:items-center">
+          <div>
+            <h1 className="max-w-2xl font-display text-4xl font-bold leading-tight sm:text-5xl">
+              Un artisan de confiance, près de chez vous.
+            </h1>
+            <p className="mt-4 max-w-xl text-lg text-primary-foreground/80">
+              Recherchez un service et réservez directement en ligne. Sans
+              commission sur l'intervention, sans frais pour vous.
+            </p>
 
-          <div className="mt-8 max-w-3xl">
-            <SearchForm trades={activeTrades} cities={cities} services={services} />
+            <div className="mt-8 max-w-3xl">
+              <SearchForm trades={activeTrades} cities={cities} services={services} />
+            </div>
+          </div>
+
+          <div className="relative hidden aspect-[4/3] overflow-hidden rounded-xl lg:block">
+            <Image
+              src="/images/hero-worker.jpg"
+              alt="Artisan professionnel prêt à intervenir"
+              fill
+              priority
+              className="object-cover"
+              sizes="(min-width: 1024px) 40vw, 0px"
+            />
           </div>
         </div>
       </section>
@@ -97,15 +118,31 @@ export default async function HomePage() {
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
           {allTrades.map((trade) => {
             const Icon = (trade.icon && TRADE_ICONS[trade.icon]) || Wrench;
+            const photo = TRADE_PHOTOS[trade.slug_singular];
+
             if (trade.active) {
               return (
                 <Link
                   key={trade.slug_plural}
                   href={`/${trade.slug_plural}`}
-                  className="flex flex-col items-center gap-2 rounded-lg border border-border bg-card px-4 py-6 text-center transition-colors hover:border-primary"
+                  className="group flex flex-col items-center overflow-hidden rounded-lg border border-border bg-card text-center transition-colors hover:border-primary"
                 >
-                  <Icon className="h-6 w-6 text-primary" />
-                  <span className="text-sm font-medium">{trade.name}</span>
+                  {photo ? (
+                    <div className="relative h-24 w-full">
+                      <Image
+                        src={photo}
+                        alt={trade.name}
+                        fill
+                        className="object-cover"
+                        sizes="200px"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-24 w-full items-center justify-center bg-secondary">
+                      <Icon className="h-6 w-6 text-primary" />
+                    </div>
+                  )}
+                  <span className="px-4 py-3 text-sm font-medium">{trade.name}</span>
                 </Link>
               );
             }

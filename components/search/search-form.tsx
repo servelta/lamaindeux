@@ -58,7 +58,7 @@ export function SearchForm({ trades, cities, services }: SearchFormProps) {
             value={tradeSlug}
             onChange={(e) => setTradeSlug(e.target.value)}
             required
-            className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {trades.map((trade) => (
               <option key={trade.slug_plural} value={trade.slug_plural}>
@@ -78,11 +78,9 @@ export function SearchForm({ trades, cities, services }: SearchFormProps) {
           value={citySlug}
           onChange={(e) => setCitySlug(e.target.value)}
           required
-          className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <option value="" disabled>
-            Ville ou code postal
-          </option>
+          <option value="">Ville ou code postal</option>
           {cities.map((city) => (
             <option key={city.slug} value={city.slug}>
               {city.name}
@@ -99,7 +97,7 @@ export function SearchForm({ trades, cities, services }: SearchFormProps) {
           id="search-service"
           value={serviceSlug}
           onChange={(e) => setServiceSlug(e.target.value)}
-          className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <option value="">Tous les services</option>
           {services.map((service) => (
@@ -119,7 +117,7 @@ export function SearchForm({ trades, cities, services }: SearchFormProps) {
           placeholder="Code postal"
           value={postcode}
           onChange={(e) => setPostcode(e.target.value)}
-          className="h-11"
+          className="h-11 text-foreground placeholder:text-muted-foreground"
         />
       </div>
 
