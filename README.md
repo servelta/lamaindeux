@@ -22,7 +22,7 @@ Links · Vercel.
 
 ## 1. Prerequisites
 
-- Node.js 20+
+- Node.js 22+ (24 recommended — it is what CI and Vercel run)
 - A free [Supabase](https://supabase.com) project
 - (Optional for now) Resend and Twilio accounts — the app runs fine without
   them; SMS/email sending just no-ops with a log line until configured.
