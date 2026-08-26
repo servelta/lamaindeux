@@ -4,6 +4,7 @@ import { useFormState as useActionState } from "react-dom";
 import { useEffect, useState, useTransition } from "react";
 import { createBookingAction, type ActionResult } from "@/lib/booking/create-action";
 import { getAvailableSlotsAction } from "@/lib/booking/slots-action";
+import { lookupCityByPostcodeAction } from "@/lib/booking/city-lookup";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,6 +46,10 @@ export function BookingForm({
   const [time, setTime] = useState("");
   const [slots, setSlots] = useState<string[] | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [postcode, setPostcode] = useState("");
+  const [city, setCity] = useState("");
+  const [cityEdited, setCityEdited] = useState(false);
+  const [isLookingUpCity, startCityLookup] = useTransition();
 
   useEffect(() => {
     if (!date || isQuoteRequest) return;
@@ -55,6 +60,19 @@ export function BookingForm({
       setSlots(result);
     });
   }, [date, professionalId, durationMinutes, isQuoteRequest]);
+
+  // Fill the city in from the postcode's département once five digits are
+  // entered. A customer who types their own city keeps it — their value
+  // always wins over the lookup, however many times the postcode changes.
+  useEffect(() => {
+    if (cityEdited) return;
+    const digits = postcode.replace(/D/g, "");
+    if (digits.length < 5) return;
+    startCityLookup(async () => {
+      const match = await lookupCityByPostcodeAction(digits);
+      if (match) setCity(match);
+    });
+  }, [postcode, cityEdited]);
 
   return (
     <form action={formAction} className="space-y-6">
@@ -149,11 +167,33 @@ export function BookingForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="postcode">Code postal</Label>
-          <Input id="postcode" name="postcode" required placeholder="75015" />
+          <Input
+            id="postcode"
+            name="postcode"
+            required
+            placeholder="75015"
+            inputMode="numeric"
+            maxLength={5}
+            value={postcode}
+            onChange={(e) => setPostcode(e.target.value)}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="city">Ville</Label>
-          <Input id="city" name="city" required placeholder="Paris" />
+          <Input
+            id="city"
+            name="city"
+            required
+            placeholder="Paris"
+            value={city}
+            onChange={(e) => {
+              setCity(e.target.value);
+              setCityEdited(true);
+            }}
+          />
+          {isLookingUpCity && (
+            <p className="text-xs text-muted-foreground">Recherche de la ville…</p>
+          )}
         </div>
       </div>
 
