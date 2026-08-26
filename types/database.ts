@@ -156,10 +156,10 @@ export type Database = {
           id: string
           is_quote_request: boolean
           photo_urls: string[]
-          plumber_service_id: string
           postcode: string
           price_cents: number | null
           professional_id: string
+          professional_service_id: string
           reminder_sent_at: string | null
           scheduled_date: string
           scheduled_time: string
@@ -182,10 +182,10 @@ export type Database = {
           id?: string
           is_quote_request?: boolean
           photo_urls?: string[]
-          plumber_service_id: string
           postcode: string
           price_cents?: number | null
           professional_id: string
+          professional_service_id: string
           reminder_sent_at?: string | null
           scheduled_date: string
           scheduled_time: string
@@ -208,10 +208,10 @@ export type Database = {
           id?: string
           is_quote_request?: boolean
           photo_urls?: string[]
-          plumber_service_id?: string
           postcode?: string
           price_cents?: number | null
           professional_id?: string
+          professional_service_id?: string
           reminder_sent_at?: string | null
           scheduled_date?: string
           scheduled_time?: string
@@ -241,15 +241,15 @@ export type Database = {
             referencedColumns: ["profile_id"]
           },
           {
-            foreignKeyName: "bookings_plumber_service_id_fkey"
-            columns: ["plumber_service_id"]
+            foreignKeyName: "bookings_professional_service_id_fkey"
+            columns: ["professional_service_id"]
             isOneToOne: false
             referencedRelation: "active_professionals"
             referencedColumns: ["professional_service_id"]
           },
           {
-            foreignKeyName: "bookings_plumber_service_id_fkey"
-            columns: ["plumber_service_id"]
+            foreignKeyName: "bookings_professional_service_id_fkey"
+            columns: ["professional_service_id"]
             isOneToOne: false
             referencedRelation: "professional_services"
             referencedColumns: ["id"]

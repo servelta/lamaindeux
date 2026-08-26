@@ -1,15 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // The bundled types/database.ts is a hand-written placeholder (see that
-  // file's own comment) since this project was built before a live
-  // Supabase connection existed to generate real types from. It causes
-  // occasional false-positive type errors on nested/embedded queries that
-  // work correctly at runtime. Once you run `npm run db:types` against
-  // your real project (see README), regenerate this and it's safe to
-  // remove the line below.
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   images: {
     remotePatterns: [
       {
