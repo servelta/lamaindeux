@@ -11,8 +11,15 @@
  * in a shared environment. This is a convenience check, not a security
  * boundary — access to this script already implies server access.
  */
-import "dotenv/config";
+import { config } from "dotenv";
 import { createClient } from "@supabase/supabase-js";
+
+// DEPLOYMENT.md step 5 says to put the production values in .env.local, and
+// that is the file Next itself reads — but "dotenv/config" only ever loads
+// .env, so the documented invocation failed with "supabaseUrl is required".
+// Load .env.local first and let .env fill in anything it does not define.
+config({ path: ".env.local" });
+config();
 
 function arg(name: string): string | undefined {
   const match = process.argv.find((a) => a.startsWith(`--${name}=`));
