@@ -27,6 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/cookies`, changeFrequency: "yearly", priority: 0.1 },
   ];
 
+  const tradePages: MetadataRoute.Sitemap = [];
   const cityPages: MetadataRoute.Sitemap = [];
   const cityServicePages: MetadataRoute.Sitemap = [];
 
@@ -35,6 +36,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // services should never generate a /plombiers/... URL, and vice versa.
   for (const trade of trades ?? []) {
     const tradeServices = (services ?? []).filter((s) => s.trade_id === trade.id);
+
+    // The trade hub itself (/plombiers) — where the homepage's "Nos métiers"
+    // cards point, and the entry point into that trade's city pages.
+    tradePages.push({
+      url: `${SITE_URL}/${trade.slug_plural}`,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    });
 
     for (const city of cities ?? []) {
       cityPages.push({
@@ -63,5 +72,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  return [...staticPages, ...cityPages, ...cityServicePages, ...professionalPages];
+  return [...staticPages, ...tradePages, ...cityPages, ...cityServicePages, ...professionalPages];
 }
