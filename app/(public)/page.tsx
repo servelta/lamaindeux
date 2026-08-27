@@ -64,7 +64,12 @@ export default async function HomePage() {
 
   const primaryTrade = activeTrades[0];
   const popularCities = cities.slice(0, 8);
-  const popularServices = services.slice(0, 8);
+  // Scoped to the primary trade, which the section below assumes: these link
+  // to /{primaryTrade}/{city}/{service}, so another trade's service builds a
+  // URL whose service does not resolve under that trade — a 404.
+  const popularServices = primaryTrade
+    ? services.filter((s) => s.trade_id === primaryTrade.id).slice(0, 8)
+    : [];
 
   return (
     <>
