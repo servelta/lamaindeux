@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, User, Wrench, CalendarDays, FileText, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { NotificationBell } from "@/components/notifications/notification-bell";
+import { logoutAction } from "@/lib/auth/actions";
+import { Button } from "@/components/ui/button";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
@@ -19,7 +21,7 @@ export function ProfessionalNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex items-center gap-1 overflow-x-auto border-b border-border/60 bg-card px-4 sm:flex-col sm:items-stretch sm:gap-0.5 sm:overflow-visible sm:border-b-0 sm:border-r sm:px-3 sm:py-4">
+    <nav className="flex items-center gap-1 overflow-x-auto border-b border-border/60 bg-card px-4 sm:min-h-screen sm:flex-col sm:items-stretch sm:gap-0.5 sm:overflow-visible sm:border-b-0 sm:border-r sm:px-3 sm:py-4">
       <div className="ml-auto flex items-center py-1 sm:ml-0 sm:justify-end sm:pb-3">
         <NotificationBell basePath="/reservations" />
       </div>
@@ -41,6 +43,11 @@ export function ProfessionalNav() {
           </Link>
         );
       })}
+      <form action={logoutAction} className="ml-2 shrink-0 border-l border-border/60 pl-2 sm:mt-auto sm:ml-0 sm:border-l-0 sm:border-t sm:pl-0 sm:pt-3">
+        <Button variant="ghost" type="submit" className="w-full justify-start text-muted-foreground hover:text-foreground">
+          Se déconnecter
+        </Button>
+      </form>
     </nav>
   );
 }

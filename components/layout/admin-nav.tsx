@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Wrench as WrenchIcon, Users, CalendarClock, ListChecks, MapPin, Settings, Star } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { logoutAction } from "@/lib/auth/actions";
+import { Button } from "@/components/ui/button";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Vue d'ensemble", icon: LayoutDashboard, exact: true },
@@ -20,7 +22,7 @@ export function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex gap-1 overflow-x-auto border-b border-border/60 bg-card px-4 sm:flex-col sm:gap-0.5 sm:overflow-visible sm:border-b-0 sm:border-r sm:px-3 sm:py-4">
+    <nav className="flex gap-1 overflow-x-auto border-b border-border/60 bg-card px-4 sm:min-h-screen sm:w-64 sm:flex-col sm:gap-0.5 sm:overflow-visible sm:border-b-0 sm:border-r sm:px-3 sm:py-4">
       <div className="hidden px-3 pb-3 sm:block">
         <span className="font-display text-sm font-semibold text-primary">Administration</span>
       </div>
@@ -42,6 +44,11 @@ export function AdminNav() {
           </Link>
         );
       })}
+      <form action={logoutAction} className="ml-2 shrink-0 border-l border-border/60 pl-2 sm:mt-auto sm:ml-0 sm:border-l-0 sm:border-t sm:pl-0 sm:pt-3">
+        <Button variant="ghost" type="submit" className="w-full justify-start text-muted-foreground hover:text-foreground">
+          Se déconnecter
+        </Button>
+      </form>
     </nav>
   );
 }

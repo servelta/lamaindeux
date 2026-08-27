@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { logoutAction } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -95,12 +94,6 @@ export default async function ProfessionalDashboardPage() {
           apparaîtra dans les résultats de recherche.
         </p>
       )}
-
-      <form action={logoutAction} className="mt-8">
-        <Button variant="outline" type="submit">
-          Se déconnecter
-        </Button>
-      </form>
     </div>
   );
 }

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { logoutAction } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
 import { GdprPanel } from "@/components/gdpr/gdpr-panel";
 
@@ -37,12 +36,6 @@ export default async function MonComptePage() {
       <div className="mt-10">
         <GdprPanel />
       </div>
-
-      <form action={logoutAction} className="mt-8">
-        <Button variant="outline" type="submit">
-          Se déconnecter
-        </Button>
-      </form>
     </div>
   );
 }
