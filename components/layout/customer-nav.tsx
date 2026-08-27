@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils/cn";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { logoutAction } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/layout/brand-logo";
 
 const NAV_ITEMS = [
   { href: "/mon-compte", label: "Mon compte", icon: User },
@@ -18,6 +19,9 @@ export function CustomerNav() {
 
   return (
     <nav className="flex items-center gap-1 overflow-x-auto border-b border-border/60 bg-card px-4 sm:min-h-screen sm:flex-col sm:items-stretch sm:gap-0.5 sm:overflow-visible sm:border-b-0 sm:border-r sm:px-3 sm:py-4">
+      <div className="flex shrink-0 items-center px-1 sm:px-3 sm:pb-3">
+        <BrandLogo />
+      </div>
       <div className="ml-auto flex items-center py-1 sm:ml-0 sm:justify-end sm:pb-3">
         <NotificationBell basePath="/mes-reservations" />
       </div>
