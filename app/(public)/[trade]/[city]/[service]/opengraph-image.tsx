@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getCityBySlug, getServiceBySlug, getTradeBySlugPlural } from "@/lib/queries/search";
+import { pluralise } from "@/lib/utils/fr";
 
 export const runtime = "edge";
 export const size = { width: 1200, height: 630 };
@@ -16,7 +17,7 @@ export default async function Image({ params }: Props) {
 
   const heading = service && city ? `${service.name} à ${city.name}` : "Professionnel vérifié";
   const subheading = trade
-    ? `${trade.name_singular}s vérifiés · Prix affichés · Réservation en ligne`
+    ? `${pluralise(trade.name_singular)} vérifiés · Prix affichés · Réservation en ligne`
     : "Professionnels vérifiés · Prix affichés · Réservation en ligne";
 
   return new ImageResponse(

@@ -6,6 +6,7 @@ import { ProfessionalCard } from "@/components/search/professional-card";
 import { EmptySearchResults } from "@/components/search/empty-results";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbSchema, faqSchema } from "@/lib/seo/schema";
+import { pluralise, withParticle } from "@/lib/utils/fr";
 
 type Props = {
   params: Promise<{ trade: string; city: string }>;
@@ -56,10 +57,10 @@ export default async function CityPage({ params, searchParams }: Props) {
     {
       question: "Le service est-il gratuit pour moi ?",
       answer:
-        `Oui. La recherche et la réservation sont entièrement gratuites. Vous payez uniquement le ${tradeLower}, directement, pour l'intervention réalisée.`,
+        `Oui. La recherche et la réservation sont entièrement gratuites. Vous payez uniquement ${withParticle("le", tradeLower)}, directement, pour l'intervention réalisée.`,
     },
     {
-      question: `Comment sont vérifiés les ${trade.slug_plural} à ${city.name} ?`,
+      question: `Comment sont vérifiés les ${pluralise(tradeLower)} à ${city.name} ?`,
       answer: "Chaque professionnel passe par une vérification de notre équipe avant d'apparaître sur la plateforme.",
     },
   ];

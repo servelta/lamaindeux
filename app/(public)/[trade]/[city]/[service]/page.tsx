@@ -5,6 +5,7 @@ import { ProfessionalCard } from "@/components/search/professional-card";
 import { EmptySearchResults } from "@/components/search/empty-results";
 import { JsonLd } from "@/components/seo/json-ld";
 import { cityServiceSchema, faqSchema, breadcrumbSchema } from "@/lib/seo/schema";
+import { pluralise, withParticle } from "@/lib/utils/fr";
 
 type Props = {
   params: Promise<{ trade: string; city: string; service: string }>;
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!city || !service) return {};
 
   const title = `${service.name} ${city.name} — ${trade.name_singular} vérifié | LaMainDeux`;
-  const description = `Besoin d'un service "${service.name.toLowerCase()}" à ${city.name} ? Comparez les ${trade.slug_plural} vérifiés, consultez les prix et réservez en ligne.`;
+  const description = `Besoin d'un service "${service.name.toLowerCase()}" à ${city.name} ? Comparez les ${pluralise(trade.name_singular.toLowerCase())} vérifiés, consultez les prix et réservez en ligne.`;
   const path = `/${trade.slug_plural}/${city.slug}/${service.slug}`;
 
   return {
@@ -68,7 +69,7 @@ export default async function CityServicePage({ params, searchParams }: Props) {
     {
       question: "Puis-je réserver en urgence ?",
       answer:
-        `Les disponibilités affichées sur chaque profil reflètent les créneaux réels du ${tradeLower}. Pour une urgence, filtrez par "Intervention d'urgence" si ce service est proposé.`,
+        `Les disponibilités affichées sur chaque profil reflètent les créneaux réels ${withParticle("du", tradeLower)}. Pour une urgence, filtrez par "Intervention d'urgence" si ce service est proposé.`,
     },
   ];
 
