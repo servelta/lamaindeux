@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils/cn";
 
-type Trade = { name: string; slug_plural: string };
+type Trade = { id: string; name: string; slug_plural: string };
 
 type SearchFormProps = {
   trades: Trade[];
@@ -20,6 +20,17 @@ export function SearchForm({ trades, cities, services }: SearchFormProps) {
   const [citySlug, setCitySlug] = useState("");
   const [serviceSlug, setServiceSlug] = useState("");
   const [postcode, setPostcode] = useState("");
+
+  // Services belong to exactly one trade, so the dropdown must never offer
+  // another trade's work: submitting Plomberie + an électricité service
+  // builds /plombiers/{city}/{service}, which 404s because the page looks
+  // the service up scoped to the trade. Harmless while a single trade was
+  // live and every service belonged to it; a 404 generator as soon as a
+  // second trade went active.
+  const selectedTrade = trades.find((t) => t.slug_plural === tradeSlug);
+  const tradeServices = selectedTrade
+    ? services.filter((s) => s.trade_id === selectedTrade.id)
+    : services;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -56,7 +67,11 @@ export function SearchForm({ trades, cities, services }: SearchFormProps) {
           <select
             id="search-trade"
             value={tradeSlug}
-            onChange={(e) => setTradeSlug(e.target.value)}
+            onChange={(e) => {
+              setTradeSlug(e.target.value);
+              // The service already picked belongs to the previous trade.
+              setServiceSlug("");
+            }}
             required
             className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
@@ -100,7 +115,7 @@ export function SearchForm({ trades, cities, services }: SearchFormProps) {
           className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <option value="">Tous les services</option>
-          {services.map((service) => (
+          {tradeServices.map((service) => (
             <option key={service.slug} value={service.slug}>
               {service.name}
             </option>
