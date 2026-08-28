@@ -135,7 +135,6 @@ export async function searchProfessionals(params: {
   tradeSlugPlural?: string;
   citySlug?: string;
   serviceSlug?: string;
-  postcode?: string;
 }): Promise<ProfessionalSearchResult[]> {
   const supabase = await createClient();
   let query = supabase.from("active_professionals").select("*");
@@ -161,9 +160,6 @@ export async function searchProfessionals(params: {
   for (const row of data as any[]) {
     const key = `${row.profile_id}-${row.professional_service_id}`;
     if (seen.has(key)) continue;
-    if (params.postcode && row.postcodes?.length && !row.postcodes.includes(params.postcode)) {
-      continue;
-    }
     seen.add(key);
     results.push(row);
   }

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils/cn";
 
 type Trade = { id: string; name: string; slug_plural: string };
@@ -19,7 +18,6 @@ export function SearchForm({ trades, cities, services }: SearchFormProps) {
   const [tradeSlug, setTradeSlug] = useState(trades[0]?.slug_plural ?? "");
   const [citySlug, setCitySlug] = useState("");
   const [serviceSlug, setServiceSlug] = useState("");
-  const [postcode, setPostcode] = useState("");
 
   // Services belong to exactly one trade, so the dropdown must never offer
   // another trade's work: submitting Plomberie + an électricité service
@@ -40,10 +38,7 @@ export function SearchForm({ trades, cities, services }: SearchFormProps) {
       ? `/${tradeSlug}/${citySlug}/${serviceSlug}`
       : `/${tradeSlug}/${citySlug}`;
 
-    const params = new URLSearchParams();
-    if (postcode) params.set("cp", postcode);
-
-    router.push(params.toString() ? `${path}?${params}` : path);
+    router.push(path);
   }
 
   return (
@@ -55,8 +50,8 @@ export function SearchForm({ trades, cities, services }: SearchFormProps) {
         // Only shown once a second trade goes active — with a single trade
         // live, picking it is pointless UI, so it's implicit instead.
         trades.length > 1
-          ? "sm:grid-cols-[1fr_1.2fr_1.2fr_0.8fr_auto]"
-          : "sm:grid-cols-[1.2fr_1.2fr_0.8fr_auto]"
+          ? "sm:grid-cols-[1fr_1.2fr_1.2fr_auto]"
+          : "sm:grid-cols-[1.2fr_1.2fr_auto]"
       )}
     >
       {trades.length > 1 && (
@@ -86,7 +81,7 @@ export function SearchForm({ trades, cities, services }: SearchFormProps) {
 
       <div>
         <label htmlFor="search-city" className="sr-only">
-          Ville ou code postal
+          Ville
         </label>
         <select
           id="search-city"
@@ -95,7 +90,7 @@ export function SearchForm({ trades, cities, services }: SearchFormProps) {
           required
           className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <option value="">Ville ou code postal</option>
+          <option value="">Ville</option>
           {cities.map((city) => (
             <option key={city.slug} value={city.slug}>
               {city.name}
@@ -121,19 +116,6 @@ export function SearchForm({ trades, cities, services }: SearchFormProps) {
             </option>
           ))}
         </select>
-      </div>
-
-      <div>
-        <label htmlFor="search-postcode" className="sr-only">
-          Code postal (optionnel)
-        </label>
-        <Input
-          id="search-postcode"
-          placeholder="Code postal"
-          value={postcode}
-          onChange={(e) => setPostcode(e.target.value)}
-          className="h-11 text-foreground placeholder:text-muted-foreground"
-        />
       </div>
 
       <Button type="submit" size="lg" className="h-11">

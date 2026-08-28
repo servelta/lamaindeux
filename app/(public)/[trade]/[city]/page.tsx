@@ -10,7 +10,6 @@ import { pluralise, withParticle } from "@/lib/utils/fr";
 
 type Props = {
   params: Promise<{ trade: string; city: string }>;
-  searchParams: Promise<{ cp?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -32,15 +31,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export const revalidate = 3600; // ISR: city data changes rarely, refresh hourly
 
-export default async function CityPage({ params, searchParams }: Props) {
+export default async function CityPage({ params }: Props) {
   const { trade: tradeSlug, city: citySlug } = await params;
-  const { cp } = await searchParams;
 
   const [trade, city] = await Promise.all([getTradeBySlugPlural(tradeSlug), getCityBySlug(citySlug)]);
   if (!trade || !city) notFound();
 
   const [results, services] = await Promise.all([
-    searchProfessionals({ tradeSlugPlural: trade.slug_plural, citySlug, postcode: cp }),
+    searchProfessionals({ tradeSlugPlural: trade.slug_plural, citySlug }),
     getActiveServices(trade.id),
   ]);
 

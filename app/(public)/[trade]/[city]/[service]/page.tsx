@@ -9,7 +9,6 @@ import { pluralise, withParticle } from "@/lib/utils/fr";
 
 type Props = {
   params: Promise<{ trade: string; city: string; service: string }>;
-  searchParams: Promise<{ cp?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -37,9 +36,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export const revalidate = 3600;
 
-export default async function CityServicePage({ params, searchParams }: Props) {
+export default async function CityServicePage({ params }: Props) {
   const { trade: tradeSlug, city: citySlug, service: serviceSlug } = await params;
-  const { cp } = await searchParams;
 
   const trade = await getTradeBySlugPlural(tradeSlug);
   if (!trade) notFound();
@@ -54,7 +52,6 @@ export default async function CityServicePage({ params, searchParams }: Props) {
     tradeSlugPlural: trade.slug_plural,
     citySlug,
     serviceSlug,
-    postcode: cp,
   });
 
   const tradeLower = trade.name_singular.toLowerCase();
