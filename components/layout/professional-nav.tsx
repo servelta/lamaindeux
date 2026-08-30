@@ -5,8 +5,6 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, User, Wrench, CalendarDays, FileText, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { NotificationBell } from "@/components/notifications/notification-bell";
-import { logoutAction } from "@/lib/auth/actions";
-import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/layout/brand-logo";
 
 const NAV_ITEMS = [
@@ -47,11 +45,6 @@ export function ProfessionalNav() {
           </Link>
         );
       })}
-      <form action={logoutAction} className="ml-2 shrink-0 border-l border-border/60 pl-2 sm:mt-auto sm:ml-0 sm:border-l-0 sm:border-t sm:pl-0 sm:pt-3">
-        <Button variant="ghost" type="submit" className="w-full justify-start text-muted-foreground hover:text-foreground">
-          Se déconnecter
-        </Button>
-      </form>
     </nav>
   );
 }
