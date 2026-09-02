@@ -27,7 +27,7 @@ export default async function ReserverPage({ params, searchParams }: Props) {
   }
 
   const [{ data: professional }, { data: professionalService }, { data: profile }] = await Promise.all([
-    supabase.from("professionals").select("profile_id, company_name, slug, status").eq("slug", slug).single(),
+    supabase.from("public_professional_profiles").select("profile_id, company_name, slug").eq("slug", slug).single(),
     supabase
       .from("professional_services")
       .select("id, price_cents, duration_minutes, pricing_type, active, services(name)")
@@ -36,7 +36,7 @@ export default async function ReserverPage({ params, searchParams }: Props) {
     supabase.from("profiles").select("first_name, last_name, phone, role").eq("id", user.id).single(),
   ]);
 
-  if (!professional || professional.status !== "ACTIVE" || !professionalService || !professionalService.active) {
+  if (!professional?.profile_id || !professional.company_name || !professional.slug || !professionalService || !professionalService.active) {
     notFound();
   }
 

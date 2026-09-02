@@ -8,6 +8,10 @@ export const updateProfileSchema = z.object({
   businessAddress: z.string().optional().or(z.literal("")),
   businessCity: z.string().min(1, "La ville est requise."),
   businessPostcode: z.string().regex(/^\d{5}$/, "Le code postal doit contenir 5 chiffres."),
+  publicPhone: z.string().optional().or(z.literal("")),
+  publicEmail: z.string().email("Adresse e-mail publique invalide.").optional().or(z.literal("")),
+  googleRating: z.coerce.number().min(0).max(5).optional(),
+  googleReviewCount: z.coerce.number().int().min(0).optional(),
 });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

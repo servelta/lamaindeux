@@ -532,6 +532,38 @@ export type Database = {
           },
         ]
       }
+      professional_gallery_photos: {
+        Row: {
+          id: string
+          professional_id: string
+          storage_path: string
+          sort_order: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          professional_id: string
+          storage_path: string
+          sort_order?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          professional_id?: string
+          storage_path?: string
+          sort_order?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_gallery_photos_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["profile_id"]
+          },
+        ]
+      }
       professional_service_areas: {
         Row: {
           city_id: string
@@ -652,6 +684,8 @@ export type Database = {
           description: string | null
           payment_date: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
+          public_email: string | null
+          public_phone: string | null
           profile_id: string
           rating_avg: number
           rating_count: number
@@ -661,6 +695,8 @@ export type Database = {
           status: Database["public"]["Enums"]["professional_status"]
           status_reason: string | null
           stripe_payment_link_url: string | null
+          google_rating: number | null
+          google_review_count: number | null
           subscription_end: string | null
           subscription_start: string | null
           trade_id: string
@@ -680,6 +716,8 @@ export type Database = {
           description?: string | null
           payment_date?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          public_email?: string | null
+          public_phone?: string | null
           profile_id: string
           rating_avg?: number
           rating_count?: number
@@ -689,6 +727,8 @@ export type Database = {
           status?: Database["public"]["Enums"]["professional_status"]
           status_reason?: string | null
           stripe_payment_link_url?: string | null
+          google_rating?: number | null
+          google_review_count?: number | null
           subscription_end?: string | null
           subscription_start?: string | null
           trade_id: string
@@ -708,6 +748,8 @@ export type Database = {
           description?: string | null
           payment_date?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          public_email?: string | null
+          public_phone?: string | null
           profile_id?: string
           rating_avg?: number
           rating_count?: number
@@ -717,6 +759,8 @@ export type Database = {
           status?: Database["public"]["Enums"]["professional_status"]
           status_reason?: string | null
           stripe_payment_link_url?: string | null
+          google_rating?: number | null
+          google_review_count?: number | null
           subscription_end?: string | null
           subscription_start?: string | null
           trade_id?: string
@@ -1049,6 +1093,32 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      public_professional_profiles: {
+        Row: {
+          profile_id: string | null
+          trade_id: string | null
+          trade_name_singular: string | null
+          trade_slug_singular: string | null
+          trade_slug_plural: string | null
+          company_name: string | null
+          slug: string | null
+          description: string | null
+          business_address: string | null
+          business_city: string | null
+          business_postcode: string | null
+          public_phone: string | null
+          public_email: string | null
+          rating_avg: number | null
+          rating_count: number | null
+          completed_jobs_count: number | null
+          google_rating: number | null
+          google_review_count: number | null
+          first_name: string | null
+          last_name: string | null
+          avatar_url: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {

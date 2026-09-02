@@ -15,7 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     supabase.from("cities").select("slug, name").eq("active", true),
     supabase.from("trades").select("id, slug_plural").eq("active", true),
     supabase.from("services").select("slug, trade_id").eq("active", true),
-    supabase.from("professionals").select("slug, updated_at").eq("status", "ACTIVE"),
+    supabase.from("public_professional_profiles").select("slug"),
   ]);
 
   const staticPages: MetadataRoute.Sitemap = [
@@ -71,7 +71,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const professionalPages: MetadataRoute.Sitemap = (professionals ?? []).map((p) => ({
     url: `${SITE_URL}/artisan/${p.slug}`,
-    lastModified: p.updated_at ?? undefined,
     changeFrequency: "weekly",
     priority: 0.6,
   }));

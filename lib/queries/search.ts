@@ -170,26 +170,33 @@ export async function getProfessionalBySlug(slug: string) {
   const supabase = await createClient();
 
   const { data: professional } = await supabase
-    .from("professionals")
-    .select(
-      "profile_id, company_name, slug, description, business_city, rating_avg, rating_count, completed_jobs_count, status, trade_id, trades(name_singular, slug_singular, slug_plural), profiles(first_name, last_name, avatar_url)"
-    )
+    .from("public_professional_profiles")
+    .select("*")
     .eq("slug", slug)
-    .eq("status", "ACTIVE")
     .single();
 
-  if (!professional) return null;
+  if (!professional?.profile_id || !professional.company_name || !professional.slug) return null;
+
+  const publicProfessional = {
+    ...professional,
+    profile_id: professional.profile_id,
+    company_name: professional.company_name,
+    slug: professional.slug,
+    rating_avg: professional.rating_avg ?? 0,
+    rating_count: professional.rating_count ?? 0,
+    completed_jobs_count: professional.completed_jobs_count ?? 0,
+  };
 
   const { data: services } = await supabase
     .from("professional_services")
     .select("id, price_cents, duration_minutes, pricing_type, description, services(name, slug)")
-    .eq("professional_id", professional.profile_id)
+    .eq("professional_id", publicProfessional.profile_id)
     .eq("active", true);
 
   const { data: reviews } = await supabase
     .from("reviews")
     .select("rating, comment, created_at")
-    .eq("professional_id", professional.profile_id)
+    .eq("professional_id", publicProfessional.profile_id)
     .eq("hidden_by_admin", false)
     .order("created_at", { ascending: false })
     .limit(10);
@@ -199,5 +206,21 @@ export async function getProfessionalBySlug(slug: string) {
     .select("cities(name, slug)")
     .eq("professional_id", professional.profile_id);
 
-  return { professional, services: services ?? [], reviews: reviews ?? [], areas: areas ?? [] };
+  const { data: gallery } = await supabase
+    .from("professional_gallery_photos")
+    .select("id, storage_path, sort_order, created_at")
+    .eq("professional_id", publicProfessional.profile_id)
+    .order("sort_order")
+    .order("created_at");
+
+  return {
+    professional: publicProfessional,
+    services: services ?? [],
+    reviews: reviews ?? [],
+    areas: areas ?? [],
+    gallery: (gallery ?? []).map((photo) => ({
+      ...photo,
+      url: supabase.storage.from("avatars").getPublicUrl(photo.storage_path).data.publicUrl,
+    })),
+  };
 }

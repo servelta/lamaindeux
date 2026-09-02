@@ -21,6 +21,10 @@ export async function updatePlumberProfileAction(
     businessAddress: formData.get("businessAddress") ?? "",
     businessCity: formData.get("businessCity"),
     businessPostcode: formData.get("businessPostcode"),
+    publicPhone: formData.get("publicPhone") ?? "",
+    publicEmail: formData.get("publicEmail") ?? "",
+    googleRating: formData.get("googleRating") || undefined,
+    googleReviewCount: formData.get("googleReviewCount") || undefined,
   });
 
   if (!parsed.success) {
@@ -41,6 +45,10 @@ export async function updatePlumberProfileAction(
       business_address: parsed.data.businessAddress || null,
       business_city: parsed.data.businessCity,
       business_postcode: parsed.data.businessPostcode,
+      public_phone: parsed.data.publicPhone || null,
+      public_email: parsed.data.publicEmail || null,
+      google_rating: parsed.data.googleRating ?? null,
+      google_review_count: parsed.data.googleReviewCount ?? null,
     })
     .eq("profile_id", professionalId);
 

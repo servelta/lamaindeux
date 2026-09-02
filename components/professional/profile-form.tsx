@@ -15,6 +15,10 @@ type Professional = {
   business_address: string | null;
   business_city: string | null;
   business_postcode: string | null;
+  public_phone: string | null;
+  public_email: string | null;
+  google_rating: number | null;
+  google_review_count: number | null;
 };
 
 export function ProfileForm({ professional }: { professional: Professional }) {
@@ -64,6 +68,17 @@ export function ProfileForm({ professional }: { professional: Professional }) {
         <Input id="businessAddress" name="businessAddress" defaultValue={professional.business_address ?? ""} />
       </div>
 
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="publicPhone">Téléphone public (optionnel)</Label>
+          <Input id="publicPhone" name="publicPhone" type="tel" defaultValue={professional.public_phone ?? ""} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="publicEmail">E-mail public (optionnel)</Label>
+          <Input id="publicEmail" name="publicEmail" type="email" defaultValue={professional.public_email ?? ""} />
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="businessCity">Ville</Label>
@@ -77,6 +92,32 @@ export function ProfileForm({ professional }: { professional: Professional }) {
             defaultValue={professional.business_postcode ?? ""}
             required
             placeholder="75015"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="googleRating">Note Google (optionnel)</Label>
+          <Input
+            id="googleRating"
+            name="googleRating"
+            type="number"
+            min={0}
+            max={5}
+            step={0.1}
+            defaultValue={professional.google_rating ?? ""}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="googleReviewCount">Nombre d'avis Google (optionnel)</Label>
+          <Input
+            id="googleReviewCount"
+            name="googleReviewCount"
+            type="number"
+            min={0}
+            step={1}
+            defaultValue={professional.google_review_count ?? ""}
           />
         </div>
       </div>
