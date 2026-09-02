@@ -20,6 +20,11 @@ const NAV_LINKS = [
 
 export function SiteHeader({ currentUser = null }: { currentUser?: CurrentUser }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const visibleNavLinks = currentUser === null
+    ? NAV_LINKS
+    : currentUser.role === "customer"
+      ? NAV_LINKS.slice(0, 1)
+      : [];
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur">
@@ -30,7 +35,7 @@ export function SiteHeader({ currentUser = null }: { currentUser?: CurrentUser }
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
-          {NAV_LINKS.map((link) => (
+          {visibleNavLinks.map((link) => (
             <Link key={link.href} href={link.href} className="hover:text-primary">
               {link.label}
             </Link>
@@ -69,7 +74,7 @@ export function SiteHeader({ currentUser = null }: { currentUser?: CurrentUser }
       {/* Mobile menu panel */}
       {mobileOpen && (
         <nav className="flex flex-col gap-1 border-t border-border/60 bg-background px-4 py-3 md:hidden">
-          {NAV_LINKS.map((link) => (
+          {visibleNavLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
