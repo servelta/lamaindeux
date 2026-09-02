@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { SearchForm } from "@/components/search/search-form";
 import { getActiveCities, getActiveServices, getActiveTrades } from "@/lib/queries/search";
@@ -26,8 +27,17 @@ export default async function SearchPage() {
 
   return (
     <div className="container py-12">
-      <h1 className="font-display text-3xl font-bold">Trouver un artisan</h1>
-      <p className="mt-2 max-w-2xl text-muted-foreground">
+      <div className="mb-8 overflow-hidden rounded-lg">
+        <Image
+          src="/images/recherche-banner.png"
+          alt="Nos artisans vérifiés : électricien, plombier, peintre et entrepreneur général"
+          width={1600}
+          height={800}
+          priority
+          className="h-48 w-full object-contain sm:h-64 md:h-80"
+        />
+      </div>
+      <p className="max-w-2xl text-muted-foreground">
         Indiquez votre ville et le service dont vous avez besoin pour trouver un artisan vérifié près de chez vous.
       </p>
 

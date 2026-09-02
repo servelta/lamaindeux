@@ -4,6 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AccountMenu } from "@/components/layout/account-menu";
+
+export type CurrentUser = {
+  firstName: string;
+  avatarUrl: string | null;
+  role: string;
+} | null;
 
 const NAV_LINKS = [
   { href: "/recherche", label: "Trouver un artisan" },
@@ -11,7 +18,7 @@ const NAV_LINKS = [
   { href: "/inscription/professionnel", label: "Devenir artisan" },
 ];
 
-export function SiteHeader() {
+export function SiteHeader({ currentUser = null }: { currentUser?: CurrentUser }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -31,9 +38,17 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button asChild size="sm" className="hidden md:inline-flex">
-            <Link href="/connexion">Se connecter</Link>
-          </Button>
+          {currentUser ? (
+            <AccountMenu
+              firstName={currentUser.firstName}
+              avatarUrl={currentUser.avatarUrl}
+              role={currentUser.role}
+            />
+          ) : (
+            <Button asChild size="sm" className="hidden md:inline-flex">
+              <Link href="/connexion">Se connecter</Link>
+            </Button>
+          )}
 
           {/* Mobile menu toggle — this is what was entirely missing before:
               on small screens the desktop nav is hidden and there was no
