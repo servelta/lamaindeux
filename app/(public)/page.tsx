@@ -3,6 +3,7 @@ import Image from "next/image";
 import { BadgeCheck, MapPin, CalendarCheck, ShieldCheck, Wrench, Zap, Paintbrush, Flame, Hammer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SearchForm } from "@/components/search/search-form";
+import { TRADE_PHOTOS } from "@/lib/trade-photos";
 import { getActiveCities, getActiveServices, getActiveTrades, getAllTrades } from "@/lib/queries/search";
 
 // This page reads the live catalog (trades/cities/services) that admins can
@@ -15,18 +16,26 @@ const HOW_IT_WORKS = [
   {
     title: "Recherchez",
     body: "Indiquez votre ville et le service dont vous avez besoin.",
+    image: "/images/how-it-works/1-recherchez.png",
+    alt: "Formulaire de recherche d'artisan",
   },
   {
     title: "Choisissez",
     body: "Comparez les artisans vérifiés, leurs avis et leurs prix.",
+    image: "/images/how-it-works/2-choisissez.png",
+    alt: "Choix d'un artisan vérifié",
   },
   {
     title: "Réservez",
     body: "Sélectionnez un créneau disponible en quelques clics.",
+    image: "/images/how-it-works/3-reservez.png",
+    alt: "Réservation d'un créneau disponible",
   },
   {
     title: "Confirmez",
     body: "Recevez votre confirmation par e-mail avec votre numéro de réservation.",
+    image: "/images/how-it-works/4-confirmez.png",
+    alt: "Confirmation de réservation par e-mail",
   },
 ];
 
@@ -45,13 +54,6 @@ const TRADE_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   Paintbrush,
   Flame,
   Hammer,
-};
-
-// Real photos for the trades that have them. Trades without an entry here
-// (not yet photographed/launched) fall back to the icon-only card style.
-const TRADE_PHOTOS: Record<string, string> = {
-  plombier: "/images/trade-plombier.webp",
-  electricien: "/images/trade-electricien.jpg",
 };
 
 export default async function HomePage() {
@@ -216,7 +218,18 @@ export default async function HomePage() {
         <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-4 sm:gap-6">
           {HOW_IT_WORKS.map((step, i) => (
             <div key={step.title} className="flex sm:flex-col sm:items-start">
-              <div className="flex items-center gap-4 sm:mb-4 sm:block">
+              <div className="mb-3 w-full overflow-hidden rounded-lg border border-border bg-card shadow-sm sm:mb-4">
+                <div className="relative aspect-square w-full">
+                  <Image
+                    src={step.image}
+                    alt={step.alt}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 25vw, 20vw"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-4 sm:block">
                 <span className="font-mono-data flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
                   {i + 1}
                 </span>
@@ -233,7 +246,7 @@ export default async function HomePage() {
         <div className="container flex flex-col items-center gap-4 py-16 text-center">
           <h2 className="font-display text-2xl font-semibold">Besoin d'un artisan ?</h2>
           <Button asChild size="lg">
-            <Link href="#recherche">Trouver un artisan maintenant</Link>
+            <Link href="/recherche">Trouver un artisan maintenant</Link>
           </Button>
         </div>
       </section>

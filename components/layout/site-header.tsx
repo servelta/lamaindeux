@@ -6,9 +6,9 @@ import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const NAV_LINKS = [
-  { href: "/#recherche", label: "Trouver un artisan" },
+  { href: "/recherche", label: "Trouver un artisan" },
+  { href: "/contact", label: "Contact" },
   { href: "/inscription/professionnel", label: "Devenir artisan" },
-  { href: "/connexion", label: "Connexion" },
 ];
 
 export function SiteHeader() {
@@ -32,7 +32,7 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-2">
           <Button asChild size="sm" className="hidden md:inline-flex">
-            <Link href="/#recherche">Trouver un artisan</Link>
+            <Link href="/connexion">Se connecter</Link>
           </Button>
 
           {/* Mobile menu toggle — this is what was entirely missing before:

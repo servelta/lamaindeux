@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getTradeBySlugPlural, getActiveCities, getActiveServices } from "@/lib/queries/search";
@@ -6,6 +7,7 @@ import { SearchForm } from "@/components/search/search-form";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbSchema, faqSchema } from "@/lib/seo/schema";
 import { pluralise, withParticle } from "@/lib/utils/fr";
+import { TRADE_BANNER_PHOTOS } from "@/lib/trade-photos";
 
 type Props = {
   params: Promise<{ trade: string }>;
@@ -76,6 +78,19 @@ export default async function TradePage({ params }: Props) {
     <div className="container py-12">
       <JsonLd data={breadcrumbs} />
       <JsonLd data={faqSchema(faqItems)} />
+
+      {TRADE_BANNER_PHOTOS[trade.slug_singular] && (
+        <div className="mb-6 overflow-hidden rounded-lg">
+          <Image
+            src={TRADE_BANNER_PHOTOS[trade.slug_singular]}
+            alt={`${trade.name_singular} professionnel`}
+            width={1600}
+            height={800}
+            priority
+            className="h-48 w-full object-cover sm:h-56 md:h-64 lg:h-72"
+          />
+        </div>
+      )}
 
       <h1 className="font-display text-3xl font-bold">
         Trouvez un {tradeLower} près de chez vous
