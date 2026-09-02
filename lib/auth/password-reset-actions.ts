@@ -30,7 +30,7 @@ export async function requestPasswordResetAction(
 
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || ""}/reinitialiser-mot-de-passe`,
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || ""}/auth/callback?next=/reinitialiser-mot-de-passe`,
   });
 
   // Always return the same success message whether or not the email is

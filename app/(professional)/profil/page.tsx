@@ -4,6 +4,7 @@ import { ProfileForm } from "@/components/professional/profile-form";
 import { AvatarUploadForm } from "@/components/professional/avatar-upload-form";
 import { ServiceAreasManager } from "@/components/professional/service-areas-manager";
 import { GdprPanel } from "@/components/gdpr/gdpr-panel";
+import { ChangePasswordForm } from "@/components/auth/change-password-form";
 import {
   Card,
   CardContent,
@@ -60,6 +61,15 @@ export default async function ProfilPage() {
         </CardHeader>
         <CardContent>
           <ServiceAreasManager areas={areas} cities={cities ?? []} />
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="text-base">Sécurité</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ChangePasswordForm />
         </CardContent>
       </Card>
 

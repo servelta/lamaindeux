@@ -24,6 +24,7 @@ function ConnexionForm() {
   );
   const searchParams = useSearchParams();
   const justSignedUp = searchParams.get("message") === "verifiez-votre-email";
+  const callbackError = searchParams.get("error");
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
@@ -39,6 +40,11 @@ function ConnexionForm() {
             <p className="mb-4 rounded-md bg-accent/10 p-3 text-sm text-accent-foreground">
               Compte créé. Vérifiez votre e-mail pour confirmer votre adresse,
               puis connectez-vous.
+            </p>
+          )}
+          {callbackError && (
+            <p className="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive" role="alert">
+              {callbackError}
             </p>
           )}
 
