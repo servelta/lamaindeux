@@ -4,6 +4,7 @@ import { CheckCircle2 } from "lucide-react";
 import { getBookingByNumber } from "@/lib/booking/queries";
 import { Button } from "@/components/ui/button";
 import { BookingStatusBadge } from "@/components/booking/status-badge";
+import { formatDateFull } from "@/lib/utils/format";
 
 type Props = { params: Promise<{ bookingNumber: string }> };
 
@@ -50,7 +51,7 @@ export default async function ReservationConfirmeePage({ params }: Props) {
             <div className="flex justify-between">
               <span className="text-muted-foreground">Date</span>
               <span className="font-mono-data font-medium">
-                {new Date(booking.scheduled_date).toLocaleDateString("fr-FR", { dateStyle: "long" })}
+                {formatDateFull(booking.scheduled_date)}
               </span>
             </div>
             <div className="flex justify-between">

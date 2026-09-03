@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireUserId } from "@/lib/professional/queries";
 import { getCustomerBookings } from "@/lib/booking/queries";
 import { BookingStatusBadge } from "@/components/booking/status-badge";
-import { formatPrice } from "@/lib/utils/format";
+import { formatDateMedium, formatPrice } from "@/lib/utils/format";
 
 export const metadata = { title: "Mes réservations" };
 
@@ -63,7 +63,7 @@ function Section({
                   {service?.name} — {professional?.company_name}
                 </p>
                 <p className="mt-1 font-mono-data text-xs text-muted-foreground">
-                  {new Date(b.scheduled_date).toLocaleDateString("fr-FR", { dateStyle: "medium" })}
+                  {formatDateMedium(b.scheduled_date)}
                   {" · "}
                   {b.scheduled_time.slice(0, 5)}
                   {" · "}

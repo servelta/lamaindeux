@@ -166,14 +166,84 @@ export async function searchProfessionals(params: {
   return results;
 }
 
+/**
+ * The public profile view only contains ACTIVE professionals, so a
+ * professional waiting for approval gets a bare 404 on their own page and no
+ * way to check how it looks. This reads the raw row for that one case — the
+ * viewer being the owner, or an admin — which is exactly the access
+ * `professionals_select_own_or_admin` is there to grant, and shapes it like
+ * the view so callers do not care which path produced it.
+ *
+ * Returns null for everyone else, so the row stays private.
+ */
+async function getPreviewProfileForOwnerOrAdmin(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  slug: string
+) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data: raw } = await supabase
+    .from("professionals")
+    .select(
+      "profile_id, trade_id, company_name, slug, description, business_address, business_city, business_postcode, public_phone, public_email, rating_avg, rating_count, completed_jobs_count, google_rating, google_review_count, status, trades(name_singular, slug_singular, slug_plural), profiles(first_name, last_name, avatar_url)"
+    )
+    .eq("slug", slug)
+    .single();
+
+  if (!raw) return null;
+
+  if (user.id !== raw.profile_id) {
+    const { data: viewer } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    if (viewer?.role !== "admin") return null;
+  }
+
+  const trade = Array.isArray(raw.trades) ? raw.trades[0] : raw.trades;
+  const profile = Array.isArray(raw.profiles) ? raw.profiles[0] : raw.profiles;
+
+  return {
+    profile_id: raw.profile_id,
+    trade_id: raw.trade_id,
+    trade_name_singular: trade?.name_singular ?? null,
+    trade_slug_singular: trade?.slug_singular ?? null,
+    trade_slug_plural: trade?.slug_plural ?? null,
+    company_name: raw.company_name,
+    slug: raw.slug,
+    description: raw.description,
+    business_address: raw.business_address,
+    business_city: raw.business_city,
+    business_postcode: raw.business_postcode,
+    public_phone: raw.public_phone,
+    public_email: raw.public_email,
+    rating_avg: raw.rating_avg,
+    rating_count: raw.rating_count,
+    completed_jobs_count: raw.completed_jobs_count,
+    google_rating: raw.google_rating,
+    google_review_count: raw.google_review_count,
+    first_name: profile?.first_name ?? null,
+    last_name: profile?.last_name ?? null,
+    avatar_url: profile?.avatar_url ?? null,
+    status: raw.status as string,
+  };
+}
+
 export async function getProfessionalBySlug(slug: string) {
   const supabase = await createClient();
 
-  const { data: professional } = await supabase
+  const { data: publicRow } = await supabase
     .from("public_professional_profiles")
     .select("*")
     .eq("slug", slug)
     .single();
+
+  const professional = publicRow ?? (await getPreviewProfileForOwnerOrAdmin(supabase, slug));
+  const isPreview = !publicRow && Boolean(professional);
 
   if (!professional?.profile_id || !professional.company_name || !professional.slug) return null;
 
@@ -222,5 +292,6 @@ export async function getProfessionalBySlug(slug: string) {
       ...photo,
       url: supabase.storage.from("avatars").getPublicUrl(photo.storage_path).data.publicUrl,
     })),
+    isPreview,
   };
 }

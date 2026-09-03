@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { todayLocal } from "@/lib/booking/slot-math";
 
 /** Returns the authenticated user's id, redirecting to login if absent. Pages are already
  * protected by middleware, but Server Actions and data loaders check again defensively. */
@@ -58,7 +59,7 @@ export async function getOwnAvailabilityExceptions(professionalId: string) {
     .from("availability_exceptions")
     .select("*")
     .eq("professional_id", professionalId)
-    .gte("date", new Date().toISOString().slice(0, 10))
+    .gte("date", todayLocal())
     .order("date");
   return data ?? [];
 }

@@ -6,7 +6,7 @@ import { getReviewForBooking } from "@/lib/reviews/queries";
 import { BookingStatusBadge } from "@/components/booking/status-badge";
 import { CustomerCancelButton } from "@/components/booking/customer-cancel-button";
 import { ReviewForm, ReviewDisplay } from "@/components/reviews/review-form";
-import { formatPrice } from "@/lib/utils/format";
+import { formatDateFull, formatPrice } from "@/lib/utils/format";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -44,7 +44,7 @@ export default async function CustomerBookingDetailPage({ params }: Props) {
         <Row label="Professionnel" value={<Link href={`/artisan/${professional?.slug}`} className="text-primary hover:underline">{professional?.company_name}</Link>} />
         {!booking.is_quote_request && (
           <>
-            <Row label="Date" value={new Date(booking.scheduled_date).toLocaleDateString("fr-FR", { dateStyle: "long" })} mono />
+            <Row label="Date" value={formatDateFull(booking.scheduled_date)} mono />
             <Row label="Heure" value={booking.scheduled_time.slice(0, 5)} mono />
           </>
         )}

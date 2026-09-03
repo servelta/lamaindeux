@@ -6,7 +6,7 @@ import { requireUserId } from "@/lib/professional/queries";
 import { createClient } from "@/lib/supabase/server";
 import { BookingStatusBadge } from "@/components/booking/status-badge";
 import { ProfessionalBookingActions } from "@/components/booking/professional-booking-actions";
-import { formatPrice } from "@/lib/utils/format";
+import { formatDateFull, formatPrice } from "@/lib/utils/format";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -54,7 +54,7 @@ export default async function PlumberBookingDetailPage({ params }: Props) {
         <Row label="Adresse" value={`${booking.address_line}, ${booking.postcode} ${booking.city}`} />
         {!booking.is_quote_request && (
           <>
-            <Row label="Date" value={new Date(booking.scheduled_date).toLocaleDateString("fr-FR", { dateStyle: "long" })} mono />
+            <Row label="Date" value={formatDateFull(booking.scheduled_date)} mono />
             <Row label="Heure" value={booking.scheduled_time.slice(0, 5)} mono />
           </>
         )}

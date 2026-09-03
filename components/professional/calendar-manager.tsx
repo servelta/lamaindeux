@@ -1,18 +1,21 @@
 "use client";
 
 import { useFormState as useActionState } from "react-dom";
-import { useTransition } from "react";
-import { X } from "lucide-react";
+import { useState, useTransition } from "react";
+import { AlertTriangle, X } from "lucide-react";
 import {
   addAvailabilitySlotAction,
   removeAvailabilitySlotAction,
   addAvailabilityExceptionAction,
   removeAvailabilityExceptionAction,
+  applyStandardHoursAction,
   type ActionResult,
 } from "@/lib/professional/availability-actions";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/auth/submit-button";
+import { formatDateLong } from "@/lib/utils/format";
 
 const WEEKDAYS = [
   "Dimanche",
@@ -33,6 +36,8 @@ export function WeeklyAvailabilityManager({ slots }: { slots: Slot[] }) {
     undefined
   );
   const [, startTransition] = useTransition();
+  const [standardState, setStandardState] = useState<ActionResult>(undefined);
+  const [isApplying, startApplying] = useTransition();
 
   const byDay = WEEKDAYS.map((_, weekday) => ({
     weekday,
@@ -41,6 +46,36 @@ export function WeeklyAvailabilityManager({ slots }: { slots: Slot[] }) {
 
   return (
     <div className="space-y-4">
+      {slots.length === 0 && (
+        <div className="rounded-md border border-accent/40 bg-accent/5 p-4">
+          <p className="flex items-start gap-2 text-sm font-medium">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+            Aucun horaire défini — vous ne pouvez recevoir aucune réservation.
+          </p>
+          <p className="mt-1.5 pl-6 text-sm text-muted-foreground">
+            Tant que cette liste est vide, votre profil est visible mais aucun
+            créneau n&apos;est proposé aux clients.
+          </p>
+          <div className="mt-3 pl-6">
+            <Button
+              type="button"
+              size="sm"
+              disabled={isApplying}
+              onClick={() =>
+                startApplying(async () => {
+                  setStandardState(await applyStandardHoursAction());
+                })
+              }
+            >
+              {isApplying ? "Application..." : "Appliquer les horaires standard (Lun–Ven, 8h–12h / 14h–18h)"}
+            </Button>
+            {standardState?.error && (
+              <p className="mt-2 text-sm text-destructive">{standardState.error}</p>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-2">
         {byDay.map(({ weekday, slots: daySlots }) => (
           <div key={weekday} className="flex flex-wrap items-center gap-2 rounded-md border border-border p-3">
@@ -110,7 +145,7 @@ export function BlockedDatesManager({ exceptions }: { exceptions: Exception[] })
         {exceptions.map((exc) => (
           <div key={exc.id} className="flex items-center justify-between rounded-md border border-border px-3 py-2 text-sm">
             <span className="font-mono-data">
-              {new Date(exc.date).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
+              {formatDateLong(exc.date)}
               {exc.reason && <span className="ml-2 text-muted-foreground">— {exc.reason}</span>}
             </span>
             <button

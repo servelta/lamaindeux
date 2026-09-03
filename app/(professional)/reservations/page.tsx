@@ -2,6 +2,8 @@ import Link from "next/link";
 import { requireUserId } from "@/lib/professional/queries";
 import { getPlumberBookings } from "@/lib/booking/queries";
 import { BookingStatusBadge } from "@/components/booking/status-badge";
+import { formatDateMedium } from "@/lib/utils/format";
+import { todayLocal } from "@/lib/booking/slot-math";
 
 export const metadata = { title: "Réservations" };
 
@@ -9,7 +11,7 @@ export default async function PlumberReservationsPage() {
   const professionalId = await requireUserId();
   const bookings = await getPlumberBookings(professionalId);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayLocal();
 
   const nouvelles = bookings.filter((b) => ["PENDING", "CONFIRMED"].includes(b.status));
   const aujourdhui = bookings.filter((b) => b.status === "ACCEPTED" && b.scheduled_date === today);
@@ -73,7 +75,7 @@ function Section({
                   {service?.name} — {b.contact_first_name} {b.contact_last_name}
                 </p>
                 <p className="mt-1 font-mono-data text-xs text-muted-foreground">
-                  {new Date(b.scheduled_date).toLocaleDateString("fr-FR", { dateStyle: "medium" })}
+                  {formatDateMedium(b.scheduled_date)}
                   {" · "}
                   {b.scheduled_time.slice(0, 5)}
                   {" · "}

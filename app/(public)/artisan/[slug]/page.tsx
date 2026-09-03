@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { BadgeCheck, Star } from "lucide-react";
+import { BadgeCheck, Eye, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPrice, formatRating } from "@/lib/utils/format";
 import { getProfessionalBySlug } from "@/lib/queries/search";
@@ -26,6 +26,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description,
     alternates: { canonical: `/artisan/${professional.slug}` },
     openGraph: { title, description, url: `/artisan/${professional.slug}`, type: "profile" },
+    // A preview is only ever reachable by its owner or an admin, but keep it
+    // out of the index regardless — it is not a live listing yet.
+    ...(result.isPreview ? { robots: { index: false, follow: false } } : {}),
   };
 }
 
@@ -34,7 +37,7 @@ export default async function ProfessionalProfilePage({ params }: Props) {
   const result = await getProfessionalBySlug(slug);
   if (!result) notFound();
 
-  const { professional, services, reviews, areas, gallery } = result;
+  const { professional, services, reviews, areas, gallery, isPreview } = result;
   const tradeLabel = professional.trade_name_singular ?? "Professionnel";
   const hasContactInfo = Boolean(
     professional.public_phone ||
@@ -76,6 +79,21 @@ export default async function ProfessionalProfilePage({ params }: Props) {
     <div className="container max-w-4xl py-12">
       <JsonLd data={schema} />
       <JsonLd data={breadcrumbs} />
+
+      {isPreview && (
+        <div className="mb-8 rounded-lg border border-accent/40 bg-accent/5 p-4">
+          <p className="flex items-start gap-2 text-sm font-medium">
+            <Eye className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+            Aperçu privé — ce profil n&apos;est pas encore public.
+          </p>
+          <p className="mt-1.5 pl-6 text-sm text-muted-foreground">
+            Vous seul (et l&apos;équipe LaMainDeux) voyez cette page ; elle
+            n&apos;apparaît pas dans les recherches et la réservation est
+            désactivée tant que le compte n&apos;est pas validé.
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
         <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-secondary">
           <span className="font-display text-3xl font-semibold text-primary">
@@ -189,9 +207,15 @@ export default async function ProfessionalProfilePage({ params }: Props) {
                   </p>
                 </div>
                 {/* Full booking flow now lives at /artisan/[slug]/reserver (Phase 4) */}
-                <Button asChild>
-                  <Link href={`/artisan/${professional.slug}/reserver?service=${s.id}`}>Réserver</Link>
-                </Button>
+                {isPreview ? (
+                  <Button disabled>Réserver</Button>
+                ) : (
+                  <Button asChild>
+                    <Link href={`/artisan/${professional.slug}/reserver?service=${s.id}`}>
+                      Réserver
+                    </Link>
+                  </Button>
+                )}
               </div>
             );
           })}

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { requireAdmin, getAdminBookingDetail } from "@/lib/admin/queries";
 import { BookingStatusBadge } from "@/components/booking/status-badge";
 import { AdminBookingActionsPanel } from "@/components/admin/booking-actions-panel";
-import { formatPrice } from "@/lib/utils/format";
+import { formatDateFull, formatPrice } from "@/lib/utils/format";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -37,7 +37,7 @@ export default async function AdminBookingDetailPage({ params }: Props) {
         <Row label="Téléphone" value={booking.contact_phone} mono />
         <Row label="E-mail" value={booking.contact_email} />
         <Row label="Adresse" value={`${booking.address_line}, ${booking.postcode} ${booking.city}`} />
-        <Row label="Date" value={new Date(booking.scheduled_date).toLocaleDateString("fr-FR", { dateStyle: "long" })} mono />
+        <Row label="Date" value={formatDateFull(booking.scheduled_date)} mono />
         <Row label="Heure" value={booking.scheduled_time.slice(0, 5)} mono />
         <Row label="Prix" value={booking.is_quote_request ? "Sur devis" : formatPrice(booking.price_cents)} mono />
         {booking.cancelled_reason && <Row label="Motif d'annulation" value={booking.cancelled_reason} />}

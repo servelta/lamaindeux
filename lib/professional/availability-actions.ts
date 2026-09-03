@@ -113,3 +113,46 @@ export async function removeAvailabilityExceptionAction(exceptionId: string) {
 
   revalidatePath("/calendrier");
 }
+
+/**
+ * Standard French trade hours: Monday–Friday, 08:00–12:00 and 14:00–18:00.
+ *
+ * A professional who never opens the Calendrier page has *no* availability
+ * rows, and the booking slot generator returns an empty list for every date
+ * — so the profile looks live but is silently unbookable. This gives them a
+ * one-click starting point they can then trim, rather than making them add
+ * ten windows by hand before their first booking can come in.
+ */
+const STANDARD_HOURS = [1, 2, 3, 4, 5].flatMap((weekday) => [
+  { weekday, start_time: "08:00", end_time: "12:00" },
+  { weekday, start_time: "14:00", end_time: "18:00" },
+]);
+
+export async function applyStandardHoursAction(): Promise<ActionResult> {
+  const professionalId = await requireUserId();
+  const supabase = await createClient();
+
+  // Only ever a starting point — refuse if hours already exist so this can
+  // never wipe out a schedule the professional has already tuned.
+  const { count } = await supabase
+    .from("availability")
+    .select("id", { count: "exact", head: true })
+    .eq("professional_id", professionalId);
+
+  if ((count ?? 0) > 0) {
+    return { error: "Vous avez déjà des horaires définis." };
+  }
+
+  const { error } = await supabase
+    .from("availability")
+    .insert(STANDARD_HOURS.map((h) => ({ ...h, professional_id: professionalId })));
+
+  if (error) {
+    console.error("applyStandardHoursAction:", error);
+    return { error: "Impossible d'appliquer les horaires standard." };
+  }
+
+  revalidatePath("/calendrier");
+  revalidatePath("/dashboard");
+  return { success: "Horaires standard appliqués. Ajustez-les si besoin." };
+}
