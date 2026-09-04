@@ -236,16 +236,40 @@ async function getPreviewProfileForOwnerOrAdmin(
 export async function getProfessionalBySlug(slug: string) {
   const supabase = await createClient();
 
-  const { data: publicRow } = await supabase
+  const { data: publicRow, error: publicRowError } = await supabase
     .from("public_professional_profiles")
     .select("*")
     .eq("slug", slug)
     .single();
 
+  // PGRST116 ("0 rows") is the ordinary case for a slug that isn't ACTIVE, and
+  // is reported below instead. Any *other* error — a dropped view, an RLS
+  // change, a renamed column — is a real fault, and without this it reaches
+  // visitors as a bare 404 with nothing at all in the Vercel function logs.
+  if (publicRowError && publicRowError.code !== "PGRST116") {
+    console.error(
+      `getProfessionalBySlug("${slug}"): public_professional_profiles query failed`,
+      publicRowError
+    );
+  }
+
   const professional = publicRow ?? (await getPreviewProfileForOwnerOrAdmin(supabase, slug));
   const isPreview = !publicRow && Boolean(professional);
 
-  if (!professional?.profile_id || !professional.company_name || !professional.slug) return null;
+  if (!professional?.profile_id || !professional.company_name || !professional.slug) {
+    // Say *why* this is about to 404. The usual answer is that the account is
+    // still PENDING: public_professional_profiles filters on status = 'ACTIVE',
+    // so an unvalidated professional is correctly invisible and has to be
+    // activated in the admin panel — not a query bug.
+    console.warn(
+      `getProfessionalBySlug("${slug}"): no public profile -> 404. ` +
+        `view=${publicRow ? "hit" : "miss"}` +
+        (publicRowError ? ` (${publicRowError.code}: ${publicRowError.message})` : "") +
+        `, owner/admin preview=${professional ? "hit" : "miss"}. ` +
+        `If this professional does exist, check professionals.status — only ACTIVE rows are public.`
+    );
+    return null;
+  }
 
   const publicProfessional = {
     ...professional,
@@ -257,13 +281,13 @@ export async function getProfessionalBySlug(slug: string) {
     completed_jobs_count: professional.completed_jobs_count ?? 0,
   };
 
-  const { data: services } = await supabase
+  const { data: services, error: servicesError } = await supabase
     .from("professional_services")
     .select("id, price_cents, duration_minutes, pricing_type, description, services(name, slug)")
     .eq("professional_id", publicProfessional.profile_id)
     .eq("active", true);
 
-  const { data: reviews } = await supabase
+  const { data: reviews, error: reviewsError } = await supabase
     .from("reviews")
     .select("rating, comment, created_at")
     .eq("professional_id", publicProfessional.profile_id)
@@ -271,17 +295,30 @@ export async function getProfessionalBySlug(slug: string) {
     .order("created_at", { ascending: false })
     .limit(10);
 
-  const { data: areas } = await supabase
+  const { data: areas, error: areasError } = await supabase
     .from("professional_service_areas")
     .select("cities(name, slug)")
     .eq("professional_id", professional.profile_id);
 
-  const { data: gallery } = await supabase
+  const { data: gallery, error: galleryError } = await supabase
     .from("professional_gallery_photos")
     .select("id, storage_path, sort_order, created_at")
     .eq("professional_id", publicProfessional.profile_id)
     .order("sort_order")
     .order("created_at");
+
+  // A failure here degrades the page silently — an empty services list or a
+  // missing gallery looks identical to a professional who simply has neither.
+  for (const [label, err] of [
+    ["services", servicesError],
+    ["reviews", reviewsError],
+    ["service areas", areasError],
+    ["gallery", galleryError],
+  ] as const) {
+    if (err) {
+      console.error(`getProfessionalBySlug("${slug}"): ${label} query failed`, err);
+    }
+  }
 
   return {
     professional: publicProfessional,

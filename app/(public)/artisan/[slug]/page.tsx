@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { BadgeCheck, Eye, Star } from "lucide-react";
+import { BadgeCheck, Eye, Mail, MessageSquare, Phone, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPrice, formatRating } from "@/lib/utils/format";
 import { getProfessionalBySlug } from "@/lib/queries/search";
@@ -95,11 +95,23 @@ export default async function ProfessionalProfilePage({ params }: Props) {
       )}
 
       <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-secondary">
-          <span className="font-display text-3xl font-semibold text-primary">
-            {professional.company_name.charAt(0)}
-          </span>
-        </div>
+        {professional.avatar_url ? (
+          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full bg-secondary">
+            <Image
+              src={professional.avatar_url}
+              alt={`Photo de profil de ${professional.company_name}`}
+              fill
+              className="object-cover"
+              sizes="80px"
+            />
+          </div>
+        ) : (
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-secondary">
+            <span className="font-display text-3xl font-semibold text-primary">
+              {professional.company_name.charAt(0)}
+            </span>
+          </div>
+        )}
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-2xl font-bold">{professional.company_name}</h1>
@@ -113,7 +125,8 @@ export default async function ProfessionalProfilePage({ params }: Props) {
             {professional.business_city ? ` · ${professional.business_city}` : ""}
           </p>
           {professional.rating_count > 0 && (
-            <p className="mt-1 flex items-center gap-1 text-sm">
+            <p className="mt-1 flex flex-wrap items-center gap-1 text-sm">
+              <span className="text-muted-foreground">Note LaMainDeux</span>
               <Star className="h-4 w-4 fill-accent text-accent" />
               <span className="font-mono-data font-medium">{formatRating(professional.rating_avg)}</span>
               <span className="text-muted-foreground">
@@ -122,7 +135,7 @@ export default async function ProfessionalProfilePage({ params }: Props) {
             </p>
           )}
           {professional.google_rating != null && (
-            <p className="mt-1 flex items-center gap-1 text-sm">
+            <p className="mt-1 flex flex-wrap items-center gap-1 text-sm">
               <span className="text-muted-foreground">Note Google</span>
               {Array.from({ length: 5 }).map((_, starIdx) => (
                 <Star
@@ -135,9 +148,46 @@ export default async function ProfessionalProfilePage({ params }: Props) {
               )}
             </p>
           )}
-          <Button asChild className="mt-3">
-            <a href={professional.public_phone ? `tel:${professional.public_phone}` : hasContactInfo ? "#contact" : "#reserver"}>Contacter</a>
-          </Button>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {professional.public_phone && (
+              <>
+                <Button asChild size="sm">
+                  <a href={`tel:${professional.public_phone}`}>
+                    <Phone className="mr-1.5 h-4 w-4" />
+                    Appeler
+                  </a>
+                </Button>
+                <Button asChild size="sm" variant="outline">
+                  <a href={`sms:${professional.public_phone}`}>
+                    <MessageSquare className="mr-1.5 h-4 w-4" />
+                    Envoyer un SMS
+                  </a>
+                </Button>
+              </>
+            )}
+            {professional.public_email && (
+              <Button asChild size="sm" variant="outline">
+                <a href={`mailto:${professional.public_email}`}>
+                  <Mail className="mr-1.5 h-4 w-4" />
+                  Envoyer un e-mail
+                </a>
+              </Button>
+            )}
+            {!professional.public_phone && !professional.public_email && hasContactInfo && (
+              <Button asChild size="sm" variant="outline">
+                <a href="#contact">Contacter</a>
+              </Button>
+            )}
+            {isPreview ? (
+              <Button size="sm" variant="secondary" disabled>
+                Réserver
+              </Button>
+            ) : (
+              <Button asChild size="sm" variant="secondary">
+                <Link href="#reserver">Réserver</Link>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
