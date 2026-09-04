@@ -11,6 +11,14 @@ type AccountMenuProps = {
   role: string;
 };
 
+// What the account is, in the visitor's own words — "professional" and
+// "customer" are database values, not something to show anyone.
+const roleLabels: Record<string, string> = {
+  customer: "Client",
+  professional: "Artisan",
+  admin: "Administrateur",
+};
+
 const roleLinks: Record<string, { href: string; label: string }[]> = {
   customer: [
     { href: "/mon-compte", label: "Mon compte" },
@@ -27,6 +35,7 @@ export function AccountMenu({ firstName, avatarUrl, role }: AccountMenuProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const initial = firstName.trim().charAt(0).toUpperCase() || "?";
+  const roleLabel = roleLabels[role] ?? "Compte";
 
   useEffect(() => {
     function handleOutsideClick(event: MouseEvent) {
@@ -40,7 +49,13 @@ export function AccountMenu({ firstName, avatarUrl, role }: AccountMenuProps) {
   }, []);
 
   return (
-    <div ref={menuRef} className="relative">
+    <div ref={menuRef} className="relative flex items-center gap-2">
+      {/* Visible without opening the menu, so it is obvious which kind of
+          account you are signed in with — the two have different sites. */}
+      <span className="hidden rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-muted-foreground sm:inline-block">
+        {roleLabel}
+      </span>
+
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
@@ -56,7 +71,14 @@ export function AccountMenu({ firstName, avatarUrl, role }: AccountMenuProps) {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-56 rounded-lg border border-border bg-card py-1 shadow-lg">
+        <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-56 rounded-lg border border-border bg-card py-1 shadow-lg">
+          <div className="border-b border-border px-4 pb-2.5 pt-2">
+            <p className="truncate text-sm font-semibold text-foreground">
+              {firstName.trim() || "Mon compte"}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{roleLabel}</p>
+          </div>
+
           {(roleLinks[role] ?? []).map((link) => (
             <Link
               key={link.href}
