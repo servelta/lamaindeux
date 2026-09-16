@@ -65,12 +65,11 @@ export default async function HomePage() {
   ]);
 
   const primaryTrade = activeTrades[0];
-  const popularCities = cities.slice(0, 8);
   // Scoped to the primary trade, which the section below assumes: these link
   // to /{primaryTrade}/{city}/{service}, so another trade's service builds a
   // URL whose service does not resolve under that trade — a 404.
   const popularServices = primaryTrade
-    ? services.filter((s) => s.trade_id === primaryTrade.id).slice(0, 8)
+    ? services.filter((s) => s.trade_id === primaryTrade.id).slice(0, 4)
     : [];
 
   return (
@@ -198,28 +197,6 @@ export default async function HomePage() {
           <Image src="/images/icon3.png" alt="Intervention fiable et professionnelle" width={220} height={220} />
         </div>
       </section>
-
-      {/* POPULAR CITIES — scoped to the primary active trade for the same reason */}
-      {primaryTrade && popularCities.length > 0 && (
-        <section className="bg-secondary/40">
-          <div className="container py-16">
-            <h2 className="font-display text-2xl font-semibold">
-              Trouvez un {primaryTrade.name_singular.toLowerCase()} dans votre ville
-            </h2>
-            <div className="mt-6 flex flex-wrap gap-3">
-              {popularCities.map((city) => (
-                <Link
-                  key={city.slug}
-                  href={`/${primaryTrade.slug_plural}/${city.slug}`}
-                  className="rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium transition-colors hover:border-primary hover:text-primary"
-                >
-                  {primaryTrade.name_singular} {city.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* HOW IT WORKS */}
       <section className="container py-16">
