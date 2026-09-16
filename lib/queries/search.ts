@@ -187,11 +187,23 @@ export async function getProfessionalBySlug(slug: string) {
     completed_jobs_count: professional.completed_jobs_count ?? 0,
   };
 
-  const { data: services } = await supabase
+  const { data: rawServices } = await supabase
     .from("professional_services")
-    .select("id, price_cents, duration_minutes, pricing_type, description, services(name, slug)")
+    .select("id, price_cents, duration_minutes, pricing_type, description, services(name, slug, sort_order)")
     .eq("professional_id", publicProfessional.profile_id)
     .eq("active", true);
+
+  // Sorted client-side (rather than via PostgREST's foreignTable order,
+  // which only reorders one-to-many embeds, not this to-one join) so
+  // services.sort_order — e.g. the urgent service pinned to -1 — controls
+  // display order on the public profile.
+  const services = (rawServices ?? [])
+    .slice()
+    .sort((a, b) => {
+      const svcA = Array.isArray(a.services) ? a.services[0] : a.services;
+      const svcB = Array.isArray(b.services) ? b.services[0] : b.services;
+      return (svcA?.sort_order ?? 0) - (svcB?.sort_order ?? 0);
+    });
 
   const { data: reviews } = await supabase
     .from("reviews")
