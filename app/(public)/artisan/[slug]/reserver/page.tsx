@@ -72,8 +72,7 @@ export default async function ReserverPage({ params, searchParams }: Props) {
           isQuoteRequest={professionalService.pricing_type === "quote"}
           returnTo={returnTo}
           prefill={{
-            firstName: profile?.first_name,
-            lastName: profile?.last_name,
+            fullName: [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || undefined,
             phone: profile?.phone ?? undefined,
             email: user.email ?? undefined,
           }}

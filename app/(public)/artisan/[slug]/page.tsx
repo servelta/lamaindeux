@@ -203,9 +203,18 @@ export default async function ProfessionalProfilePage({ params }: Props) {
                       <p className="text-xs text-muted-foreground">{s.duration_minutes} min</p>
                     ) : null}
                   </div>
-                  <Button asChild>
-                    <Link href={`/artisan/${professional.slug}/reserver?service=${s.id}`}>Réserver</Link>
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    {professional.public_phone && (
+                      <Button asChild variant="outline" size="icon" aria-label="Appeler">
+                        <a href={`tel:${professional.public_phone}`}>
+                          <Phone className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    )}
+                    <Button asChild>
+                      <Link href={`/artisan/${professional.slug}/reserver?service=${s.id}`}>Réserver</Link>
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             );

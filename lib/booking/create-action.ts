@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createBookingSchema } from "@/lib/booking/validation";
+import { parseAddress, splitFullName } from "@/lib/booking/parse-contact";
 import { getAvailableSlots } from "@/lib/booking/availability";
 import { notifyBookingCreated } from "@/lib/notifications/booking-notifications";
 import { checkRateLimit } from "@/lib/security/rate-limit";
@@ -61,13 +62,10 @@ export async function createBookingAction(
     professionalServiceId: formData.get("professionalServiceId"),
     date: formData.get("date"),
     time: formData.get("time"),
-    firstName: formData.get("firstName"),
-    lastName: formData.get("lastName"),
+    fullName: formData.get("fullName"),
     phone: formData.get("phone"),
     email: formData.get("email"),
-    addressLine: formData.get("addressLine"),
-    postcode: formData.get("postcode"),
-    city: formData.get("city"),
+    address: formData.get("address"),
     description: formData.get("description") ?? "",
   });
 
@@ -75,7 +73,9 @@ export async function createBookingAction(
     return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide." };
   }
 
-  const { professionalServiceId, date, time, description, ...contact } = parsed.data;
+  const { professionalServiceId, date, time, description, fullName, address, ...contact } = parsed.data;
+  const { firstName, lastName } = splitFullName(fullName);
+  const { addressLine, postcode, city } = parseAddress(address);
 
   const { data: service } = await supabase
     .from("professional_services")
@@ -120,13 +120,13 @@ export async function createBookingAction(
       status: isQuoteRequest ? "PENDING" : "CONFIRMED",
       scheduled_date: date,
       scheduled_time: time,
-      contact_first_name: contact.firstName,
-      contact_last_name: contact.lastName,
+      contact_first_name: firstName,
+      contact_last_name: lastName,
       contact_phone: contact.phone,
       contact_email: contact.email,
-      address_line: contact.addressLine,
-      postcode: contact.postcode,
-      city: contact.city,
+      address_line: addressLine,
+      postcode,
+      city,
       description: description || null,
       photo_urls: photoUrls,
       price_cents: isQuoteRequest ? null : service.price_cents,
