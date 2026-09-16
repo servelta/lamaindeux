@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { BadgeCheck, Mail, MapPin, Phone, Star } from "lucide-react";
+import { BadgeCheck, MapPin, Phone, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatAddress, formatPrice, formatRating } from "@/lib/utils/format";
@@ -39,7 +39,6 @@ export default async function ProfessionalProfilePage({ params }: Props) {
   const tradeLabel = professional.trade_name_singular ?? "Professionnel";
   const hasContactInfo = Boolean(
     professional.public_phone ||
-      professional.public_email ||
       professional.business_address ||
       professional.business_city ||
       professional.business_postcode
@@ -134,14 +133,6 @@ export default async function ProfessionalProfilePage({ params }: Props) {
                   <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   <a href={`tel:${professional.public_phone}`} className="text-primary hover:underline">
                     {professional.public_phone}
-                  </a>
-                </p>
-              )}
-              {professional.public_email && (
-                <p className="flex items-center gap-1.5">
-                  <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                  <a href={`mailto:${professional.public_email}`} className="text-primary hover:underline">
-                    {professional.public_email}
                   </a>
                 </p>
               )}
