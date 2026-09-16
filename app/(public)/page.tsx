@@ -189,6 +189,19 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* ABOUT US */}
+      <section className="container py-16">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="font-display text-2xl font-semibold">Qui sommes-nous ?</h2>
+          <p className="mt-4 text-muted-foreground">
+            LaMainDeux est la plateforme qui connecte particuliers et artisans
+            vérifiés partout en France — plombiers, électriciens, et bientôt
+            bien d'autres métiers. Recherchez, comparez et réservez en ligne,
+            gratuitement, sans commission sur l'intervention.
+          </p>
+        </div>
+      </section>
+
       {/* FEATURE HIGHLIGHTS — each image already contains its own icon and heading */}
       <section className="container py-16">
         <div className="grid grid-cols-1 place-items-center gap-8 sm:grid-cols-3">
