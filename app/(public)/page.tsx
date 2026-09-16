@@ -190,6 +190,15 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* FEATURE HIGHLIGHTS — each image already contains its own icon and heading */}
+      <section className="container py-16">
+        <div className="grid grid-cols-1 place-items-center gap-8 sm:grid-cols-3">
+          <Image src="/images/icon1.png" alt="Des artisans de confiance" width={220} height={220} />
+          <Image src="/images/icon2.png" alt="Artisans expérimentés et confirmés" width={220} height={220} />
+          <Image src="/images/icon3.png" alt="Intervention fiable et professionnelle" width={220} height={220} />
+        </div>
+      </section>
+
       {/* POPULAR CITIES — scoped to the primary active trade for the same reason */}
       {primaryTrade && popularCities.length > 0 && (
         <section className="bg-secondary/40">
