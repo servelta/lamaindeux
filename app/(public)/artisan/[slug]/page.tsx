@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { BadgeCheck, Star } from "lucide-react";
+import { BadgeCheck, Mail, MapPin, Phone, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatPrice, formatRating } from "@/lib/utils/format";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatAddress, formatPrice, formatRating } from "@/lib/utils/format";
 import { getProfessionalBySlug } from "@/lib/queries/search";
 import { JsonLd } from "@/components/seo/json-ld";
 import { professionalSchema, breadcrumbSchema } from "@/lib/seo/schema";
@@ -77,10 +78,20 @@ export default async function ProfessionalProfilePage({ params }: Props) {
       <JsonLd data={schema} />
       <JsonLd data={breadcrumbs} />
       <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-secondary">
-          <span className="font-display text-3xl font-semibold text-primary">
-            {professional.company_name.charAt(0)}
-          </span>
+        <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary">
+          {professional.avatar_url ? (
+            <Image
+              src={professional.avatar_url}
+              alt={professional.company_name}
+              width={80}
+              height={80}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <span className="font-display text-3xl font-semibold text-primary">
+              {professional.company_name.charAt(0)}
+            </span>
+          )}
         </div>
         <div>
           <div className="flex flex-wrap items-center gap-2">
@@ -105,7 +116,6 @@ export default async function ProfessionalProfilePage({ params }: Props) {
           )}
           {professional.google_rating != null && (
             <p className="mt-1 flex items-center gap-1 text-sm">
-              <span className="text-muted-foreground">Note Google</span>
               {Array.from({ length: 5 }).map((_, starIdx) => (
                 <Star
                   key={starIdx}
@@ -117,8 +127,36 @@ export default async function ProfessionalProfilePage({ params }: Props) {
               )}
             </p>
           )}
+          {hasContactInfo && (
+            <div className="mt-2 space-y-1 text-sm">
+              {professional.public_phone && (
+                <p className="flex items-center gap-1.5">
+                  <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <a href={`tel:${professional.public_phone}`} className="text-primary hover:underline">
+                    {professional.public_phone}
+                  </a>
+                </p>
+              )}
+              {professional.public_email && (
+                <p className="flex items-center gap-1.5">
+                  <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <a href={`mailto:${professional.public_email}`} className="text-primary hover:underline">
+                    {professional.public_email}
+                  </a>
+                </p>
+              )}
+              {(professional.business_address || professional.business_postcode || professional.business_city) && (
+                <p className="flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <span>
+                    {formatAddress(professional.business_address, professional.business_postcode, professional.business_city)}
+                  </span>
+                </p>
+              )}
+            </div>
+          )}
           <Button asChild className="mt-3">
-            <a href={professional.public_phone ? `tel:${professional.public_phone}` : hasContactInfo ? "#contact" : "#reserver"}>Contacter</a>
+            <a href={professional.public_phone ? `tel:${professional.public_phone}` : "#reserver"}>Contacter</a>
           </Button>
         </div>
       </div>
@@ -140,19 +178,6 @@ export default async function ProfessionalProfilePage({ params }: Props) {
         </section>
       )}
 
-      {(professional.public_phone || professional.public_email || professional.business_address || professional.business_city || professional.business_postcode) && (
-        <section id="contact" className="mt-8">
-          <h2 className="font-display text-xl font-semibold">Contact</h2>
-          <div className="mt-4 space-y-2 text-sm">
-            {professional.public_phone && <p><strong>Téléphone :</strong>{" "}<a href={`tel:${professional.public_phone}`} className="text-primary hover:underline">{professional.public_phone}</a></p>}
-            {professional.public_email && <p><strong>E-mail :</strong>{" "}<a href={`mailto:${professional.public_email}`} className="text-primary hover:underline">{professional.public_email}</a></p>}
-            {(professional.business_address || professional.business_postcode || professional.business_city) && (
-              <p><strong>Adresse :</strong>{" "}{[professional.business_address, professional.business_postcode, professional.business_city].filter(Boolean).join(", ")}</p>
-            )}
-          </div>
-        </section>
-      )}
-
       {areas.length > 0 && (
         <p className="mt-4 text-sm text-muted-foreground">
           Zone d'intervention :{" "}
@@ -165,7 +190,7 @@ export default async function ProfessionalProfilePage({ params }: Props) {
 
       <section id="reserver" className="mt-10">
         <h2 className="font-display text-xl font-semibold">Services proposés</h2>
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
           {services.length === 0 && (
             <p className="text-sm text-muted-foreground">
               Aucun service actif pour le moment.
@@ -174,25 +199,24 @@ export default async function ProfessionalProfilePage({ params }: Props) {
           {services.map((s) => {
             const service = Array.isArray(s.services) ? s.services[0] : s.services;
             return (
-              <div
-                key={s.id}
-                className="flex flex-col gap-3 rounded-lg border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <p className="font-medium">{service?.name}</p>
-                  {s.description && (
-                    <p className="mt-1 text-sm text-muted-foreground">{s.description}</p>
-                  )}
-                  <p className="mt-1 font-mono-data text-sm">
-                    {formatPrice(s.price_cents)}
-                    {s.duration_minutes ? ` · ${s.duration_minutes} min` : ""}
-                  </p>
-                </div>
+              <Card key={s.id} className="flex flex-col">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">{service?.name}</CardTitle>
+                  {s.description && <CardDescription>{s.description}</CardDescription>}
+                </CardHeader>
                 {/* Full booking flow now lives at /artisan/[slug]/reserver (Phase 4) */}
-                <Button asChild>
-                  <Link href={`/artisan/${professional.slug}/reserver?service=${s.id}`}>Réserver</Link>
-                </Button>
-              </div>
+                <CardContent className="mt-auto flex items-end justify-between gap-4 pt-0">
+                  <div>
+                    <p className="font-mono-data text-xl font-bold">{formatPrice(s.price_cents)}</p>
+                    {s.duration_minutes ? (
+                      <p className="text-xs text-muted-foreground">{s.duration_minutes} min</p>
+                    ) : null}
+                  </div>
+                  <Button asChild>
+                    <Link href={`/artisan/${professional.slug}/reserver?service=${s.id}`}>Réserver</Link>
+                  </Button>
+                </CardContent>
+              </Card>
             );
           })}
         </div>
