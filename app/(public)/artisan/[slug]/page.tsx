@@ -205,7 +205,7 @@ export default async function ProfessionalProfilePage({ params }: Props) {
                   </div>
                   <div className="flex items-center gap-2">
                     {professional.public_phone && (
-                      <Button asChild variant="outline" size="icon" aria-label="Appeler">
+                      <Button asChild size="icon" aria-label="Appeler">
                         <a href={`tel:${professional.public_phone}`}>
                           <Phone className="h-4 w-4" />
                         </a>
