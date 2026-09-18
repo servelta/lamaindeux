@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getTradeBySlugPlural, getActiveCities, getActiveServices } from "@/lib/queries/search";
+import { getTradeBySlugPlural, getActiveCities, getAllTrades } from "@/lib/queries/search";
 import { SearchForm } from "@/components/search/search-form";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbSchema, faqSchema } from "@/lib/seo/schema";
@@ -52,7 +52,7 @@ export default async function TradePage({ params }: Props) {
 
   // Services are scoped to this trade, so the service dropdown can never
   // offer another trade's work (an électricité service under /plombiers).
-  const [cities, services] = await Promise.all([getActiveCities(), getActiveServices(trade.id)]);
+  const [cities, allTrades] = await Promise.all([getActiveCities(), getAllTrades()]);
 
   const tradeLower = trade.name_singular.toLowerCase();
   const tradePlural = pluralise(tradeLower);
@@ -101,10 +101,10 @@ export default async function TradePage({ params }: Props) {
         ligne en quelques clics.
       </p>
 
-      {/* Passing a single trade keeps the form's trade selector hidden — the
-          trade is already implied by the page the visitor is standing on. */}
+      {/* Every trade is offered so a visitor can switch from here; the one
+          whose page this is starts selected. */}
       <div className="mt-8 max-w-3xl">
-        <SearchForm trades={[trade]} cities={cities} services={services} />
+        <SearchForm trades={allTrades} cities={cities} defaultTradeSlug={trade.slug_plural} />
       </div>
 
       <section className="mt-14">

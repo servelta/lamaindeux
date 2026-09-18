@@ -4,35 +4,30 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
-type Trade = { id: string; slug_plural: string };
+type Trade = { name: string; slug_plural: string; active: boolean };
 
 type SearchFormProps = {
   trades: Trade[];
   cities: { name: string; slug: string }[];
-  services: { name: string; slug: string; trade_id: string }[];
+  /** Preselects a trade — used on /{trade}, where one is already implied. */
+  defaultTradeSlug?: string;
 };
 
-export function SearchForm({ trades, cities, services }: SearchFormProps) {
+export function SearchForm({ trades, cities, defaultTradeSlug }: SearchFormProps) {
   const router = useRouter();
   const [citySlug, setCitySlug] = useState("");
-  const [serviceSlug, setServiceSlug] = useState("");
+  const [tradeSlug, setTradeSlug] = useState(defaultTradeSlug ?? "");
 
-  // The visitor picks a need and a place; the trade is inferred from the
-  // need, since a service belongs to exactly one trade. Services whose
-  // trade is not in `trades` are dropped rather than shown: their trade is
-  // inactive here, so /{trade}/{city}/{service} would not resolve.
-  const tradeById = new Map(trades.map((t) => [t.id, t.slug_plural]));
-  const searchableServices = services.filter((s) => tradeById.has(s.trade_id));
+  // Inactive trades are listed rather than hidden — they are the roadmap,
+  // and the homepage already advertises them below. They stay disabled
+  // because /{trade} 404s for a trade that is not active yet.
+  const availableTrades = trades.filter((t) => t.active);
+  const comingSoonTrades = trades.filter((t) => !t.active);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!citySlug || !serviceSlug) return;
-
-    const service = searchableServices.find((s) => s.slug === serviceSlug);
-    const tradeSlug = service && tradeById.get(service.trade_id);
-    if (!tradeSlug) return;
-
-    router.push(`/${tradeSlug}/${citySlug}/${serviceSlug}`);
+    if (!citySlug || !tradeSlug) return;
+    router.push(`/${tradeSlug}/${citySlug}`);
   }
 
   return (
@@ -62,22 +57,31 @@ export function SearchForm({ trades, cities, services }: SearchFormProps) {
       </div>
 
       <div>
-        <label htmlFor="search-service" className="sr-only">
-          Quel service recherchez-vous ?
+        <label htmlFor="search-trade" className="sr-only">
+          Quel métier recherchez-vous ?
         </label>
         <select
-          id="search-service"
-          value={serviceSlug}
-          onChange={(e) => setServiceSlug(e.target.value)}
+          id="search-trade"
+          value={tradeSlug}
+          onChange={(e) => setTradeSlug(e.target.value)}
           required
           className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <option value="">Service</option>
-          {searchableServices.map((service) => (
-            <option key={service.slug} value={service.slug}>
-              {service.name}
+          <option value="">Métier</option>
+          {availableTrades.map((trade) => (
+            <option key={trade.slug_plural} value={trade.slug_plural}>
+              {trade.name}
             </option>
           ))}
+          {comingSoonTrades.length > 0 && (
+            <optgroup label="Bientôt disponible">
+              {comingSoonTrades.map((trade) => (
+                <option key={trade.slug_plural} value={trade.slug_plural} disabled>
+                  {trade.name}
+                </option>
+              ))}
+            </optgroup>
+          )}
         </select>
       </div>
 

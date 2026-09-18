@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { SearchForm } from "@/components/search/search-form";
-import { getActiveCities, getActiveServices, getActiveTrades } from "@/lib/queries/search";
+import { getActiveCities, getActiveServices, getActiveTrades, getAllTrades } from "@/lib/queries/search";
 
 export const dynamic = "force-dynamic";
 
@@ -12,10 +12,10 @@ export const metadata: Metadata = {
 };
 
 export default async function SearchPage() {
-  const [trades, cities, services] = await Promise.all([
+  const [trades, allTrades, cities] = await Promise.all([
     getActiveTrades(),
+    getAllTrades(),
     getActiveCities(),
-    getActiveServices(),
   ]);
 
   const servicesByTrade = await Promise.all(
@@ -42,7 +42,7 @@ export default async function SearchPage() {
       </p>
 
       <div className="mt-8 max-w-3xl">
-        <SearchForm trades={trades} cities={cities} services={services} />
+        <SearchForm trades={allTrades} cities={cities} />
       </div>
 
       <section className="mt-14">

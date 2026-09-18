@@ -87,7 +87,7 @@ export default async function HomePage() {
             </p>
 
             <div className="mt-8 max-w-3xl">
-              <SearchForm trades={activeTrades} cities={cities} services={services} />
+              <SearchForm trades={allTrades} cities={cities} />
             </div>
           </div>
 
