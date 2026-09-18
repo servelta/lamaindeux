@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getTradeBySlugPlural, getActiveCities, getAllTrades } from "@/lib/queries/search";
-import { SearchForm } from "@/components/search/search-form";
+import { getTradeBySlugPlural, getActiveCities, searchProfessionals } from "@/lib/queries/search";
+import { ProfessionalCard } from "@/components/search/professional-card";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbSchema, faqSchema } from "@/lib/seo/schema";
 import { pluralise, withParticle } from "@/lib/utils/fr";
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const tradeLower = trade.name_singular.toLowerCase();
   const title = `${trade.name} — Trouvez un ${tradeLower} vérifié près de chez vous`;
-  const description = `Indiquez votre ville et le service dont vous avez besoin pour comparer les ${pluralise(tradeLower)} vérifiés, consulter les avis et les prix, et réserver en ligne.`;
+  const description = `Tous les ${pluralise(tradeLower)} vérifiés de la plateforme : consultez leurs avis et leurs prix, choisissez votre ville et réservez en ligne.`;
   const path = `/${trade.slug_plural}`;
 
   return {
@@ -31,14 +31,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export const revalidate = 3600; // ISR: the city/service catalog changes rarely
+export const revalidate = 3600; // ISR: the city catalog and roster change rarely
 
 /**
  * Trade hub page — the landing spot for the "Nos métiers" cards on the
- * homepage, which link to a bare `/{slug_plural}`. Every page below this one
- * (`/{trade}/{city}` and `/{trade}/{city}/{service}`) needs a city, so this
- * page's job is to ask for one: the search form is the primary content, with
- * the city list underneath as a browsable (and crawlable) alternative.
+ * homepage, which link to a bare `/{slug_plural}`. It lists every
+ * professional of this trade across all cities, with the city list above as
+ * a way to narrow down (and as crawlable internal links).
  *
  * getTradeBySlugPlural already filters on active=true, so a trade that is
  * still switched off 404s here rather than showing an empty hub — matching
@@ -50,12 +49,24 @@ export default async function TradePage({ params }: Props) {
   const trade = await getTradeBySlugPlural(tradeSlug);
   if (!trade) notFound();
 
-  // Services are scoped to this trade, so the service dropdown can never
-  // offer another trade's work (an électricité service under /plombiers).
-  const [cities, allTrades] = await Promise.all([getActiveCities(), getAllTrades()]);
+  // Scoped to this trade, so /plombiers can never list an électricien.
+  const [cities, results] = await Promise.all([
+    getActiveCities(),
+    searchProfessionals({ tradeSlugPlural: trade.slug_plural }),
+  ]);
+
+  // The view returns one row per professional *and service*, so a plumber
+  // offering five services would otherwise appear five times in a roster
+  // whose unit is the person.
+  const byProfessional = new Map<string, (typeof results)[number]>();
+  for (const r of results) {
+    if (!byProfessional.has(r.profile_id)) byProfessional.set(r.profile_id, r);
+  }
+  const professionals = Array.from(byProfessional.values());
 
   const tradeLower = trade.name_singular.toLowerCase();
   const tradePlural = pluralise(tradeLower);
+  const many = professionals.length > 1;
 
   const faqItems = [
     {
@@ -96,19 +107,13 @@ export default async function TradePage({ params }: Props) {
         Trouvez un {tradeLower} près de chez vous
       </h1>
       <p className="mt-2 max-w-2xl text-muted-foreground">
-        Indiquez votre ville et le service dont vous avez besoin pour comparer
-        les {tradePlural} vérifiés, leurs avis et leurs prix, puis réservez en
-        ligne en quelques clics.
+        {professionals.length > 0
+          ? `${professionals.length} ${many ? tradePlural : tradeLower} vérifié${many ? "s" : ""} sur la plateforme. Comparez leurs avis et leurs prix, puis réservez en ligne en quelques clics.`
+          : `Comparez les ${tradePlural} vérifiés, leurs avis et leurs prix, puis réservez en ligne en quelques clics.`}
       </p>
 
-      {/* Every trade is offered so a visitor can switch from here; the one
-          whose page this is starts selected. */}
-      <div className="mt-8 max-w-3xl">
-        <SearchForm trades={allTrades} cities={cities} defaultTradeSlug={trade.slug_plural} />
-      </div>
-
-      <section className="mt-14">
-        <h2 className="font-display text-xl font-semibold">Ou choisissez votre ville</h2>
+      <section className="mt-10">
+        <h2 className="font-display text-xl font-semibold">Choisissez votre ville</h2>
         {cities.length > 0 ? (
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {cities.map((city) => (
@@ -126,6 +131,30 @@ export default async function TradePage({ params }: Props) {
             Aucune ville n'est encore ouverte pour ce métier. Revenez bientôt.
           </p>
         )}
+      </section>
+
+      <section className="mt-14">
+        <h2 className="font-display text-xl font-semibold">
+          {professionals.length > 0
+            ? many
+              ? `Tous les ${tradePlural} vérifiés`
+              : `Notre ${tradeLower} vérifié`
+            : `Nos ${tradePlural}`}
+        </h2>
+        <div className="mt-4 space-y-4">
+          {professionals.length > 0 ? (
+            professionals.map((p) => <ProfessionalCard key={p.profile_id} professional={p} />)
+          ) : (
+            <div className="rounded-lg border border-dashed border-border bg-card/50 p-10 text-center">
+              <p className="font-medium">
+                Aucun {tradeLower} n'est encore disponible sur la plateforme.
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                De nouveaux professionnels rejoignent LaMainDeux chaque semaine — revenez bientôt.
+              </p>
+            </div>
+          )}
+        </div>
       </section>
 
       <section className="mt-16 max-w-2xl">

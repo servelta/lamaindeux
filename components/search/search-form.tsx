@@ -9,14 +9,12 @@ type Trade = { name: string; slug_plural: string; active: boolean };
 type SearchFormProps = {
   trades: Trade[];
   cities: { name: string; slug: string }[];
-  /** Preselects a trade — used on /{trade}, where one is already implied. */
-  defaultTradeSlug?: string;
 };
 
-export function SearchForm({ trades, cities, defaultTradeSlug }: SearchFormProps) {
+export function SearchForm({ trades, cities }: SearchFormProps) {
   const router = useRouter();
   const [citySlug, setCitySlug] = useState("");
-  const [tradeSlug, setTradeSlug] = useState(defaultTradeSlug ?? "");
+  const [tradeSlug, setTradeSlug] = useState("");
 
   // Inactive trades are listed rather than hidden — they are the roadmap,
   // and the homepage already advertises them below. They stay disabled
