@@ -3,9 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils/cn";
 
-type Trade = { id: string; name: string; slug_plural: string };
+type Trade = { id: string; slug_plural: string };
 
 type SearchFormProps = {
   trades: Trade[];
@@ -15,70 +14,33 @@ type SearchFormProps = {
 
 export function SearchForm({ trades, cities, services }: SearchFormProps) {
   const router = useRouter();
-  const [tradeSlug, setTradeSlug] = useState(trades[0]?.slug_plural ?? "");
   const [citySlug, setCitySlug] = useState("");
   const [serviceSlug, setServiceSlug] = useState("");
 
-  // Services belong to exactly one trade, so the dropdown must never offer
-  // another trade's work: submitting Plomberie + an électricité service
-  // builds /plombiers/{city}/{service}, which 404s because the page looks
-  // the service up scoped to the trade. Harmless while a single trade was
-  // live and every service belonged to it; a 404 generator as soon as a
-  // second trade went active.
-  const selectedTrade = trades.find((t) => t.slug_plural === tradeSlug);
-  const tradeServices = selectedTrade
-    ? services.filter((s) => s.trade_id === selectedTrade.id)
-    : services;
+  // The visitor picks a need and a place; the trade is inferred from the
+  // need, since a service belongs to exactly one trade. Services whose
+  // trade is not in `trades` are dropped rather than shown: their trade is
+  // inactive here, so /{trade}/{city}/{service} would not resolve.
+  const tradeById = new Map(trades.map((t) => [t.id, t.slug_plural]));
+  const searchableServices = services.filter((s) => tradeById.has(s.trade_id));
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!citySlug || !tradeSlug) return;
+    if (!citySlug || !serviceSlug) return;
 
-    const path = serviceSlug
-      ? `/${tradeSlug}/${citySlug}/${serviceSlug}`
-      : `/${tradeSlug}/${citySlug}`;
+    const service = searchableServices.find((s) => s.slug === serviceSlug);
+    const tradeSlug = service && tradeById.get(service.trade_id);
+    if (!tradeSlug) return;
 
-    router.push(path);
+    router.push(`/${tradeSlug}/${citySlug}/${serviceSlug}`);
   }
 
   return (
     <form
       onSubmit={handleSubmit}
       id="recherche"
-      className={cn(
-        "grid gap-3 rounded-xl border border-border bg-card p-4 shadow-lg sm:gap-2 sm:p-3",
-        // Only shown once a second trade goes active — with a single trade
-        // live, picking it is pointless UI, so it's implicit instead.
-        trades.length > 1
-          ? "sm:grid-cols-[1fr_1.2fr_1.2fr_auto]"
-          : "sm:grid-cols-[1.2fr_1.2fr_auto]"
-      )}
+      className="grid gap-3 rounded-xl border border-border bg-card p-4 shadow-lg sm:grid-cols-[1.2fr_1.2fr_auto] sm:gap-2 sm:p-3"
     >
-      {trades.length > 1 && (
-        <div>
-          <label htmlFor="search-trade" className="sr-only">
-            Quel type de professionnel recherchez-vous ?
-          </label>
-          <select
-            id="search-trade"
-            value={tradeSlug}
-            onChange={(e) => {
-              setTradeSlug(e.target.value);
-              // The service already picked belongs to the previous trade.
-              setServiceSlug("");
-            }}
-            required
-            className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {trades.map((trade) => (
-              <option key={trade.slug_plural} value={trade.slug_plural}>
-                {trade.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
       <div>
         <label htmlFor="search-city" className="sr-only">
           Ville
@@ -107,10 +69,11 @@ export function SearchForm({ trades, cities, services }: SearchFormProps) {
           id="search-service"
           value={serviceSlug}
           onChange={(e) => setServiceSlug(e.target.value)}
+          required
           className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <option value="">Tous les services</option>
-          {tradeServices.map((service) => (
+          <option value="">Service</option>
+          {searchableServices.map((service) => (
             <option key={service.slug} value={service.slug}>
               {service.name}
             </option>
