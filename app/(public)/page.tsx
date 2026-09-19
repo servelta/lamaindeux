@@ -99,7 +99,9 @@ export default async function HomePage() {
     <>
       {/* HERO */}
       <section className="relative overflow-hidden bg-primary text-primary-foreground">
-        <div className="container relative grid gap-8 py-12 sm:py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+        {/* Narrower than the container the rest of the page uses, so the
+            hero does not run the full width of a wide screen. */}
+        <div className="container relative mx-auto grid max-w-5xl gap-8 py-12 sm:py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div>
             <h1 className="max-w-xl font-display text-3xl font-bold leading-[1.12] tracking-tight sm:text-4xl">
               Le bon artisan, près de chez vous.
