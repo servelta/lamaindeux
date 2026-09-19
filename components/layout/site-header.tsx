@@ -41,7 +41,7 @@ export function SiteHeader({
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container flex h-20 items-center justify-between">
         <BrandLogo />
 
         {/* Desktop nav */}

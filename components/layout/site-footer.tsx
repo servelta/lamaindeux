@@ -18,7 +18,7 @@ export async function SiteFooter() {
     <footer className="border-t border-border/60 bg-secondary/40">
       <div className="container grid gap-10 py-12 sm:grid-cols-2 md:grid-cols-4">
         <div>
-          <BrandLogo />
+          <BrandLogo imageClassName="h-20 w-auto" />
           <p className="mt-3 text-sm text-muted-foreground">
             Trouvez un artisan vérifié près de chez vous. Réservation
             gratuite, sans commission sur les interventions.
