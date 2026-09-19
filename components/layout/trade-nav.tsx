@@ -74,9 +74,13 @@ export function TradeNav({ trades, cities }: TradeNavProps) {
 
   return (
     <div ref={containerRef} className="border-t border-border/60 bg-background">
+      {/* No overflow on this row. Setting overflow-x makes overflow-y
+          compute to auto rather than stay visible, which turns the row into
+          a scroll box that clips the city menu instead of letting it hang
+          below the header — so the trades wrap rather than scroll. */}
       <nav
         aria-label="Métiers"
-        className="container flex h-11 items-center gap-1 overflow-x-auto text-sm"
+        className="container flex min-h-11 flex-wrap items-center gap-1 py-1.5 text-sm"
       >
         {trades.map((trade) => {
           // An inactive trade has no /{trade} page — it 404s — so it is
