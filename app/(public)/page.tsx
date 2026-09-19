@@ -97,9 +97,11 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* HERO */}
-      <section className="relative overflow-hidden bg-primary text-primary-foreground">
-        <div className="container relative grid gap-12 py-20 sm:py-28 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+      {/* HERO — a floating panel rather than a full-bleed band: the colour
+          is carried by the rounded block, so the page background shows
+          down both sides and above it. */}
+      <section className="container pb-12 pt-6 sm:pb-16 sm:pt-8">
+        <div className="relative grid gap-12 overflow-hidden rounded-3xl bg-primary px-6 py-16 text-primary-foreground shadow-sm sm:px-10 sm:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:px-14">
           <div>
             <h1 className="max-w-2xl font-display text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
               Le bon artisan,
@@ -138,7 +140,7 @@ export default async function HomePage() {
               fill
               priority
               className="object-cover"
-              sizes="(min-width: 1024px) 40vw, 0px"
+              sizes="(min-width: 1024px) 36vw, 0px"
             />
           </div>
         </div>
