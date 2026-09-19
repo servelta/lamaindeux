@@ -1,29 +1,62 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
-import { SearchForm } from "@/components/search/search-form";
-import { getActiveCities, getActiveServices, getActiveTrades, getAllTrades } from "@/lib/queries/search";
+import { Suspense } from "react";
+import { SearchFilters } from "@/components/search/search-filters";
+import { ProfessionalCard } from "@/components/search/professional-card";
+import { EmptySearchResults } from "@/components/search/empty-results";
+import {
+  getActiveCities,
+  getAllTrades,
+  getCityBySlug,
+  getTradeBySlugPlural,
+  searchProfessionals,
+} from "@/lib/queries/search";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Trouver un artisan",
-  description: "Recherchez un artisan vérifié près de chez vous et trouvez le service dont vous avez besoin.",
+  description:
+    "Tous les artisans vérifiés de la plateforme. Filtrez par ville et par métier, comparez les avis et les prix, et réservez en ligne.",
 };
 
-export default async function SearchPage() {
-  const [trades, allTrades, cities] = await Promise.all([
-    getActiveTrades(),
+type Props = {
+  searchParams: Promise<{ ville?: string; metier?: string }>;
+};
+
+export default async function SearchPage({ searchParams }: Props) {
+  const { ville, metier } = await searchParams;
+
+  const [allTrades, cities, results] = await Promise.all([
     getAllTrades(),
     getActiveCities(),
+    // With neither filter set this returns every active professional, which
+    // is the default view: the whole roster.
+    searchProfessionals({ tradeSlugPlural: metier, citySlug: ville }),
   ]);
 
-  const servicesByTrade = await Promise.all(
-    trades.map(async (trade) => ({
-      trade,
-      services: await getActiveServices(trade.id),
-    }))
-  );
+  // Group by professional: the active_professionals view returns one row
+  // per professional *and* service, so someone offering five services
+  // would otherwise appear five times in a list whose unit is the person.
+  const byProfessional = new Map<string, (typeof results)[number]>();
+  for (const r of results) {
+    if (!byProfessional.has(r.profile_id)) byProfessional.set(r.profile_id, r);
+  }
+  const professionals = Array.from(byProfessional.values());
+
+  // Only used to name the active filters in the heading and empty state.
+  const [selectedTrade, selectedCity] = await Promise.all([
+    metier ? getTradeBySlugPlural(metier) : null,
+    ville ? getCityBySlug(ville) : null,
+  ]);
+
+  const count = professionals.length;
+  const many = count > 1;
+  const noun = selectedTrade
+    ? selectedTrade.name.toLowerCase()
+    : many
+      ? "artisans"
+      : "artisan";
 
   return (
     <div className="container py-12">
@@ -37,37 +70,45 @@ export default async function SearchPage() {
           className="h-48 w-full object-contain sm:h-64 md:h-80"
         />
       </div>
-      <p className="max-w-2xl text-muted-foreground">
-        Indiquez votre ville et le service dont vous avez besoin pour trouver un artisan vérifié près de chez vous.
+
+      <h1 className="font-display text-3xl font-bold tracking-tight">
+        {selectedTrade ? selectedTrade.name : "Tous nos artisans"}
+        {selectedCity ? ` à ${selectedCity.name}` : ""}
+      </h1>
+      <p className="mt-2 max-w-2xl text-muted-foreground">
+        Filtrez par ville et par métier, comparez les avis et les prix
+        affichés, puis réservez en ligne.
       </p>
 
       <div className="mt-8 max-w-3xl">
-        <SearchForm trades={allTrades} cities={cities} />
+        {/* useSearchParams needs a Suspense boundary, or the whole route
+            opts into client-side rendering. */}
+        <Suspense
+          fallback={<div className="h-[150px] rounded-xl border border-border bg-card" />}
+        >
+          <SearchFilters trades={allTrades} cities={cities} />
+        </Suspense>
       </div>
 
-      <section className="mt-14">
-        <h2 className="font-display text-2xl font-semibold">Parcourir tous les services</h2>
-        <div className="mt-8 space-y-8">
-          {servicesByTrade.map(({ trade, services: tradeServices }) => (
-            <div key={trade.id}>
-              <h3 className="font-display text-xl font-semibold">{trade.name}</h3>
-              {tradeServices.length > 0 ? (
-                <div className="mt-4 flex flex-wrap gap-3">
-                  {tradeServices.map((service) => (
-                    <Link
-                      key={service.id}
-                      href={`/${trade.slug_plural}`}
-                      className="rounded-full border border-border bg-card px-5 py-2.5 text-sm font-medium transition-colors hover:border-primary hover:text-primary"
-                    >
-                      {service.name}
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <p className="mt-3 text-sm text-muted-foreground">Aucun service disponible pour le moment.</p>
-              )}
+      <section className="mt-10">
+        <h2 className="font-display text-xl font-semibold">
+          {count > 0 ? `${count} ${noun} vérifié${many ? "s" : ""}` : "Aucun résultat"}
+        </h2>
+
+        <div className="mt-4 space-y-4">
+          {count > 0 ? (
+            professionals.map((p) => <ProfessionalCard key={p.profile_id} professional={p} />)
+          ) : selectedCity ? (
+            <EmptySearchResults cityName={selectedCity.name} />
+          ) : (
+            <div className="rounded-lg border border-dashed border-border bg-card/50 p-10 text-center">
+              <p className="font-medium">Aucun artisan ne correspond à votre recherche.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Essayez un autre métier, ou retirez les filtres pour voir tous
+                les artisans de la plateforme.
+              </p>
             </div>
-          ))}
+          )}
         </div>
       </section>
     </div>
