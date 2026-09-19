@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AccountMenu } from "@/components/layout/account-menu";
+import { BrandLogo } from "@/components/layout/brand-logo";
 import { TradeNav, type TradeNavCity, type TradeNavTrade } from "@/components/layout/trade-nav";
 
 export type CurrentUser = {
@@ -41,9 +42,7 @@ export function SiteHeader({
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur">
       <div className="container flex h-16 items-center justify-between">
-        <Link href="/" className="font-display text-lg font-bold tracking-tight text-primary">
-          LaMainDeux
-        </Link>
+        <BrandLogo />
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
