@@ -37,25 +37,6 @@ export function SearchFilters({ trades, cities }: { trades: Trade[]; cities: Cit
     <div className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label htmlFor="filter-city" className="mb-1.5 block text-sm font-medium">
-            Ville
-          </label>
-          <select
-            id="filter-city"
-            value={ville}
-            onChange={(e) => apply("ville", e.target.value)}
-            className={SELECT_CLASS}
-          >
-            <option value="">Toutes les villes</option>
-            {cities.map((city) => (
-              <option key={city.slug} value={city.slug}>
-                {city.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
           <label htmlFor="filter-trade" className="mb-1.5 block text-sm font-medium">
             Métier
           </label>
@@ -80,6 +61,25 @@ export function SearchFilters({ trades, cities }: { trades: Trade[]; cities: Cit
                 ))}
               </optgroup>
             )}
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="filter-city" className="mb-1.5 block text-sm font-medium">
+            Ville
+          </label>
+          <select
+            id="filter-city"
+            value={ville}
+            onChange={(e) => apply("ville", e.target.value)}
+            className={SELECT_CLASS}
+          >
+            <option value="">Toutes les villes</option>
+            {cities.map((city) => (
+              <option key={city.slug} value={city.slug}>
+                {city.name}
+              </option>
+            ))}
           </select>
         </div>
       </div>
