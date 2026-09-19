@@ -8,6 +8,7 @@ export type UserRole = "customer" | "professional" | "admin";
 export const PROTECTED_ROUTES: { prefix: string; roles: UserRole[] }[] = [
   { prefix: "/mon-compte", roles: ["customer"] },
   { prefix: "/mes-reservations", roles: ["customer"] },
+  { prefix: "/parametres", roles: ["customer"] },
   { prefix: "/dashboard", roles: ["professional"] },
   { prefix: "/profil", roles: ["professional"] },
   { prefix: "/mes-services", roles: ["professional"] },

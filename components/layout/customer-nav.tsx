@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User, CalendarCheck, Search, Menu, X } from "lucide-react";
+import { User, CalendarCheck, Search, Settings, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { BrandLogo } from "@/components/layout/brand-logo";
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { href: "/recherche", label: "Trouver un artisan", icon: Search },
   { href: "/mon-compte", label: "Mon compte", icon: User },
   { href: "/mes-reservations", label: "Mes réservations", icon: CalendarCheck },
+  { href: "/parametres", label: "Paramètres", icon: Settings },
 ];
 
 export function CustomerNav() {

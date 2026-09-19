@@ -5,10 +5,8 @@ import { getCustomerBookings } from "@/lib/booking/queries";
 import { ACTIVE_BOOKING_STATUSES } from "@/lib/booking/statuses";
 import { Button } from "@/components/ui/button";
 import { GdprPanel } from "@/components/gdpr/gdpr-panel";
-import { ChangePasswordForm } from "@/components/auth/change-password-form";
 import { BookingStatusBadge } from "@/components/booking/status-badge";
 import { formatPrice } from "@/lib/utils/format";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Mon compte" };
 
@@ -123,15 +121,6 @@ export default async function MonComptePage() {
           </div>
         )}
       </section>
-
-      <Card className="mt-10">
-        <CardHeader>
-          <CardTitle className="text-base">Sécurité</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ChangePasswordForm />
-        </CardContent>
-      </Card>
 
       <div className="mt-10">
         <GdprPanel />

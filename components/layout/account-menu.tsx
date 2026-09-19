@@ -15,6 +15,7 @@ const roleLinks: Record<string, { href: string; label: string }[]> = {
   customer: [
     { href: "/mon-compte", label: "Mon compte" },
     { href: "/mes-reservations", label: "Mes réservations" },
+    { href: "/parametres", label: "Paramètres" },
   ],
   professional: [
     { href: "/dashboard", label: "Tableau de bord" },
