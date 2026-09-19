@@ -4,9 +4,9 @@
 
 /*
   MonPlombier design tokens (Phase 2).
-  Palette: deep pipe-blue primary, copper-fitting accent, verified-green,
-  cool near-white background. Display type is geometric (Space Grotesk),
-  not serif-on-cream — numeric data (prices, booking numbers, postcodes)
+  Palette: deep pipe-blue primary, warm cream secondary, copper-fitting
+  accent, verified-green, cool near-white background. Display type is
+  geometric (Space Grotesk), not serif-on-cream — numeric data (prices, booking numbers, postcodes)
   is set in a mono face (IBM Plex Mono) to read like a technical spec sheet,
   which is the trade's own vernacular.
 */
@@ -18,7 +18,7 @@
     --card-foreground: 200 22% 12%;
     --primary: 193 51% 24%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 195 15% 93%;
+    --secondary: 23 65% 86.7%; /* #f3d8c7 */
     --secondary-foreground: 200 22% 12%;
     --muted: 195 15% 93%;
     --muted-foreground: 200 10% 40%;
