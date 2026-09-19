@@ -6,7 +6,7 @@ export default async function ProfessionalLayout({ children }: { children: React
     <div className="flex min-h-screen flex-col sm:flex-row">
       <ProfessionalNav />
       <div className="flex flex-1 flex-col">
-        <AuthAwareHeader />
+        <AuthAwareHeader showTrades={false} />
         <div className="flex-1">{children}</div>
       </div>
     </div>

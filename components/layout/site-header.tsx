@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AccountMenu } from "@/components/layout/account-menu";
+import { TradeNav, type TradeNavCity, type TradeNavTrade } from "@/components/layout/trade-nav";
 
 export type CurrentUser = {
   firstName: string;
@@ -18,7 +19,15 @@ const NAV_LINKS = [
   { href: "/inscription/professionnel", label: "Devenir artisan" },
 ];
 
-export function SiteHeader({ currentUser = null }: { currentUser?: CurrentUser }) {
+export function SiteHeader({
+  currentUser = null,
+  trades = [],
+  cities = [],
+}: {
+  currentUser?: CurrentUser;
+  trades?: TradeNavTrade[];
+  cities?: TradeNavCity[];
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const visibleNavLinks = currentUser === null
     ? NAV_LINKS
@@ -71,6 +80,12 @@ export function SiteHeader({ currentUser = null }: { currentUser?: CurrentUser }
         </div>
       </div>
 
+      {/* Trade bar — hover-driven, so desktop only. Phones get the same
+          trades inside the mobile panel below, as plain links. */}
+      <div className="hidden md:block">
+        <TradeNav trades={trades} cities={cities} />
+      </div>
+
       {/* Mobile menu panel */}
       {mobileOpen && (
         <nav className="flex flex-col gap-1 border-t border-border/60 bg-background px-4 py-3 md:hidden">
@@ -84,6 +99,36 @@ export function SiteHeader({ currentUser = null }: { currentUser?: CurrentUser }
               {link.label}
             </Link>
           ))}
+
+          {trades.length > 0 && (
+            <>
+              <p className="mt-3 px-3 pb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Métiers
+              </p>
+              {trades.map((trade) =>
+                trade.active ? (
+                  <Link
+                    key={trade.slug_plural}
+                    href={`/${trade.slug_plural}`}
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-md px-3 py-2.5 text-sm font-medium hover:bg-secondary"
+                  >
+                    {trade.name}
+                  </Link>
+                ) : (
+                  <span
+                    key={trade.slug_plural}
+                    className="flex items-center justify-between gap-2 px-3 py-2.5 text-sm text-muted-foreground"
+                  >
+                    {trade.name}
+                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">
+                      Bientôt disponible
+                    </span>
+                  </span>
+                )
+              )}
+            </>
+          )}
         </nav>
       )}
     </header>

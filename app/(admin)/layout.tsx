@@ -6,7 +6,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="flex min-h-screen flex-col sm:flex-row">
       <AdminNav />
       <div className="flex flex-1 flex-col">
-        <AuthAwareHeader />
+        <AuthAwareHeader showTrades={false} />
         <div className="flex-1">{children}</div>
       </div>
     </div>
