@@ -236,3 +236,49 @@ export async function getProfessionalBySlug(slug: string) {
     })),
   };
 }
+
+export type TradeStats = {
+  professionalCount: number;
+  ratingAvg: number | null;
+  ratingCount: number;
+};
+
+/**
+ * Per-trade headline numbers for the homepage category cards, keyed by
+ * trade_id. One read of active_professionals rather than a count query per
+ * trade — the view is small (active professionals only) and the homepage
+ * needs every trade at once.
+ *
+ * Counts distinct people, not rows: the view returns one row per
+ * professional *and* service, so a plumber offering five services is five
+ * rows and would otherwise read as five plumbers.
+ */
+export async function getTradeStats(): Promise<Record<string, TradeStats>> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("active_professionals")
+    .select("profile_id, trade_id, rating_avg, rating_count");
+
+  const byTrade: Record<string, { seen: Set<string>; ratingSum: number; ratingCount: number }> = {};
+  for (const row of (data ?? []) as any[]) {
+    const bucket = (byTrade[row.trade_id] ??= { seen: new Set(), ratingSum: 0, ratingCount: 0 });
+    if (bucket.seen.has(row.profile_id)) continue;
+    bucket.seen.add(row.profile_id);
+    // Weight each professional's average by how many reviews it rests on, so
+    // one 5★ review does not outweigh forty 4.5★ ones.
+    if (row.rating_count > 0 && row.rating_avg != null) {
+      bucket.ratingSum += Number(row.rating_avg) * row.rating_count;
+      bucket.ratingCount += row.rating_count;
+    }
+  }
+
+  const stats: Record<string, TradeStats> = {};
+  for (const [tradeId, b] of Object.entries(byTrade)) {
+    stats[tradeId] = {
+      professionalCount: b.seen.size,
+      ratingAvg: b.ratingCount > 0 ? b.ratingSum / b.ratingCount : null,
+      ratingCount: b.ratingCount,
+    };
+  }
+  return stats;
+}
