@@ -13,10 +13,13 @@ export type CurrentUser = {
   role: string;
 } | null;
 
+// Order matters twice over: it is the order shown, and a signed-in
+// customer sees only the first entry (slice below), which must stay
+// "Trouver un artisan".
 const NAV_LINKS = [
   { href: "/recherche", label: "Trouver un artisan" },
-  { href: "/contact", label: "Contact" },
   { href: "/inscription/professionnel", label: "Devenir artisan" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export function SiteHeader({
