@@ -3,10 +3,10 @@ import { requireUserId } from "@/lib/professional/queries";
 import { getCustomerBookings } from "@/lib/booking/queries";
 import { BookingStatusBadge } from "@/components/booking/status-badge";
 import { formatPrice } from "@/lib/utils/format";
+import { ACTIVE_BOOKING_STATUSES } from "@/lib/booking/statuses";
 
 export const metadata = { title: "Mes réservations" };
 
-const ACTIVE_STATUSES = ["PENDING", "CONFIRMED", "ACCEPTED"];
 const PAST_STATUSES = ["COMPLETED"];
 const CANCELLED_STATUSES = ["CANCELLED_BY_CUSTOMER", "CANCELLED_BY_PROFESSIONAL", "NO_SHOW", "DISPUTED"];
 
@@ -14,7 +14,7 @@ export default async function MesReservationsPage() {
   const customerId = await requireUserId();
   const bookings = await getCustomerBookings(customerId);
 
-  const upcoming = bookings.filter((b) => ACTIVE_STATUSES.includes(b.status));
+  const upcoming = bookings.filter((b) => ACTIVE_BOOKING_STATUSES.includes(b.status));
   const past = bookings.filter((b) => PAST_STATUSES.includes(b.status));
   const cancelled = bookings.filter((b) => CANCELLED_STATUSES.includes(b.status));
 
