@@ -99,19 +99,17 @@ export default async function HomePage() {
     <>
       {/* HERO */}
       <section className="relative overflow-hidden bg-primary text-primary-foreground">
-        <div className="container relative grid gap-12 py-20 sm:py-28 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+        <div className="container relative grid gap-8 py-12 sm:py-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
           <div>
-            <h1 className="max-w-2xl font-display text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
-              Le bon artisan,
-              <br />
-              près de chez vous.
+            <h1 className="max-w-xl font-display text-3xl font-bold leading-[1.12] tracking-tight sm:text-4xl">
+              Le bon artisan, près de chez vous.
             </h1>
-            <p className="mt-6 max-w-xl text-lg text-primary-foreground/80 sm:text-xl">
+            <p className="mt-3 max-w-lg text-primary-foreground/80">
               Comparez des artisans vérifiés, consultez leurs prix et réservez
               en ligne. Gratuit, sans commission sur l&apos;intervention.
             </p>
 
-            <div className="mt-8 max-w-3xl">
+            <div className="mt-6 max-w-3xl">
               <SearchForm trades={allTrades} cities={cities} />
             </div>
 
@@ -131,7 +129,9 @@ export default async function HomePage() {
             )}
           </div>
 
-          <div className="relative hidden aspect-[4/3] overflow-hidden rounded-2xl lg:block">
+          {/* Shorter than the text column is tall, so the image cannot be
+              what sets the hero's height. */}
+          <div className="relative hidden aspect-[16/10] max-h-[340px] overflow-hidden rounded-2xl lg:block">
             <Image
               src="/images/hero-worker.jpg"
               alt="Artisan professionnel prêt à intervenir"
