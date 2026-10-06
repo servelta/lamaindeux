@@ -5,6 +5,7 @@ import {
   BadgeCheck,
   ChevronRight,
   Clock3,
+  ExternalLink,
   MapPin,
   Phone,
   Star,
@@ -14,6 +15,7 @@ import { formatAddress, formatPrice, formatRating } from "@/lib/utils/format";
 import type { getProfessionalBySlug } from "@/lib/queries/search";
 import { TRADE_BANNER_PHOTOS } from "@/lib/trade-photos";
 import { ProfilePhotoCarousel } from "@/components/professional/profile-photo-carousel";
+import { googleMapsBusinessUrl } from "@/lib/utils/google-maps";
 
 type Profile = NonNullable<Awaited<ReturnType<typeof getProfessionalBySlug>>>;
 type Review = Profile["reviews"][number];
@@ -47,6 +49,12 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
           alt: `Illustration du métier : ${trade.toLowerCase()}`,
         },
       ];
+  const description = pro.description?.trim();
+  const introduction =
+    description && description.length > 260
+      ? `${description.slice(0, 260).replace(/\s+\S*$/, "")}…`
+      : description;
+  const googleMapsUrl = googleMapsBusinessUrl(pro.company_name, address);
 
   return (
     <div className="container max-w-6xl pb-12">
@@ -171,6 +179,68 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
         </div>
       </section>
 
+      <section
+        id="presentation"
+        className="mt-8 grid scroll-mt-44 gap-5 lg:grid-cols-[1.3fr_1fr]"
+      >
+        <div className="rounded-2xl border border-border bg-card p-6">
+          <h2 className="font-display text-xl font-semibold">
+            Votre artisan, en quelques mots
+          </h2>
+          <p className="mt-3 whitespace-pre-line text-sm leading-7 text-muted-foreground">
+            {introduction ||
+              `${pro.first_name} ${pro.last_name}, ${trade.toLowerCase()}${pro.business_city ? ` à ${pro.business_city}` : ""}, vous propose les prestations ci-dessous. Choisissez votre service pour préparer votre intervention.`}
+          </p>
+          {description && description.length > 260 ? (
+            <details className="mt-3 text-sm">
+              <summary className="w-fit cursor-pointer font-medium text-primary">
+                Lire la présentation complète
+              </summary>
+              <p className="mt-3 whitespace-pre-line leading-7 text-muted-foreground">
+                {description}
+              </p>
+            </details>
+          ) : null}
+          {pro.completed_jobs_count > 0 ? (
+            <p className="mt-4 text-xs font-medium text-primary">
+              {pro.completed_jobs_count} interventions réalisées sur Plan b
+            </p>
+          ) : null}
+        </div>
+        <div className="rounded-2xl bg-secondary/45 p-6">
+          <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
+            <MapPin aria-hidden="true" className="h-5 w-5 text-primary" />
+            Zone d’intervention
+          </h2>
+          <p className="mt-3 text-sm leading-7">
+            {cities.length
+              ? cities.join(", ")
+              : pro.business_city ||
+                "Contactez l’artisan pour vérifier votre secteur."}
+          </p>
+          {address ? (
+            <p className="mt-2 text-xs leading-6 text-muted-foreground">
+              {address}
+            </p>
+          ) : null}
+          {pro.public_email ? (
+            <a
+              href={`mailto:${pro.public_email}`}
+              className="mt-3 inline-block break-all text-sm font-medium text-primary hover:underline"
+            >
+              {pro.public_email}
+            </a>
+          ) : null}
+          <p className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+            <BadgeCheck
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0 text-verified"
+            />
+            Profil vérifié par l’équipe Plan b.
+          </p>
+        </div>
+      </section>
+
       <section id="reserver" className="mt-9 scroll-mt-44 sm:mt-12">
         <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
           Services & tarifs
@@ -198,13 +268,13 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
                       {item.duration_minutes} min
                     </p>
                   ) : null}
-                  {item.description ? (
+                  {item.description || service?.description ? (
                     <details className="mt-2 text-sm text-muted-foreground">
                       <summary className="w-fit cursor-pointer hover:text-primary">
                         Détails du service
                       </summary>
                       <p className="mt-2 whitespace-pre-line leading-6">
-                        {item.description}
+                        {item.description || service?.description}
                       </p>
                     </details>
                   ) : null}
@@ -239,40 +309,23 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
         </p>
       </section>
 
-      {pro.description || address || cities.length ? (
-        <section id="presentation" className="mt-7 scroll-mt-44">
-          <details className="rounded-2xl border border-border bg-card p-5 sm:p-6">
-            <summary className="cursor-pointer font-display text-lg font-semibold text-primary">
-              À propos & zone d’intervention
-            </summary>
-            {pro.description ? (
-              <p className="mt-4 whitespace-pre-line text-sm leading-7 text-muted-foreground">
-                {pro.description}
-              </p>
-            ) : null}
-            {address ? (
-              <p className="mt-4 flex items-start gap-2 text-sm text-muted-foreground">
-                <MapPin
-                  aria-hidden="true"
-                  className="mt-0.5 h-4 w-4 shrink-0"
-                />
-                {address}
-              </p>
-            ) : null}
-            {cities.length ? (
-              <p className="mt-3 text-sm text-muted-foreground">
-                Intervient à : {cities.join(", ")}
-              </p>
-            ) : null}
-          </details>
-        </section>
-      ) : null}
-
       <section id="avis" className="mt-9 scroll-mt-44 sm:mt-12">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
             Avis clients
           </h2>
+          <Button asChild variant="outline">
+            <a
+              href={googleMapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Laisser un avis sur Google Maps (nouvel onglet)"
+            >
+              <Star aria-hidden="true" className="mr-2 h-4 w-4" />
+              Laisser un avis sur Google
+              <ExternalLink aria-hidden="true" className="ml-2 h-4 w-4" />
+            </a>
+          </Button>
           {pro.rating_count > 0 ? (
             <p className="inline-flex items-center gap-2 text-sm">
               <Star
@@ -283,6 +336,10 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
             </p>
           ) : null}
         </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Ouvrez la fiche de l’artisan sur Google Maps, puis choisissez «
+          Rédiger un avis ».
+        </p>
         {pro.google_rating != null ? (
           <p className="mt-3 text-sm text-muted-foreground">
             {formatRating(pro.google_rating)}/5 sur Google

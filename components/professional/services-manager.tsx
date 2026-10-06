@@ -16,7 +16,11 @@ import { Badge } from "@/components/ui/badge";
 import { SubmitButton } from "@/components/auth/submit-button";
 import { formatPrice } from "@/lib/utils/format";
 
-type CatalogService = { id: string; name: string; default_pricing_type: "fixed" | "quote" };
+type CatalogService = {
+  id: string;
+  name: string;
+  default_pricing_type: "fixed" | "quote";
+};
 
 type PlumberService = {
   id: string;
@@ -25,18 +29,22 @@ type PlumberService = {
   pricing_type: "fixed" | "quote";
   description: string | null;
   active: boolean;
-  services: { id: string; name: string } | { id: string; name: string }[] | null;
+  services:
+    { id: string; name: string } | { id: string; name: string }[] | null;
 };
 
 export function AddServiceForm({ catalog }: { catalog: CatalogService[] }) {
   const [state, formAction] = useActionState<ActionResult, FormData>(
     addProfessionalServiceAction,
-    undefined
+    undefined,
   );
   const [pricingType, setPricingType] = useState<"fixed" | "quote">("fixed");
 
   return (
-    <form action={formAction} className="space-y-4 rounded-lg border border-border bg-card p-5">
+    <form
+      action={formAction}
+      className="space-y-4 rounded-lg border border-border bg-card p-5"
+    >
       <div className="space-y-2">
         <Label htmlFor="serviceId">Service</Label>
         <select
@@ -94,9 +102,13 @@ export function AddServiceForm({ catalog }: { catalog: CatalogService[] }) {
               min={1}
               step="0.01"
               onChange={(e) => {
-                const hidden = document.getElementById("priceCentsHidden") as HTMLInputElement | null;
+                const hidden = document.getElementById(
+                  "priceCentsHidden",
+                ) as HTMLInputElement | null;
                 if (hidden) {
-                  hidden.value = String(Math.round(parseFloat(e.target.value || "0") * 100));
+                  hidden.value = String(
+                    Math.round(parseFloat(e.target.value || "0") * 100),
+                  );
                 }
               }}
             />
@@ -104,7 +116,14 @@ export function AddServiceForm({ catalog }: { catalog: CatalogService[] }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="durationMinutes">Durée (minutes)</Label>
-            <Input id="durationMinutes" name="durationMinutes" type="number" min={5} step={5} defaultValue={60} />
+            <Input
+              id="durationMinutes"
+              name="durationMinutes"
+              type="number"
+              min={5}
+              step={5}
+              defaultValue={60}
+            />
           </div>
         </div>
       )}
@@ -114,15 +133,25 @@ export function AddServiceForm({ catalog }: { catalog: CatalogService[] }) {
         <Textarea id="description" name="description" rows={2} />
       </div>
 
-      {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
-      {state?.success && <p className="text-sm text-verified">{state.success}</p>}
+      {state?.error && (
+        <p className="text-sm text-destructive">{state.error}</p>
+      )}
+      {state?.success && (
+        <p className="text-sm text-verified">{state.success}</p>
+      )}
 
       <SubmitButton className="w-auto">Ajouter ce service</SubmitButton>
     </form>
   );
 }
 
-export function ServiceList({ services }: { services: PlumberService[] }) {
+export function ServiceList({
+  services,
+  managed = false,
+}: {
+  services: PlumberService[];
+  managed?: boolean;
+}) {
   const [, startTransition] = useTransition();
 
   if (services.length === 0) {
@@ -150,35 +179,44 @@ export function ServiceList({ services }: { services: PlumberService[] }) {
                 </Badge>
               </div>
               <p className="mt-1 font-mono-data text-sm text-muted-foreground">
-                {s.pricing_type === "fixed" ? formatPrice(s.price_cents) : "Sur devis"}
+                {s.pricing_type === "fixed"
+                  ? formatPrice(s.price_cents)
+                  : "Sur devis"}
                 {s.duration_minutes ? ` · ${s.duration_minutes} min` : ""}
               </p>
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
-              <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                <input
-                  type="checkbox"
-                  checked={s.active}
-                  onChange={(e) =>
+            {!managed ? (
+              <div className="flex shrink-0 items-center gap-2">
+                <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <input
+                    type="checkbox"
+                    checked={s.active}
+                    onChange={(e) =>
+                      startTransition(async () => {
+                        await toggleProfessionalServiceAction(
+                          s.id,
+                          e.target.checked,
+                        );
+                      })
+                    }
+                  />
+                  Actif
+                </label>
+                <button
+                  type="button"
+                  onClick={() =>
                     startTransition(async () => {
-                      await toggleProfessionalServiceAction(s.id, e.target.checked);
+                      await deleteProfessionalServiceAction(s.id);
                     })
                   }
-                />
-                Actif
-              </label>
-              <button
-                type="button"
-                onClick={() => startTransition(async () => {
-                  await deleteProfessionalServiceAction(s.id);
-                })}
-                className="text-muted-foreground hover:text-destructive"
-                aria-label="Supprimer"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
+                  className="text-muted-foreground hover:text-destructive"
+                  aria-label="Supprimer"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            ) : null}
           </div>
         );
       })}

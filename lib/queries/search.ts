@@ -189,7 +189,7 @@ export async function getProfessionalBySlug(slug: string) {
 
   const { data: rawServices } = await supabase
     .from("professional_services")
-    .select("id, price_cents, duration_minutes, pricing_type, description, services(name, slug, sort_order)")
+    .select("id, price_cents, duration_minutes, pricing_type, description, services(name, slug, sort_order, description)")
     .eq("professional_id", publicProfessional.profile_id)
     .eq("active", true);
 

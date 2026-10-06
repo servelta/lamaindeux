@@ -10,15 +10,22 @@ import {
 } from "@/lib/validation/auth";
 import { homeForRole } from "@/lib/auth/roles";
 import { sendEmail } from "@/lib/email/send";
-import { customerWelcomeEmail, professionalWelcomeEmail } from "@/lib/email/templates";
+import {
+  customerWelcomeEmail,
+  professionalWelcomeEmail,
+} from "@/lib/email/templates";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 import { getClientIp } from "@/lib/security/get-client-ip";
+import {
+  createProvisioningClient,
+  provisionPlumbingServices,
+} from "@/lib/professional/provision-plumbing-services";
 
 export type ActionResult = { error?: string } | void;
 
 export async function loginAction(
   _prev: ActionResult,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionResult> {
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
@@ -33,11 +40,17 @@ export async function loginAction(
   // email) and per-IP (stops one attacker spraying many accounts).
   const ip = await getClientIp();
   const [accountOk, ipOk] = await Promise.all([
-    checkRateLimit(`login:account:${parsed.data.email.toLowerCase()}`, 5, 15 * 60),
+    checkRateLimit(
+      `login:account:${parsed.data.email.toLowerCase()}`,
+      5,
+      15 * 60,
+    ),
     checkRateLimit(`login:ip:${ip}`, 20, 15 * 60),
   ]);
   if (!accountOk || !ipOk) {
-    return { error: "Trop de tentatives. Merci de réessayer dans quelques minutes." };
+    return {
+      error: "Trop de tentatives. Merci de réessayer dans quelques minutes.",
+    };
   }
 
   const supabase = await createClient();
@@ -66,7 +79,7 @@ export async function logoutAction() {
 
 export async function customerSignUpAction(
   _prev: ActionResult,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionResult> {
   const parsed = customerSignUpSchema.safeParse({
     firstName: formData.get("firstName"),
@@ -88,7 +101,9 @@ export async function customerSignUpAction(
   const ip = await getClientIp();
   const ipOk = await checkRateLimit(`signup:ip:${ip}`, 5, 60 * 60);
   if (!ipOk) {
-    return { error: "Trop de tentatives d'inscription. Merci de réessayer plus tard." };
+    return {
+      error: "Trop de tentatives d'inscription. Merci de réessayer plus tard.",
+    };
   }
 
   const supabase = await createClient();
@@ -126,7 +141,7 @@ export async function customerSignUpAction(
 
 export async function professionalSignUpAction(
   _prev: ActionResult,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionResult> {
   const parsed = professionalSignUpSchema.safeParse({
     firstName: formData.get("firstName"),
@@ -153,7 +168,9 @@ export async function professionalSignUpAction(
   const ip = await getClientIp();
   const ipOk = await checkRateLimit(`signup:ip:${ip}`, 5, 60 * 60);
   if (!ipOk) {
-    return { error: "Trop de tentatives d'inscription. Merci de réessayer plus tard." };
+    return {
+      error: "Trop de tentatives d'inscription. Merci de réessayer plus tard.",
+    };
   }
 
   const supabase = await createClient();
@@ -204,6 +221,19 @@ export async function professionalSignUpAction(
         business_postcode: businessPostcode,
       })
       .eq("profile_id", data.user.id);
+    if (tradeSlug === "plombier") {
+      try {
+        await provisionPlumbingServices(
+          createProvisioningClient(),
+          data.user.id,
+        );
+      } catch {
+        // Signup remains usable; the authenticated dashboard and daily sync retry.
+        console.error(
+          "professional signup: standard plumbing service provisioning failed.",
+        );
+      }
+    }
   }
 
   try {

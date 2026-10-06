@@ -9,11 +9,30 @@ import type { ActionResult } from "@/lib/professional/profile-actions";
 // Re-exported so components can import the action and its result type together.
 export type { ActionResult };
 
+async function hasManagedPlumbingServices(professionalId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("professionals")
+    .select("trades(slug_singular)")
+    .eq("profile_id", professionalId)
+    .single();
+  if (error || !data)
+    throw new Error("Unable to verify the professional’s trade.");
+  const trade = Array.isArray(data.trades) ? data.trades[0] : data.trades;
+  return trade?.slug_singular === "plombier";
+}
+
+const managedServicesError = {
+  error: "Les services de plomberie sont attribués automatiquement par Plan b.",
+};
+
 export async function addProfessionalServiceAction(
   _prev: ActionResult,
-  formData: FormData
+  formData: FormData,
 ): Promise<ActionResult> {
   const professionalId = await requireUserId();
+  if (await hasManagedPlumbingServices(professionalId))
+    return managedServicesError;
 
   const parsed = addProfessionalServiceSchema.safeParse({
     serviceId: formData.get("serviceId"),
@@ -32,7 +51,8 @@ export async function addProfessionalServiceAction(
     professional_id: professionalId,
     service_id: parsed.data.serviceId,
     pricing_type: parsed.data.pricingType,
-    price_cents: parsed.data.pricingType === "fixed" ? parsed.data.priceCents : null,
+    price_cents:
+      parsed.data.pricingType === "fixed" ? parsed.data.priceCents : null,
     duration_minutes: parsed.data.durationMinutes ?? null,
     description: parsed.data.description || null,
   });
@@ -49,8 +69,13 @@ export async function addProfessionalServiceAction(
   return { success: "Service ajouté." };
 }
 
-export async function toggleProfessionalServiceAction(professionalServiceId: string, active: boolean) {
+export async function toggleProfessionalServiceAction(
+  professionalServiceId: string,
+  active: boolean,
+) {
   const professionalId = await requireUserId();
+  if (await hasManagedPlumbingServices(professionalId))
+    return managedServicesError;
   const supabase = await createClient();
 
   const { error } = await supabase
@@ -67,8 +92,12 @@ export async function toggleProfessionalServiceAction(professionalServiceId: str
   revalidatePath("/mes-services");
 }
 
-export async function deleteProfessionalServiceAction(professionalServiceId: string) {
+export async function deleteProfessionalServiceAction(
+  professionalServiceId: string,
+) {
   const professionalId = await requireUserId();
+  if (await hasManagedPlumbingServices(professionalId))
+    return managedServicesError;
   const supabase = await createClient();
 
   const { error } = await supabase

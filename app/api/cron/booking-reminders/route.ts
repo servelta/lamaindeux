@@ -7,6 +7,7 @@ import { bookingReminderSmsBody } from "@/lib/sms/messages";
 import { formatDateFr, formatTimeFr } from "@/lib/utils/date-fr";
 import { getProfessionalContact } from "@/lib/notifications/get-professional-contact";
 import { createNotification } from "@/lib/notifications/create";
+import { provisionPlumbingServices } from "@/lib/professional/provision-plumbing-services";
 
 /**
  * Sends a reminder for every non-cancelled booking scheduled tomorrow that
@@ -16,11 +17,20 @@ import { createNotification } from "@/lib/notifications/create";
  */
 export async function GET(request: Request) {
   const authHeader = request.headers.get("authorization");
-  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (
+    !process.env.CRON_SECRET ||
+    authHeader !== `Bearer ${process.env.CRON_SECRET}`
+  ) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const supabase = createAdminClient();
+  try {
+    await provisionPlumbingServices(supabase);
+  } catch {
+    // Keep booking reminders independent of catalog maintenance.
+    console.error("daily sync: standard plumbing service provisioning failed.");
+  }
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowStr = tomorrow.toISOString().slice(0, 10);
@@ -28,7 +38,7 @@ export async function GET(request: Request) {
   const { data: bookings, error } = await supabase
     .from("bookings")
     .select(
-      "id, booking_number, customer_id, professional_id, scheduled_date, scheduled_time, contact_email, contact_phone, address_line, postcode, city, professional_services(services(name))"
+      "id, booking_number, customer_id, professional_id, scheduled_date, scheduled_time, contact_email, contact_phone, address_line, postcode, city, professional_services(services(name))",
     )
     .eq("scheduled_date", tomorrowStr)
     .in("status", ["CONFIRMED", "ACCEPTED"])
@@ -36,13 +46,22 @@ export async function GET(request: Request) {
 
   if (error) {
     console.error("booking-reminders cron:", error);
-    return NextResponse.json({ error: "Failed to fetch bookings" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch bookings" },
+      { status: 500 },
+    );
   }
 
   let sent = 0;
   for (const booking of bookings ?? []) {
-    const ps = Array.isArray(booking.professional_services) ? booking.professional_services[0] : booking.professional_services;
-    const service = ps ? (Array.isArray(ps.services) ? ps.services[0] : ps.services) : null;
+    const ps = Array.isArray(booking.professional_services)
+      ? booking.professional_services[0]
+      : booking.professional_services;
+    const service = ps
+      ? Array.isArray(ps.services)
+        ? ps.services[0]
+        : ps.services
+      : null;
     const serviceName = service?.name ?? "Service";
 
     const emailData = {
@@ -56,9 +75,15 @@ export async function GET(request: Request) {
     };
 
     // Customer
-    const { subject: custSubject, html: custHtml } = bookingReminderEmail(emailData, true);
+    const { subject: custSubject, html: custHtml } = bookingReminderEmail(
+      emailData,
+      true,
+    );
     await sendEmail(booking.contact_email, custSubject, custHtml);
-    await sendSms(toE164France(booking.contact_phone), bookingReminderSmsBody(emailData.time));
+    await sendSms(
+      toE164France(booking.contact_phone),
+      bookingReminderSmsBody(emailData.time),
+    );
     await createNotification({
       userId: booking.customer_id,
       type: "booking_reminder",
@@ -70,8 +95,13 @@ export async function GET(request: Request) {
     // Professional
     const professional = await getProfessionalContact(booking.professional_id);
     if (professional.email) {
-      const { subject: professionalSubject, html: professionalHtml } = bookingReminderEmail(emailData, false);
-      await sendEmail(professional.email, professionalSubject, professionalHtml);
+      const { subject: professionalSubject, html: professionalHtml } =
+        bookingReminderEmail(emailData, false);
+      await sendEmail(
+        professional.email,
+        professionalSubject,
+        professionalHtml,
+      );
     }
     await createNotification({
       userId: booking.professional_id,
