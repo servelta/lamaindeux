@@ -280,8 +280,8 @@ export default async function HomePage() {
           should address both once, side by side, rather than stacking two
           full-width CTAs that repeat each other. */}
       <section className="container py-12 sm:py-16">
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="flex flex-col items-start rounded-2xl border border-border bg-card p-8 shadow-sm sm:p-10">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="flex min-w-0 flex-col items-start rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-10">
             <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold uppercase tracking-wide text-secondary-foreground">
               Particuliers
             </span>
@@ -293,12 +293,12 @@ export default async function HomePage() {
               puis réservez un créneau en ligne. La réservation est gratuite et
               vous payez l&apos;artisan directement.
             </p>
-            <Button asChild size="lg" className="mt-8">
+            <Button asChild size="lg" className="mt-8 h-auto min-h-11 max-w-full whitespace-normal py-3 text-center">
               <Link href="/recherche">Trouver un artisan</Link>
             </Button>
           </div>
 
-          <div className="flex flex-col items-start rounded-2xl bg-primary p-8 text-primary-foreground shadow-sm sm:p-10">
+          <div className="flex min-w-0 flex-col items-start rounded-2xl bg-primary p-6 text-primary-foreground shadow-sm sm:p-10">
             <span className="rounded-full bg-primary-foreground/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
               Artisans
             </span>
@@ -310,7 +310,7 @@ export default async function HomePage() {
               interventions. Vous fixez vos prix et vos disponibilités.
               Inscription gratuite, vérification par notre équipe.
             </p>
-            <Button asChild size="lg" variant="secondary" className="mt-8">
+            <Button asChild size="lg" variant="secondary" className="mt-8 h-auto min-h-11 max-w-full whitespace-normal py-3 text-center">
               <Link href="/inscription/professionnel">Devenir artisan partenaire</Link>
             </Button>
           </div>
