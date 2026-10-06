@@ -43,7 +43,7 @@ export default async function MesServicesPage() {
       <h1 className="font-display text-2xl font-bold">Mes services</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         {managed
-          ? "Vos services de plomberie sont attribués automatiquement par Plan b. Aucun ajout manuel nécessaire."
+          ? "Vos services de plomberie sont attribués automatiquement par Plan B. Aucun ajout manuel nécessaire."
           : "Ajoutez les services que vous proposez, avec vos prix et durées."}
       </p>
 

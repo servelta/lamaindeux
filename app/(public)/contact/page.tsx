@@ -24,7 +24,7 @@ export default function ContactPage() {
         <div className="overflow-hidden rounded-lg">
           <Image
             src="/images/contact-banner.png"
-            alt="Une conseillère Plan b prête à vous aider"
+            alt="Une conseillère Plan B prête à vous aider"
             width={1600}
             height={800}
             priority

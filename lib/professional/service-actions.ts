@@ -23,7 +23,7 @@ async function hasManagedPlumbingServices(professionalId: string) {
 }
 
 const managedServicesError = {
-  error: "Les services de plomberie sont attribués automatiquement par Plan b.",
+  error: "Les services de plomberie sont attribués automatiquement par Plan B.",
 };
 
 export async function addProfessionalServiceAction(

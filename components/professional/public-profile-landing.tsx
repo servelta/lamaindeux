@@ -172,7 +172,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
               ) : null}
             </div>
             <p className="mt-4 text-xs text-white/70">
-              Réservation gratuite sur Plan b.
+              Réservation gratuite sur Plan B.
             </p>
           </div>
           <ProfilePhotoCarousel key={pro.slug} photos={photos} />
@@ -203,7 +203,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
           ) : null}
           {pro.completed_jobs_count > 0 ? (
             <p className="mt-4 text-xs font-medium text-primary">
-              {pro.completed_jobs_count} interventions réalisées sur Plan b
+              {pro.completed_jobs_count} interventions réalisées sur Plan B
             </p>
           ) : null}
         </div>
@@ -236,7 +236,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
               aria-hidden="true"
               className="h-4 w-4 shrink-0 text-verified"
             />
-            Profil vérifié par l’équipe Plan b.
+            Profil vérifié par l’équipe Plan B.
           </p>
         </div>
       </section>
@@ -332,7 +332,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
                 aria-hidden="true"
                 className="h-4 w-4 fill-accent text-accent"
               />
-              {formatRating(pro.rating_avg)}/5 · {pro.rating_count} avis Plan b
+              {formatRating(pro.rating_avg)}/5 · {pro.rating_count} avis Plan B
             </p>
           ) : null}
         </div>
@@ -376,7 +376,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
           </>
         ) : (
           <p className="mt-4 text-sm text-muted-foreground">
-            Pas encore d’avis sur Plan b.
+            Pas encore d’avis sur Plan B.
           </p>
         )}
       </section>
@@ -406,7 +406,7 @@ function ReviewCard({ review }: { review: Review }) {
         </blockquote>
       ) : null}
       <figcaption className="mt-3 text-xs text-muted-foreground">
-        Avis Plan b ·{" "}
+        Avis Plan B ·{" "}
         <time dateTime={review.created_at}>
           {new Date(review.created_at).toLocaleDateString("fr-FR", {
             month: "long",

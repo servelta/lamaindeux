@@ -32,7 +32,7 @@ function ConnexionForm() {
         <CardHeader>
           <CardTitle>Connexion</CardTitle>
           <CardDescription>
-            Accédez à votre compte Plan b.
+            Accédez à votre compte Plan B.
           </CardDescription>
         </CardHeader>
         <CardContent>

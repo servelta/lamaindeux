@@ -113,17 +113,17 @@ export function bookingAcceptedCustomerEmail(
 }
 
 export function customerWelcomeEmail(firstName: string) {
-  const subject = "Bienvenue sur Plan b";
+  const subject = "Bienvenue sur Plan B";
   const html = wrapEmail(`
     <p>Bonjour ${firstName},</p>
-    <p>Votre compte Plan b est créé. Vous pouvez dès maintenant rechercher un artisan vérifié près de chez vous et réserver en ligne, gratuitement.</p>
+    <p>Votre compte Plan B est créé. Vous pouvez dès maintenant rechercher un artisan vérifié près de chez vous et réserver en ligne, gratuitement.</p>
     ${button(SITE_URL, "Trouver un artisan")}
   `);
   return { subject, html };
 }
 
 export function professionalWelcomeEmail(firstName: string) {
-  const subject = "Bienvenue sur Plan b";
+  const subject = "Bienvenue sur Plan B";
   const html = wrapEmail(`
     <p>Bonjour ${firstName},</p>
     <p>Votre demande d'inscription a bien été reçue. Notre équipe va vérifier votre dossier avant d'activer votre compte. Vous pouvez dès maintenant compléter votre profil, vos services et votre calendrier.</p>

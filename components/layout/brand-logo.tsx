@@ -18,10 +18,10 @@ export function BrandLogo({
   imageClassName?: string;
 }) {
   return (
-    <Link href="/" className={`inline-flex items-center ${className}`} aria-label="Plan b — accueil">
+    <Link href="/" className={`inline-flex items-center ${className}`} aria-label="Plan B — accueil">
       <Image
         src="/images/Plan B logo.png"
-        alt="Plan b"
+        alt="Plan B"
         width={LOGO_W}
         height={LOGO_H}
         priority

@@ -197,7 +197,7 @@ export async function activateProfessionalAction(professionalId: string): Promis
         <p>Votre compte est maintenant actif. Votre profil est désormais visible dans les résultats de recherche et vous pouvez recevoir des réservations.</p>
         ${button(`${process.env.NEXT_PUBLIC_SITE_URL || ""}/dashboard`, "Accéder à mon tableau de bord")}
       `);
-      await sendEmail(contact.email, "Votre compte Plan b est actif", html);
+      await sendEmail(contact.email, "Votre compte Plan B est actif", html);
     }
     await createNotification({
       userId: professionalId,
