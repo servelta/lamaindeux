@@ -33,6 +33,14 @@ export const metadata: Metadata = {
   },
   description:
     "Recherchez un artisan vérifié près de chez vous, comparez les prix et réservez en ligne. Sans commission, sans frais pour le client.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-plan-b.png", type: "image/png", sizes: "64x64" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+  },
   openGraph: {
     siteName: "Plan B",
     locale: "fr_FR",
