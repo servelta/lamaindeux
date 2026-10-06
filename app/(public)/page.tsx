@@ -10,8 +10,6 @@ import {
   Wrench,
   Zap,
   Paintbrush,
-  Flame,
-  Hammer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SearchForm } from "@/components/search/search-form";
@@ -71,8 +69,6 @@ const TRADE_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   Wrench,
   Zap,
   Paintbrush,
-  Flame,
-  Hammer,
 };
 
 export default async function HomePage() {
@@ -83,8 +79,10 @@ export default async function HomePage() {
     getTradeStats(),
   ]);
 
-  const activeTrades = allTrades.filter((t) => t.active);
-  const comingSoonTrades = allTrades.filter((t) => !t.active);
+  const homeTrades = ["plombier", "electricien", "peintre"].flatMap((slug) =>
+    allTrades.filter((trade) => trade.slug_singular === slug),
+  );
+  const activeTrades = homeTrades.filter((t) => t.active);
   const primaryTrade = activeTrades[0];
 
   // Quick links under the search field: the most-requested services of the
@@ -101,8 +99,9 @@ export default async function HomePage() {
           is carried by the rounded block, so the page background shows
           down both sides and above it. */}
       <section className="container pb-12 pt-6 sm:pb-16 sm:pt-8">
-        <div className="relative grid gap-12 overflow-hidden rounded-3xl bg-primary px-6 py-16 text-primary-foreground shadow-sm sm:px-10 sm:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:px-14">
-          <div>
+        <div className="relative grid gap-8 overflow-hidden rounded-[2rem] bg-gradient-to-br from-primary via-primary to-[#163c47] px-6 py-8 text-primary-foreground shadow-lg shadow-primary/10 sm:gap-10 sm:px-10 sm:py-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:px-12 lg:py-14">
+          <div className="min-w-0">
+            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-2 text-xs font-medium tracking-wide"><BadgeCheck aria-hidden="true" className="h-4 w-4 text-secondary" />Votre maison entre de bonnes mains</p>
             <h1 className="max-w-2xl font-display text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
               Le bon artisan,
               <br />
@@ -114,7 +113,7 @@ export default async function HomePage() {
             </p>
 
             <div className="mt-8 max-w-3xl">
-              <SearchForm trades={allTrades} cities={cities} />
+              <SearchForm trades={homeTrades} cities={cities} />
             </div>
 
             {popularServices.length > 0 && primaryTrade && (
@@ -133,25 +132,26 @@ export default async function HomePage() {
             )}
           </div>
 
-          <div className="relative hidden aspect-[4/3] overflow-hidden rounded-2xl lg:block">
+          <div className="relative aspect-[3/2] overflow-hidden rounded-3xl bg-white/10 shadow-xl lg:aspect-[4/3]">
             <Image
-              src="/images/hero-worker.jpg"
-              alt="Artisan professionnel prêt à intervenir"
+              src="/images/new image on the landing page.png"
+              alt="Deux artisans prêts à vous accompagner dans votre maison"
               fill
               priority
-              className="object-cover"
-              sizes="(min-width: 1024px) 36vw, 0px"
+              className="object-cover object-center"
+              sizes="(min-width: 1024px) 40vw, (min-width: 640px) 80vw, 100vw"
             />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-5 pt-16"><p className="flex items-center gap-2 text-sm font-medium text-white"><ShieldCheck aria-hidden="true" className="h-5 w-5" />Des professionnels. Un vrai coup de main.</p></div>
           </div>
         </div>
       </section>
 
       {/* TRUST SECTION */}
-      <section className="border-b border-border/60 bg-card">
-        <div className="container grid grid-cols-2 gap-6 py-8 sm:grid-cols-4">
+      <section className="container pb-4">
+        <div className="grid grid-cols-2 gap-5 rounded-2xl border border-border/60 bg-card px-5 py-6 sm:grid-cols-4 sm:px-8">
           {TRUST_ITEMS.map(({ icon: Icon, label }) => (
             <div key={label} className="flex flex-col items-center gap-2 text-center sm:flex-row sm:text-left">
-              <Icon className="h-5 w-5 shrink-0 text-accent" />
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary/70"><Icon aria-hidden="true" className="h-5 w-5 text-primary" /></span>
               <span className="text-sm font-medium">{label}</span>
             </div>
           ))}
@@ -162,15 +162,15 @@ export default async function HomePage() {
           its own live numbers; a trade with no artisans yet says so rather
           than printing a zero, and inactive trades keep the honest
           "Bientôt disponible" treatment they had before. */}
-      <section className="container py-20">
+      <section id="metiers" className="container py-12 sm:py-16">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-              Parcourir par métier
+              Un besoin, le bon métier.
             </h2>
             <p className="mt-3 max-w-xl text-muted-foreground">
-              La plateforme s&apos;ouvre progressivement à de nouveaux métiers
-              du bâtiment et de la maison.
+              Plomberie, électricité, peinture : trouvez le bon professionnel
+              pour prendre soin de votre maison.
             </p>
           </div>
           <Link
@@ -182,8 +182,8 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {activeTrades.map((trade) => {
+        <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+          {homeTrades.map((trade) => {
             const Icon = (trade.icon && TRADE_ICONS[trade.icon]) || Wrench;
             const photo = TRADE_PHOTOS[trade.slug_singular];
             const stats = tradeStats[trade.id];
@@ -191,25 +191,25 @@ export default async function HomePage() {
             const tradeLower = trade.name_singular.toLowerCase();
 
             return (
-              <Link
+              <article
                 key={trade.slug_plural}
-                href={`/${trade.slug_plural}`}
-                className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
+                className="group relative flex flex-col overflow-hidden rounded-3xl border border-border/70 bg-card shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 focus-within:ring-2 focus-within:ring-primary motion-safe:hover:-translate-y-1"
               >
-                <div className="relative h-40 w-full overflow-hidden bg-secondary">
+                <div className="relative aspect-[16/10] w-full overflow-hidden bg-secondary">
                   {photo ? (
                     <Image
                       src={photo}
                       alt={trade.name}
                       fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                      sizes="(min-width: 1024px) 380px, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-[1.04]"
+                      sizes="(min-width: 768px) 33vw, 100vw"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
                       <Icon className="h-8 w-8 text-primary" />
                     </div>
                   )}
+                  <span className="absolute bottom-4 left-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white/95 text-primary shadow-sm"><Icon aria-hidden="true" className="h-5 w-5" /></span>
                 </div>
 
                 <div className="flex flex-1 flex-col p-5">
@@ -217,7 +217,7 @@ export default async function HomePage() {
                     <h3 className="font-display text-lg font-semibold group-hover:text-primary">
                       {trade.name}
                     </h3>
-                    {stats?.ratingAvg != null && (
+                    {trade.active && stats?.ratingAvg != null && (
                       <span className="flex shrink-0 items-center gap-1 text-sm">
                         <Star className="h-4 w-4 fill-accent text-accent" />
                         <span className="font-mono-data font-medium">
@@ -229,65 +229,47 @@ export default async function HomePage() {
                   </div>
 
                   <p className="mt-2 text-sm text-muted-foreground">
-                    {count > 0
+                    {trade.active && count > 0
                       ? `${count} ${count > 1 ? pluralise(tradeLower) : tradeLower} vérifié${count > 1 ? "s" : ""}`
-                      : "Bientôt des artisans dans votre ville"}
+                      : trade.active ? "Bientôt des artisans dans votre ville" : "Ce métier arrive bientôt sur Plan B."}
                   </p>
 
-                  <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-                    Voir les artisans
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                  </span>
+                  {trade.active ? <><Link href={`/${trade.slug_plural}`} className="absolute inset-0 rounded-3xl focus:outline-none"><span className="sr-only">Voir les artisans en {trade.name.toLowerCase()}</span></Link><span className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-primary">Voir les artisans<ArrowRight aria-hidden="true" className="h-4 w-4 motion-safe:transition-transform motion-safe:group-hover:translate-x-1" /></span></> : <span className="mt-5 self-start rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">Bientôt disponible</span>}
                 </div>
-              </Link>
+              </article>
             );
           })}
 
-          {comingSoonTrades.map((trade) => {
-            const Icon = (trade.icon && TRADE_ICONS[trade.icon]) || Wrench;
-            return (
-              <div
-                key={trade.slug_plural}
-                className="flex flex-col items-start justify-center gap-3 rounded-xl border border-dashed border-border bg-card/40 p-6 text-muted-foreground"
-              >
-                <Icon className="h-7 w-7" />
-                <h3 className="font-display text-lg font-semibold">{trade.name}</h3>
-                <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
-                  Bientôt disponible
-                </span>
-              </div>
-            );
-          })}
         </div>
       </section>
 
       {/* HOW IT WORKS */}
       <section className="border-y border-border/60 bg-card">
-        <div className="container py-20">
+        <div className="container py-12 sm:py-16">
           <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
             Comment ça marche
           </h2>
-          <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-4 sm:gap-6">
+          <div className="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
             {HOW_IT_WORKS.map((step, i) => (
-              <div key={step.title} className="flex sm:flex-col sm:items-start">
-                <div className="mb-3 w-full overflow-hidden rounded-xl border border-border bg-background shadow-sm sm:mb-4">
-                  <div className="relative aspect-square w-full">
+              <div key={step.title} className="min-w-0 rounded-2xl bg-background p-3 sm:p-4">
+                <div className="mb-4 w-full overflow-hidden rounded-xl border border-border/60 bg-background">
+                  <div className="relative aspect-[4/3] w-full">
                     <Image
                       src={step.image}
                       alt={step.alt}
                       fill
                       className="object-cover"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 25vw, 20vw"
+                      sizes="(min-width: 1024px) 25vw, 50vw"
                     />
                   </div>
                 </div>
-                <div className="flex items-center gap-4 sm:block">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="font-mono-data flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
                     {i + 1}
                   </span>
-                  <h3 className="font-display text-base font-semibold sm:mt-3">{step.title}</h3>
+                  <h3 className="font-display text-base font-semibold">{step.title}</h3>
                 </div>
-                <p className="mt-1 text-sm text-muted-foreground sm:mt-2">{step.body}</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
               </div>
             ))}
           </div>
@@ -297,7 +279,7 @@ export default async function HomePage() {
       {/* TWO-SIDED PANEL — the marketplace has two audiences and the page
           should address both once, side by side, rather than stacking two
           full-width CTAs that repeat each other. */}
-      <section className="container py-20">
+      <section className="container py-12 sm:py-16">
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="flex flex-col items-start rounded-2xl border border-border bg-card p-8 shadow-sm sm:p-10">
             <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold uppercase tracking-wide text-secondary-foreground">
@@ -342,8 +324,8 @@ export default async function HomePage() {
             <h2 className="font-display text-2xl font-semibold">Qui sommes-nous ?</h2>
             <p className="mt-4 text-muted-foreground">
               Plan B est la plateforme qui connecte particuliers et artisans
-              vérifiés partout en France — plombiers, électriciens, et bientôt
-              bien d&apos;autres métiers. Recherchez, comparez et réservez en
+              vérifiés partout en France — plomberie, électricité et peinture.
+              Recherchez, comparez et réservez en
               ligne, gratuitement, sans commission sur l&apos;intervention.
             </p>
           </div>
