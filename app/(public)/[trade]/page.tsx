@@ -141,7 +141,7 @@ export default async function TradePage({ params }: Props) {
               : `Notre ${tradeLower} vérifié`
             : `Nos ${tradePlural}`}
         </h2>
-        <div className="mt-4 space-y-4">
+        <div className="mt-4 grid gap-5 md:grid-cols-2 xl:grid-cols-3 [&>div]:col-span-full">
           {professionals.length > 0 ? (
             professionals.map((p) => <ProfessionalCard key={p.profile_id} professional={p} />)
           ) : (

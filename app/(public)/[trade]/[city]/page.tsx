@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ResultsHeader } from "@/components/search/results-header";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCityBySlug, getActiveServices, searchProfessionals, getTradeBySlugPlural } from "@/lib/queries/search";
@@ -73,14 +74,7 @@ export default async function CityPage({ params }: Props) {
       <JsonLd data={breadcrumbs} />
       <JsonLd data={faqSchema(faqItems)} />
 
-      <h1 className="font-display text-3xl font-bold">
-        {trade.name_singular} {city.name}
-      </h1>
-      <p className="mt-2 max-w-2xl text-muted-foreground">
-        {professionals.length > 0
-          ? `${professionals.length} ${tradeLower}${professionals.length > 1 ? "s" : ""} vérifié${professionals.length > 1 ? "s" : ""} disponible${professionals.length > 1 ? "s" : ""} à ${city.name}.`
-          : `Recherchez un ${tradeLower} vérifié à ${city.name}.`}
-      </p>
+      <ResultsHeader title={`${trade.name_singular} à ${city.name}`} cityName={city.name} description="Trouvez votre artisan de confiance. Comparez les profils, les avis et les prestations, puis choisissez le professionnel qui vous convient." />
 
       {/* Service filter chips — internal links for SEO + quick refinement */}
       <div className="mt-6 flex flex-wrap gap-2">
@@ -95,7 +89,8 @@ export default async function CityPage({ params }: Props) {
         ))}
       </div>
 
-      <div className="mt-8 space-y-4">
+      <h2 className="mt-10 font-display text-xl font-semibold">{professionals.length} artisan{professionals.length > 1 ? "s" : ""} pour votre recherche</h2>
+      <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3 [&>div]:col-span-full">
         {professionals.length > 0 ? (
           professionals.map((p) => <ProfessionalCard key={p.profile_id} professional={p} />)
         ) : (

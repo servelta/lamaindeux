@@ -7,7 +7,7 @@ type Trade = { name: string; slug_plural: string; active: boolean };
 type City = { name: string; slug: string };
 
 const SELECT_CLASS =
-  "h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "h-12 w-full rounded-xl border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 /**
  * Filters for /recherche. State lives in the URL rather than in component
@@ -34,7 +34,7 @@ export function SearchFilters({ trades, cities }: { trades: Trade[]; cities: Cit
   const comingSoonTrades = trades.filter((t) => !t.active);
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
+    <div className="rounded-2xl border border-border bg-white p-5 shadow-sm sm:p-6">
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="filter-trade" className="mb-1.5 block text-sm font-medium">

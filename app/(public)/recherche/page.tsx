@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { ResultsHeader } from "@/components/search/results-header";
 import { Suspense } from "react";
 import { SearchFilters } from "@/components/search/search-filters";
 import { ProfessionalCard } from "@/components/search/professional-card";
@@ -60,25 +60,7 @@ export default async function SearchPage({ searchParams }: Props) {
 
   return (
     <div className="container py-12">
-      <div className="mb-8 overflow-hidden rounded-lg">
-        <Image
-          src="/images/recherche-banner.png"
-          alt="Nos artisans vérifiés : électricien, plombier, peintre et entrepreneur général"
-          width={1600}
-          height={800}
-          priority
-          className="h-48 w-full object-contain sm:h-64 md:h-80"
-        />
-      </div>
-
-      <h1 className="font-display text-3xl font-bold tracking-tight">
-        {selectedTrade ? selectedTrade.name : "Tous nos artisans"}
-        {selectedCity ? ` à ${selectedCity.name}` : ""}
-      </h1>
-      <p className="mt-2 max-w-2xl text-muted-foreground">
-        Filtrez par ville et par métier, comparez les avis et les prix
-        affichés, puis réservez en ligne.
-      </p>
+      <ResultsHeader title={`${selectedTrade ? selectedTrade.name : "Trouvez votre artisan"}${selectedCity ? ` à ${selectedCity.name}` : ""}`} cityName={selectedCity?.name} description="Des profils vérifiés, des avis et des prix clairs. Choisissez votre ville et votre métier, puis trouvez le professionnel qui vous convient." />
 
       <div className="mt-8 max-w-3xl">
         {/* useSearchParams needs a Suspense boundary, or the whole route
@@ -95,7 +77,7 @@ export default async function SearchPage({ searchParams }: Props) {
           {count > 0 ? `${count} ${noun} vérifié${many ? "s" : ""}` : "Aucun résultat"}
         </h2>
 
-        <div className="mt-4 space-y-4">
+        <div className="mt-4 grid gap-5 md:grid-cols-2 xl:grid-cols-3 [&>div]:col-span-full">
           {count > 0 ? (
             professionals.map((p) => <ProfessionalCard key={p.profile_id} professional={p} />)
           ) : selectedCity ? (

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ResultsHeader } from "@/components/search/results-header";
 import { notFound } from "next/navigation";
 import { getCityBySlug, getServiceBySlug, searchProfessionals, getTradeBySlugPlural } from "@/lib/queries/search";
 import { ProfessionalCard } from "@/components/search/professional-card";
@@ -91,14 +92,9 @@ export default async function CityServicePage({ params }: Props) {
       <JsonLd data={breadcrumbs} />
       <JsonLd data={faqSchema(faqItems)} />
 
-      <h1 className="font-display text-3xl font-bold">
-        {service.name} à {city.name}
-      </h1>
-      <p className="mt-2 max-w-2xl text-muted-foreground">
-        {service.description ?? `Trouvez un ${tradeLower} vérifié pour un service de ${service.name.toLowerCase()} à ${city.name}.`}
-      </p>
+      <ResultsHeader title={`${service.name} à ${city.name}`} cityName={city.name} description={service.description ?? "Comparez les artisans vérifiés et leurs prix pour cette prestation. Consultez leur profil et réservez en quelques étapes."} />
 
-      <div className="mt-8 space-y-4">
+      <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3 [&>div]:col-span-full">
         {professionals.length > 0 ? (
           professionals.map((p) => <ProfessionalCard key={`${p.profile_id}-${p.professional_service_id}`} professional={p} />)
         ) : (
