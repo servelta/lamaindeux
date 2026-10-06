@@ -9,6 +9,7 @@ import {
   professionalSignUpSchema,
 } from "@/lib/validation/auth";
 import { homeForRole } from "@/lib/auth/roles";
+import { safeReturnTo } from "@/lib/auth/safe-return-to";
 import { sendEmail } from "@/lib/email/send";
 import {
   customerWelcomeEmail,
@@ -67,7 +68,7 @@ export async function loginAction(
     .eq("id", data.user.id)
     .single();
 
-  redirect(homeForRole(profile?.role ?? "customer"));
+  redirect(safeReturnTo(formData.get("returnTo")) ?? homeForRole(profile?.role ?? "customer"));
 }
 
 export async function logoutAction() {

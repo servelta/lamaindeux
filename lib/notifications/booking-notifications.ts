@@ -1,5 +1,6 @@
 import { sendEmail } from "@/lib/email/send";
 import { createAdminClient } from "@/lib/supabase/server";
+import { customerBookingLink } from "@/lib/booking/customer-link";
 import { sendSms, toE164France } from "@/lib/sms/send";
 import { createNotification } from "@/lib/notifications/create";
 import { getProfessionalContact } from "@/lib/notifications/get-professional-contact";
@@ -33,7 +34,7 @@ type BookingLike = {
 };
 
 /** Called right after a booking is created. Notifies the professional (always) and confirms to the customer. */
-export async function notifyBookingCreated(booking: BookingLike, serviceName: string) {
+export async function notifyBookingCreated(booking: BookingLike, serviceName: string, options: { isGuest?: boolean; customerBookingUrl?: string } = {}) {
   const professional = await getProfessionalContact(booking.professional_id);
   const date = formatDateFr(booking.scheduled_date);
   const time = formatTimeFr(booking.scheduled_time);
@@ -59,6 +60,7 @@ export async function notifyBookingCreated(booking: BookingLike, serviceName: st
     photoCount: booking.photo_urls?.length ?? 0,
     priceCents: booking.price_cents,
     bookingUrl,
+    customerBookingUrl: options.customerBookingUrl,
     date,
     time,
     addressLine: booking.address_line,
@@ -98,7 +100,7 @@ export async function notifyBookingCreated(booking: BookingLike, serviceName: st
   if (!booking.is_quote_request) {
     await sendSms(toE164France(booking.contact_phone), bookingConfirmedSmsBody(booking.booking_number));
   }
-  await createNotification({
+  if (!options.isGuest) await createNotification({
     userId: booking.customer_id,
     type: "booking_confirmed",
     title: booking.is_quote_request ? "Demande de devis envoyée" : "Réservation confirmée",
@@ -135,7 +137,7 @@ export async function notifyBookingCancelled(
   } else {
     // Notify the customer
     const { subject, html } = bookingCancelledEmail(
-      { bookingNumber: booking.booking_number, serviceName, cancelledBy },
+      { bookingNumber: booking.booking_number, serviceName, cancelledBy, customerBookingUrl: await customerBookingLink(booking) },
       true
     );
     await sendEmail(booking.contact_email, subject, html);
@@ -158,6 +160,7 @@ export async function notifyBookingAccepted(booking: BookingLike, serviceName: s
     professionalCompanyName: professional.companyName,
     date: formatDateFr(booking.scheduled_date),
     time: formatTimeFr(booking.scheduled_time),
+    customerBookingUrl: await customerBookingLink(booking),
   });
   await sendEmail(booking.contact_email, subject, html);
   await createNotification({

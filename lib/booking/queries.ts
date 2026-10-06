@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { verifyReceiptToken } from "@/lib/booking/receipt-token";
 
 const BOOKING_SELECT = `
   id, booking_number, status, scheduled_date, scheduled_time,
@@ -59,4 +60,13 @@ export async function getBookingByNumber(bookingNumber: string) {
     .eq("booking_number", bookingNumber)
     .single();
   return data ? (await attachPublicProfessionals([data]))[0] : data;
+}
+
+/** Public receipts require a valid signed capability for exactly this booking. */
+export async function getGuestBookingByNumber(bookingNumber: string, token: string | undefined) {
+  const receipt = verifyReceiptToken(token, bookingNumber, process.env.SUPABASE_SERVICE_ROLE_KEY ?? "");
+  if (!receipt) return null;
+  const { data } = await createAdminClient().from("bookings").select(BOOKING_SELECT)
+    .eq("id", receipt.bookingId).eq("booking_number", bookingNumber).single();
+  return data ? (await attachPublicProfessionals([data]))[0] : null;
 }

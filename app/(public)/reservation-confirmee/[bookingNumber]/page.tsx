@@ -1,17 +1,22 @@
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
-import { getBookingByNumber } from "@/lib/booking/queries";
+import { getBookingByNumber, getGuestBookingByNumber } from "@/lib/booking/queries";
+import { receiptCookieName } from "@/lib/booking/receipt-token";
 import { Button } from "@/components/ui/button";
 import { BookingStatusBadge } from "@/components/booking/status-badge";
 
-type Props = { params: Promise<{ bookingNumber: string }> };
+type Props = { params: Promise<{ bookingNumber: string }>; searchParams: Promise<{ receipt?: string }> };
 
-export const metadata = { title: "Réservation confirmée" };
+export const metadata = { title: "Réservation confirmée", robots: { index: false, follow: false } };
 
-export default async function ReservationConfirmeePage({ params }: Props) {
+export default async function ReservationConfirmeePage({ params, searchParams }: Props) {
   const { bookingNumber } = await params;
-  const booking = await getBookingByNumber(bookingNumber);
+  const { receipt } = await searchParams;
+  const ownBooking = await getBookingByNumber(bookingNumber);
+  const guestBooking = !ownBooking ? await getGuestBookingByNumber(bookingNumber, receipt ?? (await cookies()).get(receiptCookieName(bookingNumber))?.value) : null;
+  const booking = ownBooking ?? guestBooking;
   if (!booking) notFound();
 
   const professional = Array.isArray(booking.professionals) ? booking.professionals[0] : booking.professionals;
@@ -68,12 +73,11 @@ export default async function ReservationConfirmeePage({ params }: Props) {
       </div>
 
       <p className="mt-6 text-sm text-muted-foreground">
-        Retrouvez votre demande et ses détails à tout moment dans votre espace
-        client. L’artisan peut vous recontacter grâce aux coordonnées renseignées.
+        {guestBooking ? "Votre demande est enregistrée. Conservez votre référence et le lien privé de confirmation envoyé par e-mail. L’artisan vous recontactera grâce aux coordonnées renseignées." : "Retrouvez votre demande et ses détails à tout moment dans votre espace client. L’artisan peut vous recontacter grâce aux coordonnées renseignées."}
       </p>
 
       <Button asChild className="mt-6">
-        <Link href="/mes-reservations">Voir mes réservations</Link>
+        <Link href={guestBooking ? "/" : "/mes-reservations"}>{guestBooking ? "Retour à l’accueil" : "Voir mes réservations"}</Link>
       </Button>
     </div>
   );

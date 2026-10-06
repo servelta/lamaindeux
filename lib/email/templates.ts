@@ -15,6 +15,7 @@ type BookingEmailData = {
   photoCount?: number;
   priceCents?: number | null;
   bookingUrl?: string;
+  customerBookingUrl?: string;
   date: string; // already formatted, e.g. "15 août 2026"
   time: string; // "14:00"
   addressLine: string;
@@ -46,7 +47,7 @@ export function bookingConfirmationCustomerEmail(data: BookingEmailData) {
         : "Votre réservation est confirmée. Voici le récapitulatif :"
     }</p>
     ${detailTable(rows)}
-    ${button(`${SITE_URL}/mes-reservations`, "Voir ma réservation")}
+    ${button(data.customerBookingUrl ?? `${SITE_URL}/mes-reservations`, "Voir ma réservation")}
   `);
 
   return { subject, html };
@@ -82,7 +83,7 @@ export function newBookingPlumberEmail(data: BookingEmailData) {
 }
 
 export function bookingCancelledEmail(
-  data: Pick<BookingEmailData, "bookingNumber" | "serviceName"> & { cancelledBy: "customer" | "professional" },
+  data: Pick<BookingEmailData, "bookingNumber" | "serviceName" | "customerBookingUrl"> & { cancelledBy: "customer" | "professional" },
   recipientIsCustomer: boolean
 ) {
   const subject = `Réservation annulée — ${data.bookingNumber}`;
@@ -94,20 +95,20 @@ export function bookingCancelledEmail(
       La réservation ${data.bookingNumber} (${data.serviceName}) a été annulée
       par ${recipientIsCustomer && data.cancelledBy === "customer" ? "vous-même" : who}.
     </p>
-    ${button(`${SITE_URL}/${recipientIsCustomer ? "mes-reservations" : "reservations"}`, "Voir mes réservations")}
+    ${button(recipientIsCustomer && data.customerBookingUrl ? data.customerBookingUrl : `${SITE_URL}/${recipientIsCustomer ? "mes-reservations" : "reservations"}`, "Voir mes réservations")}
   `);
 
   return { subject, html };
 }
 
 export function bookingAcceptedCustomerEmail(
-  data: Pick<BookingEmailData, "bookingNumber" | "serviceName" | "professionalCompanyName" | "date" | "time">
+  data: Pick<BookingEmailData, "bookingNumber" | "serviceName" | "professionalCompanyName" | "date" | "time" | "customerBookingUrl">
 ) {
   const subject = `Votre réservation a été acceptée — ${data.bookingNumber}`;
   const html = wrapEmail(`
     <p>Bonjour,</p>
     <p>${data.professionalCompanyName} a accepté votre réservation pour "${data.serviceName}" le ${data.date} à ${data.time}.</p>
-    ${button(`${SITE_URL}/mes-reservations`, "Voir ma réservation")}
+    ${button(data.customerBookingUrl ?? `${SITE_URL}/mes-reservations`, "Voir ma réservation")}
   `);
   return { subject, html };
 }
@@ -133,7 +134,7 @@ export function professionalWelcomeEmail(firstName: string) {
 }
 
 export function bookingReminderEmail(
-  data: Pick<BookingEmailData, "bookingNumber" | "serviceName" | "date" | "time" | "addressLine" | "postcode" | "city">,
+  data: Pick<BookingEmailData, "bookingNumber" | "serviceName" | "date" | "time" | "addressLine" | "postcode" | "city" | "customerBookingUrl">,
   recipientIsCustomer: boolean
 ) {
   const subject = `Rappel — rendez-vous demain (${data.bookingNumber})`;
@@ -146,7 +147,7 @@ export function bookingReminderEmail(
         detailRow("Heure", data.time) +
         detailRow("Adresse", `${data.addressLine}, ${data.postcode} ${data.city}`)
     )}
-    ${button(`${SITE_URL}/${recipientIsCustomer ? "mes-reservations" : "reservations"}`, "Voir les détails")}
+    ${button(recipientIsCustomer && data.customerBookingUrl ? data.customerBookingUrl : `${SITE_URL}/${recipientIsCustomer ? "mes-reservations" : "reservations"}`, "Voir les détails")}
   `);
   return { subject, html };
 }

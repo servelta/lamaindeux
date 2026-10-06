@@ -57,10 +57,10 @@ const HOW_IT_WORKS = [
 ];
 
 const TRUST_ITEMS = [
-  { icon: BadgeCheck, label: "Des artisans vérifiés" },
-  { icon: MapPin, label: "Réservation partout en France" },
-  { icon: CalendarCheck, label: "Réservation en ligne" },
-  { icon: ShieldCheck, label: "Prix affichés, sans commission" },
+  { icon: BadgeCheck, label: "Des artisans vérifiés", detail: "Des profils contrôlés par notre équipe.", tint: "bg-primary/10" },
+  { icon: MapPin, label: "Réservation partout en France", detail: "Trouvez un professionnel près de chez vous.", tint: "bg-secondary" },
+  { icon: CalendarCheck, label: "Réservation en ligne", detail: "Avec ou sans connexion, vous choisissez.", tint: "bg-primary/10" },
+  { icon: ShieldCheck, label: "Prix affichés, sans commission", detail: "Vous payez directement votre artisan.", tint: "bg-secondary" },
 ];
 
 // Maps each trade's icon name (stored as plain text in the trades table)
@@ -147,12 +147,13 @@ export default async function HomePage() {
       </section>
 
       {/* TRUST SECTION */}
-      <section className="container pb-4">
-        <div className="grid grid-cols-2 gap-5 rounded-2xl border border-border/60 bg-card px-5 py-6 sm:grid-cols-4 sm:px-8">
-          {TRUST_ITEMS.map(({ icon: Icon, label }) => (
-            <div key={label} className="flex flex-col items-center gap-2 text-center sm:flex-row sm:text-left">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary/70"><Icon aria-hidden="true" className="h-5 w-5 text-primary" /></span>
-              <span className="text-sm font-medium">{label}</span>
+      <section aria-label="Les avantages Plan B" className="container pb-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+          {TRUST_ITEMS.map(({ icon: Icon, label, detail, tint }) => (
+            <div key={label} className="group relative min-w-0 overflow-hidden rounded-2xl border border-border/60 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5">
+              <div className="flex items-center justify-between gap-2"><span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-primary ${tint}`}><Icon aria-hidden="true" className="h-5 w-5" /></span><span aria-hidden="true" className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/5 text-primary"><BadgeCheck className="h-3.5 w-3.5" /></span></div>
+              <h2 className="mt-4 text-sm font-semibold leading-snug text-primary sm:text-base">{label}</h2>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground sm:text-sm">{detail}</p>
             </div>
           ))}
         </div>

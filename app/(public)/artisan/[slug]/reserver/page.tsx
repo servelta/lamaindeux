@@ -1,7 +1,8 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { BookingForm } from "@/components/booking/booking-form";
+import { BookingAccessChoice } from "@/components/booking/booking-access-choice";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -22,10 +23,6 @@ export default async function ReserverPage({ params, searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect(`/connexion?next=${encodeURIComponent(returnTo)}`);
-  }
-
   const [{ data: professional }, { data: professionalService }, { data: profile }] = await Promise.all([
     supabase.from("public_professional_profiles").select("profile_id, company_name, slug").eq("slug", slug).single(),
     supabase
@@ -33,14 +30,14 @@ export default async function ReserverPage({ params, searchParams }: Props) {
       .select("id, professional_id, price_cents, duration_minutes, pricing_type, active, services(name)")
       .eq("id", professionalServiceId)
       .single(),
-    supabase.from("profiles").select("first_name, last_name, phone, role").eq("id", user.id).single(),
+    user ? supabase.from("profiles").select("first_name, last_name, phone, role").eq("id", user.id).single() : Promise.resolve({ data: null }),
   ]);
 
   if (!professional?.profile_id || !professional.company_name || !professional.slug || !professionalService || !professionalService.active || professionalService.professional_id !== professional.profile_id) {
     notFound();
   }
 
-  if (profile?.role !== "customer") {
+  if (user && profile?.role !== "customer") {
     return (
       <div className="container max-w-lg py-16 text-center">
         <p className="text-sm text-muted-foreground">
@@ -52,6 +49,18 @@ export default async function ReserverPage({ params, searchParams }: Props) {
   }
 
   const service = Array.isArray(professionalService.services) ? professionalService.services[0] : professionalService.services;
+  const bookingForm = <BookingForm
+    professionalId={professional.profile_id}
+    professionalServiceId={professionalService.id}
+    serviceName={service?.name ?? ""}
+    companyName={professional.company_name}
+    priceCents={professionalService.price_cents}
+    durationMinutes={professionalService.duration_minutes}
+    isQuoteRequest={professionalService.pricing_type === "quote"}
+    returnTo={returnTo}
+    isGuest={!user}
+    prefill={{ fullName: [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || undefined, phone: profile?.phone ?? undefined, email: user?.email ?? undefined }}
+  />;
 
   return (
     <div className="bg-secondary/25">
@@ -66,21 +75,7 @@ export default async function ReserverPage({ params, searchParams }: Props) {
       <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">Quelques informations suffisent pour transmettre votre demande à {professional.company_name}.</p>
 
       <div className="mt-8">
-        <BookingForm
-          professionalId={professional.profile_id}
-          professionalServiceId={professionalService.id}
-          serviceName={service?.name ?? ""}
-          companyName={professional.company_name}
-          priceCents={professionalService.price_cents}
-          durationMinutes={professionalService.duration_minutes}
-          isQuoteRequest={professionalService.pricing_type === "quote"}
-          returnTo={returnTo}
-          prefill={{
-            fullName: [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || undefined,
-            phone: profile?.phone ?? undefined,
-            email: user.email ?? undefined,
-          }}
-        />
+        {user ? bookingForm : <BookingAccessChoice returnTo={returnTo}>{bookingForm}</BookingAccessChoice>}
       </div>
     </div>
     </div>

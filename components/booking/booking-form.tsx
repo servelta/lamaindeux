@@ -21,6 +21,7 @@ type BookingFormProps = {
   durationMinutes: number | null;
   isQuoteRequest: boolean;
   returnTo: string;
+  isGuest?: boolean;
   prefill?: {
     fullName?: string;
     email?: string;
@@ -41,6 +42,7 @@ export function BookingForm({
   durationMinutes,
   isQuoteRequest,
   returnTo,
+  isGuest = false,
   prefill,
 }: BookingFormProps) {
   const [state, formAction] = useActionState<ActionResult, FormData>(createBookingAction, undefined);
@@ -70,6 +72,8 @@ export function BookingForm({
     <form action={formAction} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
       <input type="hidden" name="professionalServiceId" value={professionalServiceId} />
       <input type="hidden" name="returnTo" value={returnTo} />
+      <input type="hidden" name="bookingMode" value={isGuest ? "guest" : "account"} />
+      <div className="hidden" aria-hidden="true"><label htmlFor="booking-website">Site web</label><input id="booking-website" name="website" tabIndex={-1} autoComplete="off" /></div>
 
       <div className="min-w-0 space-y-5 [&_input:not([type=hidden]):not([type=file])]:h-12 [&_input]:min-w-0 [&_input]:rounded-xl [&_input]:bg-background/60 [&_input]:text-base [&_textarea]:rounded-xl [&_textarea]:text-base">
       <section className="rounded-3xl border border-border/70 bg-white p-5 shadow-sm sm:p-7">

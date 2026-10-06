@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 
 const SLOT_STEP_MINUTES = 30;
 
@@ -58,18 +58,23 @@ export async function getAvailableSlots(
 
   if (!windows || windows.length === 0) return [];
 
-  const { data: existingBookings } = await supabase
+  // Availability is public, but the booking table is private. Read only start
+  // times server-side so guests never receive occupied slots or other clients' data.
+  const { data: existingBookings, error: bookingsError } = await createAdminClient()
     .from("bookings")
     .select("scheduled_time")
     .eq("professional_id", professionalId)
     .eq("scheduled_date", dateStr)
     .not("status", "in", "(CANCELLED_BY_CUSTOMER,CANCELLED_BY_PROFESSIONAL,NO_SHOW)");
+  if (bookingsError) throw new Error("Booking availability unavailable.");
 
   const takenTimes = new Set((existingBookings ?? []).map((b) => b.scheduled_time.slice(0, 5)));
 
   const now = new Date();
-  const isToday = dateStr === now.toISOString().slice(0, 10);
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const parisDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+  const parisTime = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Paris", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(now);
+  const isToday = dateStr === parisDate;
+  const nowMinutes = timeToMinutes(parisTime);
 
   const slots: string[] = [];
   for (const w of windows) {

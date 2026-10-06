@@ -49,6 +49,7 @@ function ConnexionForm() {
           )}
 
           <form action={formAction} className="space-y-4">
+            <input type="hidden" name="returnTo" value={searchParams.get("next") ?? ""} />
             <div className="space-y-2">
               <Label htmlFor="email">Adresse e-mail</Label>
               <Input id="email" name="email" type="email" required autoComplete="email" />

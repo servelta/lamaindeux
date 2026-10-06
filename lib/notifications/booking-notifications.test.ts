@@ -30,4 +30,11 @@ describe("created booking notification pipeline", () => {
     expect(mocks.sendSms).toHaveBeenCalled();
     log.mockRestore();
   });
+  it("sends a private guest receipt instead of directing guests to login", async () => {
+    const customerBookingUrl = "https://example.com/reservation-confirmee/PB-456?receipt=signed-token";
+    await notifyBookingCreated(booking, "Fuite", { isGuest: true, customerBookingUrl });
+    expect(mocks.sendEmail).toHaveBeenCalledWith(booking.contact_email, expect.any(String), expect.stringContaining(customerBookingUrl));
+    expect(mocks.createNotification).not.toHaveBeenCalledWith(expect.objectContaining({ userId: booking.customer_id }));
+    expect(mocks.sendEmail).toHaveBeenCalledWith("artisan@example.com", expect.any(String), expect.stringContaining(booking.description));
+  });
 });

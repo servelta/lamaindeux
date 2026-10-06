@@ -8,6 +8,7 @@ import { formatDateFr, formatTimeFr } from "@/lib/utils/date-fr";
 import { getProfessionalContact } from "@/lib/notifications/get-professional-contact";
 import { createNotification } from "@/lib/notifications/create";
 import { provisionPlumbingServices } from "@/lib/professional/provision-plumbing-services";
+import { customerBookingLink } from "@/lib/booking/customer-link";
 
 /**
  * Sends a reminder for every non-cancelled booking scheduled tomorrow that
@@ -72,6 +73,7 @@ export async function GET(request: Request) {
       addressLine: booking.address_line,
       postcode: booking.postcode,
       city: booking.city,
+      customerBookingUrl: await customerBookingLink(booking),
     };
 
     // Customer

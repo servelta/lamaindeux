@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "tsx scripts/sync-plumbing-services.ts && tsx scripts/check-notification-configuration.ts",
+    "prebuild": "tsx scripts/sync-plumbing-services.ts && tsx scripts/check-notification-configuration.ts && tsx scripts/verify-guest-booking.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
