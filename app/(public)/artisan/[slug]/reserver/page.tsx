@@ -30,13 +30,13 @@ export default async function ReserverPage({ params, searchParams }: Props) {
     supabase.from("public_professional_profiles").select("profile_id, company_name, slug").eq("slug", slug).single(),
     supabase
       .from("professional_services")
-      .select("id, price_cents, duration_minutes, pricing_type, active, services(name)")
+      .select("id, professional_id, price_cents, duration_minutes, pricing_type, active, services(name)")
       .eq("id", professionalServiceId)
       .single(),
     supabase.from("profiles").select("first_name, last_name, phone, role").eq("id", user.id).single(),
   ]);
 
-  if (!professional?.profile_id || !professional.company_name || !professional.slug || !professionalService || !professionalService.active) {
+  if (!professional?.profile_id || !professional.company_name || !professional.slug || !professionalService || !professionalService.active || professionalService.professional_id !== professional.profile_id) {
     notFound();
   }
 
@@ -54,19 +54,23 @@ export default async function ReserverPage({ params, searchParams }: Props) {
   const service = Array.isArray(professionalService.services) ? professionalService.services[0] : professionalService.services;
 
   return (
-    <div className="container max-w-xl py-12">
+    <div className="bg-secondary/25">
+    <div className="container max-w-6xl py-8 sm:py-12">
       <p className="text-sm text-muted-foreground">
         <Link href={`/artisan/${professional.slug}`} className="hover:text-primary">
-          {professional.company_name}
+          ← Retour à {professional.company_name}
         </Link>
       </p>
-      <h1 className="mt-1 font-display text-2xl font-bold">Réserver — {service?.name}</h1>
+      <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-primary">Un coup de main, simplement</p>
+      <h1 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">{professionalService.pricing_type === "quote" ? "Parlez-nous de votre besoin." : "Préparons votre rendez-vous."}</h1>
+      <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">Quelques informations suffisent pour transmettre votre demande à {professional.company_name}.</p>
 
       <div className="mt-8">
         <BookingForm
           professionalId={professional.profile_id}
           professionalServiceId={professionalService.id}
           serviceName={service?.name ?? ""}
+          companyName={professional.company_name}
           priceCents={professionalService.price_cents}
           durationMinutes={professionalService.duration_minutes}
           isQuoteRequest={professionalService.pricing_type === "quote"}
@@ -78,6 +82,7 @@ export default async function ReserverPage({ params, searchParams }: Props) {
           }}
         />
       </div>
+    </div>
     </div>
   );
 }

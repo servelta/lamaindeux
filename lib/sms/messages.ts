@@ -1,4 +1,7 @@
-export function newBookingSmsBody(serviceName: string): string {
+type NewBookingDetails = { bookingNumber: string; customerName: string; phone: string; date: string; time?: string; isQuoteRequest: boolean; bookingUrl: string };
+
+export function newBookingSmsBody(serviceName: string, details?: NewBookingDetails): string {
+  if (details) return `Plan b : ${details.isQuoteRequest ? "demande de devis" : "reservation"} ${details.bookingNumber}\n${serviceName}\n${details.customerName} - ${details.phone}\n${details.isQuoteRequest ? "Date souhaitee : " : ""}${details.date}${details.time ? ` a ${details.time}` : ""}\nTous les details et photos : ${details.bookingUrl}`;
   return `Plan b : nouvelle réservation (${serviceName}). Détails sur votre tableau de bord.`;
 }
 

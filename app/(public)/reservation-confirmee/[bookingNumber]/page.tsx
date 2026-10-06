@@ -68,9 +68,8 @@ export default async function ReservationConfirmeePage({ params }: Props) {
       </div>
 
       <p className="mt-6 text-sm text-muted-foreground">
-        Un e-mail de confirmation vous sera envoyé dès que le système de
-        notifications sera activé (Phase 5). En attendant, retrouvez cette
-        réservation à tout moment dans votre espace client.
+        Retrouvez votre demande et ses détails à tout moment dans votre espace
+        client. L’artisan peut vous recontacter grâce aux coordonnées renseignées.
       </p>
 
       <Button asChild className="mt-6">

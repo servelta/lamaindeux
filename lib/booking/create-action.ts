@@ -1,7 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { BOOKING_PHOTO_TYPES, validateBookingPhotos } from "@/lib/booking/photos";
 import { createBookingSchema } from "@/lib/booking/validation";
 import { parseAddress, splitFullName } from "@/lib/booking/parse-contact";
 import { getAvailableSlots } from "@/lib/booking/availability";
@@ -102,13 +103,21 @@ export async function createBookingAction(
 
   // Upload optional photos (max 3) before inserting the booking row.
   const photoFiles = formData.getAll("photos").filter((f): f is File => f instanceof File && f.size > 0);
+  const photoError = validateBookingPhotos(photoFiles);
+  if (photoError) return { error: photoError };
   const photoUrls: string[] = [];
-  for (const file of photoFiles.slice(0, 3)) {
-    if (file.size > 5 * 1024 * 1024) continue; // skip oversized files silently for MVP
-    const ext = file.name.split(".").pop();
-    const path = `${user.id}/${Date.now()}-${photoUrls.length}.${ext}`;
+  async function removeUploadedPhotos() {
+    if (photoUrls.length) await createAdminClient().storage.from("booking-photos").remove(photoUrls);
+  }
+  for (const file of photoFiles) {
+    const ext = BOOKING_PHOTO_TYPES[file.type as keyof typeof BOOKING_PHOTO_TYPES];
+    const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
     const { error: uploadError } = await supabase.storage.from("booking-photos").upload(path, file);
-    if (!uploadError) photoUrls.push(path);
+    if (uploadError) {
+      await removeUploadedPhotos();
+      return { error: "Impossible d’envoyer vos photos. Réessayez ou retirez les photos avant d’envoyer la demande." };
+    }
+    photoUrls.push(path);
   }
 
   const { data: booking, error } = await supabase
@@ -133,11 +142,12 @@ export async function createBookingAction(
       is_quote_request: isQuoteRequest,
     })
     .select(
-      "id, booking_number, customer_id, professional_id, scheduled_date, scheduled_time, contact_first_name, contact_email, contact_phone, address_line, postcode, city, is_quote_request"
+      "id, booking_number, customer_id, professional_id, scheduled_date, scheduled_time, contact_first_name, contact_last_name, contact_email, contact_phone, address_line, postcode, city, description, photo_urls, price_cents, is_quote_request"
     )
     .single();
 
   if (error) {
+    await removeUploadedPhotos();
     if (error.code === "23505") {
       return { error: "Ce créneau vient d'être réservé par un autre client. Merci d'en choisir un autre." };
     }

@@ -1,4 +1,5 @@
-import { wrapEmail, detailRow, detailTable, button } from "@/lib/email/wrapper";
+import { wrapEmail, detailRow, detailTable, button, escapeHtml } from "@/lib/email/wrapper";
+import { formatPrice } from "@/lib/utils/format";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -7,6 +8,13 @@ type BookingEmailData = {
   serviceName: string;
   professionalCompanyName: string;
   customerFirstName: string;
+  customerFullName?: string;
+  customerEmail?: string;
+  description?: string | null;
+  photoLinks?: string[];
+  photoCount?: number;
+  priceCents?: number | null;
+  bookingUrl?: string;
   date: string; // already formatted, e.g. "15 août 2026"
   time: string; // "14:00"
   addressLine: string;
@@ -26,12 +34,12 @@ export function bookingConfirmationCustomerEmail(data: BookingEmailData) {
     detailRow("Professionnel", data.professionalCompanyName) +
     detailRow("Service", data.serviceName) +
     (data.isQuoteRequest
-      ? ""
+      ? detailRow("Date souhaitée (indicative)", data.date)
       : detailRow("Date", data.date) + detailRow("Heure", data.time)) +
     detailRow("Adresse", `${data.addressLine}, ${data.postcode} ${data.city}`);
 
   const html = wrapEmail(`
-    <p>Bonjour ${data.customerFirstName},</p>
+    <p>Bonjour ${escapeHtml(data.customerFirstName)},</p>
     <p>${
       data.isQuoteRequest
         ? "Votre demande de devis a bien été envoyée. Le professionnel vous recontactera prochainement pour convenir d'un rendez-vous et d'un prix."
@@ -48,19 +56,26 @@ export function newBookingPlumberEmail(data: BookingEmailData) {
   const subject = `Nouvelle réservation — ${data.serviceName}`;
 
   const rows =
-    detailRow("Client", data.customerFirstName) +
+    detailRow("Référence", data.bookingNumber) +
+    detailRow("Client", data.customerFullName ?? data.customerFirstName) +
     detailRow("Téléphone", data.phone) +
+    detailRow("E-mail", data.customerEmail ?? "Non renseigné") +
     detailRow("Service", data.serviceName) +
     (data.isQuoteRequest
-      ? detailRow("Type", "Demande de devis")
+      ? detailRow("Type", "Demande de devis") + detailRow("Date souhaitée (indicative)", data.date)
       : detailRow("Date", data.date) + detailRow("Heure", data.time)) +
-    detailRow("Adresse", `${data.addressLine}, ${data.postcode} ${data.city}`);
+    detailRow("Adresse", `${data.addressLine}, ${data.postcode} ${data.city}`) +
+    detailRow("Tarif", data.isQuoteRequest ? "Sur devis" : formatPrice(data.priceCents ?? null)) +
+    detailRow("Description du problème", data.description || "Non renseignée") +
+    detailRow("Photos jointes", String(data.photoCount ?? 0));
 
   const html = wrapEmail(`
     <p>Bonjour,</p>
-    <p>Vous avez une nouvelle réservation.</p>
+    <p>Vous avez une nouvelle ${data.isQuoteRequest ? "demande de devis" : "réservation"}.</p>
     ${detailTable(rows)}
-    ${button(`${SITE_URL}/reservations`, "Voir la réservation")}
+    ${(data.photoLinks ?? []).map((url, index) => button(url, `Voir la photo ${index + 1}`)).join("<br />")}
+    ${data.photoCount ? "<p>Les liens des photos sont valables 7 jours. Toutes les photos restent accessibles dans la réservation.</p>" : ""}
+    ${button(data.bookingUrl ?? `${SITE_URL}/reservations`, "Voir la réservation complète")}
   `);
 
   return { subject, html };

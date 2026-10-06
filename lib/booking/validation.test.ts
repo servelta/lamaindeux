@@ -16,6 +16,11 @@ describe("createBookingSchema", () => {
   it("accepts valid input", () => {
     expect(createBookingSchema.safeParse(base).success).toBe(true);
   });
+  it("accepts formatted phone numbers shown in the form", () => {
+    const result = createBookingSchema.parse({ ...base, phone: "06 12 34 56 78" });
+    expect(result.phone).toBe("0612345678");
+    expect(createBookingSchema.parse({ ...base, phone: "+33 (6) 12-34-56-78" }).phone).toBe("+33612345678");
+  });
 
   it("rejects an invalid professionalServiceId (not a UUID)", () => {
     expect(

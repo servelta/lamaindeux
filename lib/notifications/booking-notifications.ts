@@ -1,4 +1,5 @@
 import { sendEmail } from "@/lib/email/send";
+import { createAdminClient } from "@/lib/supabase/server";
 import { sendSms, toE164France } from "@/lib/sms/send";
 import { createNotification } from "@/lib/notifications/create";
 import { getProfessionalContact } from "@/lib/notifications/get-professional-contact";
@@ -19,6 +20,10 @@ type BookingLike = {
   scheduled_date: string;
   scheduled_time: string;
   contact_first_name: string;
+  contact_last_name?: string;
+  description?: string | null;
+  photo_urls?: string[];
+  price_cents?: number | null;
   contact_email: string;
   contact_phone: string;
   address_line: string;
@@ -32,12 +37,28 @@ export async function notifyBookingCreated(booking: BookingLike, serviceName: st
   const professional = await getProfessionalContact(booking.professional_id);
   const date = formatDateFr(booking.scheduled_date);
   const time = formatTimeFr(booking.scheduled_time);
+  let photoLinks: string[] = [];
+  if (booking.photo_urls?.length) {
+    try {
+      const { data, error } = await createAdminClient().storage.from("booking-photos").createSignedUrls(booking.photo_urls, 7 * 24 * 60 * 60);
+      if (error) console.error("Booking photo email links:", error);
+      photoLinks = data?.flatMap((photo) => photo.signedUrl ? [photo.signedUrl] : []) ?? [];
+    } catch (error) { console.error("Booking photo email links:", error); }
+  }
+  const bookingUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://lamaindeux.vercel.app"}/reservations/${booking.id}`;
 
   const emailData = {
     bookingNumber: booking.booking_number,
     serviceName,
     professionalCompanyName: professional.companyName,
     customerFirstName: booking.contact_first_name,
+    customerFullName: [booking.contact_first_name, booking.contact_last_name].filter(Boolean).join(" "),
+    customerEmail: booking.contact_email,
+    description: booking.description,
+    photoLinks,
+    photoCount: booking.photo_urls?.length ?? 0,
+    priceCents: booking.price_cents,
+    bookingUrl,
     date,
     time,
     addressLine: booking.address_line,
@@ -53,7 +74,15 @@ export async function notifyBookingCreated(booking: BookingLike, serviceName: st
     await sendEmail(professional.email, subject, html);
   }
   if (professional.phone) {
-    await sendSms(toE164France(professional.phone), newBookingSmsBody(serviceName));
+    await sendSms(toE164France(professional.phone), newBookingSmsBody(serviceName, {
+      bookingNumber: booking.booking_number,
+      customerName: emailData.customerFullName,
+      phone: booking.contact_phone,
+      date,
+      time: booking.is_quote_request ? undefined : time,
+      isQuoteRequest: booking.is_quote_request,
+      bookingUrl,
+    }));
   }
   await createNotification({
     userId: booking.professional_id,

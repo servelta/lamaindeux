@@ -34,10 +34,14 @@ export function wrapEmail(bodyHtml: string): string {
 </html>`;
 }
 
+export function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]!));
+}
+
 export function detailRow(label: string, value: string): string {
   return `<tr>
-    <td style="padding:4px 0;color:#6b7280;">${label}</td>
-    <td style="padding:4px 0;text-align:right;font-weight:600;">${value}</td>
+    <td style="padding:4px 0;color:#6b7280;">${escapeHtml(label)}</td>
+    <td style="padding:4px 0;text-align:right;font-weight:600;overflow-wrap:anywhere;white-space:pre-line;">${escapeHtml(value)}</td>
   </tr>`;
 }
 
@@ -46,5 +50,5 @@ export function detailTable(rows: string): string {
 }
 
 export function button(href: string, label: string): string {
-  return `<a href="${href}" style="display:inline-block;margin-top:16px;padding:10px 20px;background-color:#1D4E5C;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:600;">${label}</a>`;
+  return `<a href="${escapeHtml(href)}" style="display:inline-block;margin-top:16px;padding:10px 20px;background-color:#1D4E5C;color:#ffffff;text-decoration:none;border-radius:6px;font-weight:600;">${escapeHtml(label)}</a>`;
 }
