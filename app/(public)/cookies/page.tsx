@@ -9,7 +9,7 @@ export default function CookiesPage() {
     <div className="container max-w-2xl py-16">
       <h1 className="font-display text-2xl font-bold">Politique de cookies</h1>
       <p className="mt-4 text-sm text-muted-foreground">
-        LaMainDeux n'utilise, à ce stade, que des cookies strictement
+        Plan b n'utilise, à ce stade, que des cookies strictement
         nécessaires au fonctionnement du site : le cookie de session
         d'authentification (géré par notre prestataire technique Supabase)
         qui vous permet de rester connecté à votre compte. Ces cookies ne

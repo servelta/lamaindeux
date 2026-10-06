@@ -28,7 +28,7 @@ export default async function Image({ params }: Props) {
         }}
       >
         <div style={{ display: "flex", width: 64, height: 6, backgroundColor: "#B8703B", marginBottom: 32 }} />
-        <div style={{ fontSize: 28, opacity: 0.8, display: "flex" }}>LaMainDeux</div>
+        <div style={{ fontSize: 28, opacity: 0.8, display: "flex" }}>Plan b</div>
         <div style={{ fontSize: 58, fontWeight: 700, marginTop: 16, display: "flex" }}>
           {professional?.company_name ?? "Professionnel vérifié"}
         </div>

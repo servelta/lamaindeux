@@ -9,7 +9,7 @@ export default function PrivacyPage() {
       <h1 className="font-display text-2xl font-bold">Politique de confidentialité</h1>
       <p className="mt-4 text-sm text-muted-foreground">
         Ce texte est un espace réservé, à finaliser avec une revue juridique
-        avant le lancement (Phase 9). LaMainDeux collecte uniquement les
+        avant le lancement (Phase 9). Plan b collecte uniquement les
         données nécessaires à la mise en relation entre clients et professionnels
         (nom, coordonnées, adresse d'intervention). Les documents de
         vérification des professionnels restent strictement privés et ne sont

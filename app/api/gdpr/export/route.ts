@@ -58,7 +58,7 @@ export async function GET() {
   return new NextResponse(JSON.stringify(exportData, null, 2), {
     headers: {
       "Content-Type": "application/json",
-      "Content-Disposition": `attachment; filename="lamaindeux-mes-donnees-${user.id.slice(0, 8)}.json"`,
+      "Content-Disposition": `attachment; filename="plan-b-mes-donnees-${user.id.slice(0, 8)}.json"`,
     },
   });
 }

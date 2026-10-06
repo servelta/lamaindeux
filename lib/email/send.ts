@@ -30,7 +30,8 @@ export async function sendEmail(to: string, subject: string, html: string): Prom
 
   try {
     await client.emails.send({
-      from: process.env.EMAIL_FROM ?? "LaMainDeux <onboarding@resend.dev>",
+      from: (process.env.EMAIL_FROM ?? "Plan b <onboarding@resend.dev>")
+        .replace(/^\s*LaMainDeux(?=\s*<)/i, "Plan b"),
       to,
       subject,
       html,

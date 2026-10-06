@@ -61,7 +61,7 @@ export function ChatWidget() {
       {open && (
         <div className="mb-3 flex h-[28rem] w-[calc(100vw-2rem)] max-w-sm flex-col overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
           <div className="flex items-center justify-between bg-primary px-4 py-3 text-primary-foreground">
-            <span className="font-display text-sm font-semibold">Assistant LaMainDeux</span>
+            <span className="font-display text-sm font-semibold">Assistant Plan b</span>
             <button onClick={() => setOpen(false)} aria-label="Fermer le chat">
               <X className="h-5 w-5" />
             </button>

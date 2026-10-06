@@ -28,13 +28,13 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: {
-    default: "LaMainDeux — Trouvez un artisan près de chez vous",
-    template: "%s | LaMainDeux",
+    default: "Plan b — Trouvez un artisan près de chez vous",
+    template: "%s | Plan b",
   },
   description:
     "Recherchez un artisan vérifié près de chez vous, comparez les prix et réservez en ligne. Sans commission, sans frais pour le client.",
   openGraph: {
-    siteName: "LaMainDeux",
+    siteName: "Plan b",
     locale: "fr_FR",
     type: "website",
   },

@@ -1,4 +1,4 @@
-# LaMainDeux
+# Plan b
 
 Marketplace connecting French customers with verified home-service
 professionals — plumbers, electricians, painters, HVAC technicians, general
@@ -11,7 +11,7 @@ services, not a schema change.
 
 **Status: all 10 phases complete**, plus a subsequent generalization pass
 (originally built plumbing-only as "MonPlombier", then generalized to
-multi-trade and rebranded to "LaMainDeux" — see "Multi-trade
+multi-trade and rebranded to "Plan b" — see "Multi-trade
 generalization" below for exactly what that involved).
 
 ## Stack
@@ -335,7 +335,7 @@ configuration, first-admin bootstrap, and a pre-launch verification list.
 
 The platform was originally built plumbing-only ("MonPlombier"). After all
 10 phases were complete, it was generalized to support any home-service
-trade and rebranded to LaMainDeux. What that involved, concretely:
+trade and rebranded to Plan b. What that involved, concretely:
 
 - **Database** (`supabase/migrations/0012_multi_trade_generalization.sql`):
   added a `trades` table (Plomberie active; Électricité, Peinture, Chauffage
