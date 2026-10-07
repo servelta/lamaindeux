@@ -11,12 +11,12 @@ export const billingSchema = z.object({
   issuedOn: date, serviceOn: date, deadline: date,
   issuerName: required(), issuerAddress: required(400), issuerId: required(14).regex(/^\d{9}(\d{5})?$/, "SIREN (9 chiffres) ou SIRET (14 chiffres)."),
   issuerEmail: z.string().trim().email("Email professionnel invalide."), issuerPhone: required(40),
-  legalDetails: required(600), vatNumber: text(40), insurance: required(600),
+  vatNumber: text(40),
   clientName: required(), clientAddress: required(400), clientEmail: z.union([z.literal(""), z.string().trim().email()]),
-  clientType: z.enum(["individual", "business"]), clientId: text(14), clientVat: text(40), orderNumber: text(80), workAddress: text(400),
-  taxMode: z.enum(["vat", "exempt"]), paymentTerms: required(600), lateTerms: required(400), notes: text(1500),
+  clientType: z.enum(["individual", "business"]), clientId: text(14), clientVat: text(40),
+  taxMode: z.enum(["vat", "exempt"]), paymentMethod: z.enum(["card", "transfer", "cash", "cheque"]), lateTerms: required(400), notes: text(1500),
   quoteFeeCents: z.number().int().min(0).max(10000000),
-  lines: z.array(z.object({ description: required(500), quantity: z.number().finite().positive().max(100000).refine(n => Math.abs(n * 1000 - Math.round(n * 1000)) < 0.00001, "3 décimales maximum."), unit: z.enum(["forfait", "heure", "unité", "m²", "mètre"]), unitPriceCents: z.number().int().min(0).max(100000000), vatRate: z.union([z.literal(0), z.literal(5.5), z.literal(10), z.literal(20)]), duration: text(100) })).min(1).max(50),
+  lines: z.array(z.object({ description: required(500), priceCents: z.number().int().min(0).max(100000000), vatRate: z.union([z.literal(0), z.literal(5.5), z.literal(10), z.literal(20)]), duration: text(100) })).min(1).max(50),
 }).superRefine((data, ctx) => {
   if (data.deadline < data.issuedOn) ctx.addIssue({ code: "custom", path: ["deadline"], message: "La date limite doit être postérieure ou égale à la date du document." });
   if (data.taxMode === "vat" && !data.vatNumber) ctx.addIssue({ code: "custom", path: ["vatNumber"], message: "Renseignez votre numéro de TVA." });
@@ -33,7 +33,7 @@ export function eurosToCents(value: string): number {
 }
 export function calculateTotals(document: Pick<BillingDocument, "lines" | "taxMode">) {
   const lines = document.lines.map(line => {
-    const net = Math.round(line.quantity * line.unitPriceCents);
+    const net = line.priceCents;
     const rate = document.taxMode === "exempt" ? 0 : line.vatRate;
     const tax = Math.round(net * rate / 100);
     return { net, tax, rate, gross: net + tax };
@@ -41,3 +41,5 @@ export function calculateTotals(document: Pick<BillingDocument, "lines" | "taxMo
   return { lines, net: lines.reduce((sum, line) => sum + line.net, 0), tax: lines.reduce((sum, line) => sum + line.tax, 0), gross: lines.reduce((sum, line) => sum + line.gross, 0) };
 }
 export function parisToday(now = new Date()) { return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit" }).format(now); }
+
+export const PAYMENT_METHODS = { card: "Carte bancaire", transfer: "Virement bancaire", cash: "Espèces", cheque: "Chèque" } as const;

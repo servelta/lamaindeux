@@ -1,6 +1,6 @@
 import { PDFDocument, rgb, type PDFPage } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
-import { billingSchema, calculateTotals, type BillingDocument } from "./model";
+import { PAYMENT_METHODS, billingSchema, calculateTotals, type BillingDocument } from "./model";
 const money = (cents: number) => `${(cents / 100).toFixed(2).replace(".", ",")} €`;
 const dateLabel = (date: string) => date.split("-").reverse().join("/");
 export async function generateBillingPdf(input: BillingDocument, fontBytes: Uint8Array) {
@@ -57,19 +57,16 @@ export async function generateBillingPdf(input: BillingDocument, fontBytes: Uint
   text(doc.issuerName, 19, teal);
   text(doc.issuerAddress); text(`SIREN / SIRET : ${doc.issuerId}`);
   text(`${doc.issuerEmail} · ${doc.issuerPhone}`);
-  text(doc.legalDetails, 9, muted);
   if (doc.vatNumber) text(`TVA intracommunautaire : ${doc.vatNumber}`, 9, muted);
   heading("CLIENT"); text(doc.clientName, 12); text(doc.clientAddress);
   if (doc.clientEmail) text(doc.clientEmail);
   if (doc.clientType === "business") text(`SIREN / SIRET : ${doc.clientId}${doc.clientVat ? ` · TVA : ${doc.clientVat}` : ""}`);
-  if (doc.orderNumber) text(`Bon de commande : ${doc.orderNumber}`);
-  if (doc.workAddress) text(`Adresse des travaux : ${doc.workAddress}`);
   heading("DATES ET PRESTATIONS");
   text(`Émission : ${dateLabel(doc.issuedOn)} · ${doc.kind === "invoice" ? "Prestation réalisée le" : "Début prévu le"} : ${dateLabel(doc.serviceOn)}`);
   text(`${doc.kind === "invoice" ? "Échéance de paiement" : "Offre valable jusqu’au"} : ${dateLabel(doc.deadline)}`);
   const totals = calculateTotals(doc);
   doc.lines.forEach((line, index) => {
-    const content = [`${index + 1}. ${line.description}`, `${line.quantity} ${line.unit} × ${money(line.unitPriceCents)} HT${line.duration ? ` · Durée : ${line.duration}` : ""}`, `TVA ${totals.lines[index].rate} % · Total HT : ${money(totals.lines[index].net)} · TTC : ${money(totals.lines[index].gross)}`];
+    const content = [`${index + 1}. ${line.description}`, `Prix de la prestation : ${money(line.priceCents)} HT${line.duration ? ` · Durée : ${line.duration}` : ""}`, `TVA ${totals.lines[index].rate} % · Total HT : ${money(totals.lines[index].net)} · TTC : ${money(totals.lines[index].gross)}`];
     const blockHeight = content.reduce((sum, entry) => sum + wrap(entry,515,10).length * 15,0) + 13;
     if (y - Math.min(blockHeight, 650) < 65) newPage();
     y -= 8; content.forEach((entry, i) => text(entry,10,i === 0 ? ink : muted)); y -= 5;
@@ -79,7 +76,7 @@ export async function generateBillingPdf(input: BillingDocument, fontBytes: Uint
   rates.forEach(rate => text(`TVA ${rate} % : ${money(totals.lines.filter(line => line.rate === rate).reduce((sum,line)=>sum+line.tax,0))}`));
   text(`TOTAL TTC : ${money(totals.gross)}`,16,teal);
   if (doc.taxMode === "exempt") text("TVA non applicable, art. 293 B du CGI.",9);
-  heading("CONDITIONS"); text(doc.paymentTerms,9);
+  heading("CONDITIONS"); text(`Mode de paiement : ${PAYMENT_METHODS[doc.paymentMethod]}`,9);
   if (doc.kind === "invoice") {
     text("Escompte pour paiement anticipé : néant, sauf accord écrit contraire.",9);
     if (doc.clientType === "business") { text(doc.lateTerms,9); text("Indemnité forfaitaire pour frais de recouvrement en cas de retard : 40 € (client professionnel).",9); }
@@ -88,7 +85,6 @@ export async function generateBillingPdf(input: BillingDocument, fontBytes: Uint
     text("Acceptation : bon pour accord, date et signature du client. Les droits légaux du consommateur restent applicables.",9);
     y -= 25;
   }
-  heading("ASSURANCE PROFESSIONNELLE"); text(doc.insurance,9);
   if (doc.notes) { heading("INFORMATIONS COMPLÉMENTAIRES"); text(doc.notes,9); }
   const pages = pdf.getPages();
   pages.forEach((p,i)=>{
