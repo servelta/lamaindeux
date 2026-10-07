@@ -16,6 +16,7 @@ import type { getProfessionalBySlug } from "@/lib/queries/search";
 import { TRADE_BANNER_PHOTOS } from "@/lib/trade-photos";
 import { ProfilePhotoCarousel } from "@/components/professional/profile-photo-carousel";
 import { googleMapsBusinessUrl } from "@/lib/utils/google-maps";
+import { workingHoursRows } from "@/lib/professional/working-hours";
 
 type Profile = NonNullable<Awaited<ReturnType<typeof getProfessionalBySlug>>>;
 type Review = Profile["reviews"][number];
@@ -240,14 +241,11 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
         </h2>
         {hours.length ? <>
           <p className="mt-2 text-sm text-muted-foreground">Horaires habituels, heure de Paris. Consultez les créneaux pour réserver.</p>
-          <dl className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {([1, 2, 3, 4, 5, 6, 0] as const).map((day) => {
-              const slots = hours.filter((slot) => slot.weekday === day);
-              return <div key={day} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-muted/50 px-4 py-3 text-sm">
-                <dt className="font-medium">{["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"][day]}</dt>
-                <dd className={slots.length ? "text-primary" : "text-muted-foreground"}>{slots.length ? slots.map((slot) => `${slot.start_time.slice(0, 5).replace(":", "h")} – ${slot.end_time.slice(0, 5).replace(":", "h")}`).join(" · ") : "Fermé"}</dd>
-              </div>;
-            })}
+          <dl className="mt-4 max-w-2xl divide-y divide-border/60">
+            {workingHoursRows(hours).map(row => <div key={row.label} className="flex flex-col gap-1 py-3 text-sm sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+              <dt className="font-medium">{row.label}</dt>
+              <dd className={row.closed ? "text-muted-foreground" : "font-medium tabular-nums text-primary"}>{row.times}</dd>
+            </div>)}
           </dl>
         </> : <p className="mt-3 text-sm text-muted-foreground">Horaires non renseignés. Consultez les créneaux de réservation ou contactez l’artisan.</p>}
       </section>
