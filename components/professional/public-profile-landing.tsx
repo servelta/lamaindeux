@@ -325,15 +325,19 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
       </section>
 
 
-      <section aria-labelledby="prepare-project-title" className="mt-8 grid gap-6 rounded-[1.75rem] bg-secondary/35 p-6 sm:p-8 lg:grid-cols-[1.2fr_1fr]">
-        <div><p className="text-xs font-semibold uppercase tracking-wider text-primary">Votre projet, simplement</p><h2 id="prepare-project-title" className="mt-2 font-display text-2xl font-semibold">Une question avant de réserver ?</h2>
-          <div className="mt-5 space-y-2">{[
-            {question:"Que préciser à l’artisan ?",answer:"Décrivez le problème, l’équipement concerné et l’adresse. Ajoutez une photo si vous en avez : l’artisan pourra mieux préparer son intervention."},
-            {question:"Puis-je réserver sans compte ?",answer:"Oui. Choisissez votre service et votre créneau, puis continuez sans connexion et renseignez vos coordonnées."},
-            {question:"Comment connaître le montant ?",answer:"Consultez le prix ou la mention « Sur devis » du service. Décrivez votre besoin pour permettre à l’artisan de préciser le montant. Le paiement se règle directement avec lui."},
-          ].map(item=><details key={item.question} className="group rounded-xl border border-primary/10 bg-white/75 px-4 py-3"><summary className="cursor-pointer text-sm font-semibold text-primary">{item.question}</summary><p className="mt-3 text-sm leading-6 text-muted-foreground">{item.answer}</p></details>)}</div>
+      <section aria-labelledby="prepare-project-title" className="mt-6 rounded-2xl border border-primary/10 bg-white p-4 sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="prepare-project-title" className="font-display text-lg font-semibold">Avant de réserver</h2>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold text-primary">
+            <a href="#avis" className="inline-flex items-center gap-1.5 hover:underline"><Star aria-hidden="true" className="h-3.5 w-3.5" />Lire les avis</a>
+            <Link href={pro.trade_slug_plural ? "/recherche?metier=" + encodeURIComponent(pro.trade_slug_plural) : "/recherche"} className="inline-flex items-center gap-1.5 hover:underline">Comparer d’autres artisans<ArrowRight aria-hidden="true" className="h-3.5 w-3.5" /></Link>
+          </div>
         </div>
-        <div className="flex flex-col justify-center rounded-2xl bg-primary p-6 text-white"><BadgeCheck aria-hidden="true" className="h-8 w-8 text-secondary" /><h3 className="mt-4 font-display text-xl font-semibold">Trouvez le bon artisan pour vous</h3><p className="mt-2 text-sm leading-6 text-white/75">Consultez les avis de ce professionnel ou comparez les autres profils avant de choisir.</p><div className="mt-5 flex flex-col gap-3"><Button asChild className="bg-secondary text-primary hover:bg-secondary/90"><a href="#avis">Lire les avis<Star aria-hidden="true" className="ml-2 h-4 w-4" /></a></Button><Link href={pro.trade_slug_plural ? "/recherche?metier=" + encodeURIComponent(pro.trade_slug_plural) : "/recherche"} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 px-4 py-3 text-sm font-medium hover:bg-white/10">Comparer d’autres artisans<ArrowRight aria-hidden="true" className="h-4 w-4" /></Link></div></div>
+        <div className="mt-3 grid items-start gap-2 lg:grid-cols-3">{[
+          {question:"Que préciser à l’artisan ?",answer:"Décrivez le problème, l’équipement et l’adresse. Une photo aide l’artisan à préparer l’intervention."},
+          {question:"Réserver sans compte ?",answer:"Oui. Choisissez le service et le créneau, puis continuez sans connexion avec vos coordonnées."},
+          {question:"Quel sera le montant ?",answer:"Consultez le prix ou la mention « Sur devis ». Le montant se précise avec l’artisan et se règle directement avec lui."},
+        ].map(item=><details key={item.question} className="rounded-xl bg-primary/[0.035] px-3 py-2.5"><summary className="cursor-pointer text-xs font-medium text-primary">{item.question}</summary><p className="mt-2 text-xs leading-5 text-muted-foreground">{item.answer}</p></details>)}</div>
       </section>
 
       <section id="avis" className="mt-9 scroll-mt-44 sm:mt-12">
