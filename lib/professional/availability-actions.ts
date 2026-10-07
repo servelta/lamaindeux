@@ -42,6 +42,8 @@ export async function addAvailabilitySlotAction(
   }
 
   revalidatePath("/calendrier");
+  revalidatePath("/artisan/[slug]", "page");
+  revalidatePath("/artisan/[slug]/reserver", "page");
   return { success: "Créneau ajouté." };
 }
 
@@ -61,6 +63,8 @@ export async function removeAvailabilitySlotAction(slotId: string) {
   }
 
   revalidatePath("/calendrier");
+  revalidatePath("/artisan/[slug]", "page");
+  revalidatePath("/artisan/[slug]/reserver", "page");
 }
 
 export async function addAvailabilityExceptionAction(
@@ -93,6 +97,8 @@ export async function addAvailabilityExceptionAction(
   }
 
   revalidatePath("/calendrier");
+  revalidatePath("/artisan/[slug]", "page");
+  revalidatePath("/artisan/[slug]/reserver", "page");
   return { success: "Date bloquée." };
 }
 
@@ -112,4 +118,6 @@ export async function removeAvailabilityExceptionAction(exceptionId: string) {
   }
 
   revalidatePath("/calendrier");
+  revalidatePath("/artisan/[slug]", "page");
+  revalidatePath("/artisan/[slug]/reserver", "page");
 }

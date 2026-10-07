@@ -80,7 +80,7 @@ export async function SiteFooter() {
 
       <div className="border-t border-border/60 py-6">
         <p className="container text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Plan B. Le paiement de
+          © {new Date().getFullYear()} Le Plan B. Le paiement de
           l'intervention se règle directement avec l'artisan.
         </p>
       </div>

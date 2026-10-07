@@ -150,7 +150,7 @@ export default async function TradePage({ params }: Props) {
                 Aucun {tradeLower} n'est encore disponible sur la plateforme.
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
-                De nouveaux professionnels rejoignent Plan B chaque semaine — revenez bientôt.
+                De nouveaux professionnels rejoignent Le Plan B chaque semaine — revenez bientôt.
               </p>
             </div>
           )}

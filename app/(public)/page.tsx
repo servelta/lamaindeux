@@ -159,7 +159,7 @@ export default async function HomePage() {
       </section>
 
       {/* TRUST SECTION */}
-      <section aria-label="Les avantages Plan B" className="container pb-4">
+      <section aria-label="Les avantages Le Plan B" className="container pb-4">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
           {TRUST_ITEMS.map(({ icon: Icon, label, detail, tint }) => (
             <div key={label} className="group relative min-w-0 overflow-hidden rounded-2xl border border-border/60 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5">
@@ -244,7 +244,7 @@ export default async function HomePage() {
                   <p className="mt-2 text-sm text-muted-foreground">
                     {trade.active && count > 0
                       ? `${count} ${count > 1 ? pluralise(tradeLower) : tradeLower} vérifié${count > 1 ? "s" : ""}`
-                      : trade.active ? "Bientôt des artisans dans votre ville" : "Ce métier arrive bientôt sur Plan B."}
+                      : trade.active ? "Bientôt des artisans dans votre ville" : "Ce métier arrive bientôt sur Le Plan B."}
                   </p>
 
                   {trade.active ? <><Link href={`/${trade.slug_plural}`} className="absolute inset-0 rounded-3xl focus:outline-none"><span className="sr-only">Voir les artisans en {trade.name.toLowerCase()}</span></Link><span className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-primary">Voir les artisans<ArrowRight aria-hidden="true" className="h-4 w-4 motion-safe:transition-transform motion-safe:group-hover:translate-x-1" /></span></> : <span className="mt-5 self-start rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">Bientôt disponible</span>}
@@ -336,7 +336,7 @@ export default async function HomePage() {
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="font-display text-2xl font-semibold">Qui sommes-nous ?</h2>
             <p className="mt-4 text-muted-foreground">
-              Plan B est la plateforme qui connecte particuliers et artisans
+              Le Plan B est la plateforme qui connecte particuliers et artisans
               vérifiés partout en France — plomberie, électricité et peinture.
               Recherchez, comparez et réservez en
               ligne, gratuitement, sans commission sur l&apos;intervention.

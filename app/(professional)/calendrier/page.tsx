@@ -1,5 +1,6 @@
 import {
   requireUserId,
+  getOwnProfessional,
   getOwnAvailability,
   getOwnAvailabilityExceptions,
 } from "@/lib/professional/queries";
@@ -8,11 +9,17 @@ import {
   BlockedDatesManager,
 } from "@/components/professional/calendar-manager";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { provisionDefaultHours } from "@/lib/professional/provision-default-hours";
+import { createProvisioningClient } from "@/lib/professional/provision-plumbing-services";
 
 export const metadata = { title: "Calendrier" };
 
 export default async function CalendrierPage() {
   const professionalId = await requireUserId();
+  if (await getOwnProfessional(professionalId)) {
+    try { await provisionDefaultHours(createProvisioningClient(), professionalId); }
+    catch { console.error("calendar: default working hours initialization failed."); }
+  }
 
   const [slots, exceptions] = await Promise.all([
     getOwnAvailability(professionalId),

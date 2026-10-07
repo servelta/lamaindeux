@@ -28,6 +28,8 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
   const { professional: pro, services, reviews, areas, gallery, hours } = profile;
   const hoursRows = workingHoursRows(hours);
   const hoursPreview = hoursRows.find(row => !row.closed) ?? hoursRows[0];
+  const allWeekSame = hoursRows.length === 3 && hoursRows.every(row => !row.closed && row.times === hoursPreview?.times);
+  const tradeVisual = pro.trade_slug_singular === "plombier" ? "/images/le-plan-b-plumber-landing.webp" : pro.trade_slug_singular === "electricien" ? "/images/le-plan-b-electrician-landing.webp" : null;
   const trade = pro.trade_name_singular ?? "Professionnel";
   const bookingUrl = `/artisan/${pro.slug}/reserver`;
   const phoneUrl = `tel:${pro.public_phone}`;
@@ -132,7 +134,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
                   aria-hidden="true"
                   className="h-4 w-4 fill-secondary text-secondary"
                 />
-                {formatRating(pro.rating_avg)}/5 · {pro.rating_count} avis Plan B
+                {formatRating(pro.rating_avg)}/5 · {pro.rating_count} avis Le Plan B
               </a>
             ) : pro.google_rating != null ? (
               <a
@@ -152,7 +154,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
             {hours.length ? <details className="group mt-4 max-w-md rounded-xl border border-white/15 bg-white/[0.06]">
               <summary className="flex cursor-pointer list-none items-center gap-2.5 px-3 py-2.5 text-xs [&::-webkit-details-marker]:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary">
                 <Clock3 aria-hidden="true" className="h-4 w-4 shrink-0 text-secondary" />
-                <span className="min-w-0 flex-1"><span className="font-semibold">Horaires de travail</span><span className="mt-0.5 block text-[11px] leading-5 text-white/75 group-open:hidden">{hoursPreview.label.replace(/Lundi/g, "Lun").replace(/Vendredi/g, "Ven").replace(/Mardi/g, "Mar").replace(/Mercredi/g, "Mer").replace(/Jeudi/g, "Jeu").replace(/Samedi/g, "Sam").replace(/Dimanche/g, "Dim").replace(/ – /g, "–")} : {hoursPreview.times.replace(/h00/g, "h").replace(/ – /g, "–")}</span></span>
+                <span className="min-w-0 flex-1"><span className="font-semibold">Horaires de travail</span><span className="mt-0.5 block text-[11px] leading-5 text-white/75 group-open:hidden">{(allWeekSame ? "Tous les jours" : hoursPreview.label).replace(/Lundi/g, "Lun").replace(/Vendredi/g, "Ven").replace(/Mardi/g, "Mar").replace(/Mercredi/g, "Mer").replace(/Jeudi/g, "Jeu").replace(/Samedi/g, "Sam").replace(/Dimanche/g, "Dim").replace(/ – /g, "–")} : {hoursPreview.times.replace(/h00/g, "h").replace(/ – /g, "–")}</span></span>
                 <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-white/70 transition-transform group-open:rotate-180" />
               </summary>
               <div className="border-t border-white/10 px-3 pb-3 pt-2"><dl className="space-y-2">{hoursRows.map(row => <div key={row.label} className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-[11px] leading-5"><dt className="text-white/80">{row.label}</dt><dd className="font-medium tabular-nums">{row.times}</dd></div>)}</dl><p className="mt-2 text-[10px] text-white/55">Horaires habituels · heure de Paris</p></div>
@@ -185,7 +187,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
               ) : null}
             </div>
             <p className="mt-4 text-xs text-white/70">
-              Réservation gratuite sur Plan B.
+              Réservation gratuite sur Le Plan B.
             </p>
           </div>
           <ProfilePhotoCarousel key={pro.slug} photos={photos} />
@@ -195,7 +197,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
 
       <section aria-label="Vos repères de confiance" className="mt-5 grid gap-3 rounded-[1.75rem] border border-primary/10 bg-primary/[0.03] p-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { icon: BadgeCheck, title: "Dossier vérifié", detail: "Par l’équipe Plan B" },
+          { icon: BadgeCheck, title: "Dossier vérifié", detail: "Par l’équipe Le Plan B" },
           { icon: CalendarCheck2, title: "Créneau choisi", detail: "Une intervention planifiée" },
           { icon: FileText, title: "Prix ou devis affiché", detail: "Les détails avant de réserver" },
           { icon: Phone, title: "Contact direct", detail: "Avec votre artisan" },
@@ -226,7 +228,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
           ) : null}
           {pro.completed_jobs_count > 0 ? (
             <p className="mt-4 text-xs font-medium text-primary">
-              {pro.completed_jobs_count} interventions réalisées sur Plan B
+              {pro.completed_jobs_count} interventions réalisées sur Le Plan B
             </p>
           ) : null}
         </div>
@@ -252,10 +254,24 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
               aria-hidden="true"
               className="h-4 w-4 shrink-0 text-verified"
             />
-            Profil vérifié par l’équipe Plan B.
+            Profil vérifié par l’équipe Le Plan B.
           </p>
         </div>
       </section>
+
+      {tradeVisual && <section aria-labelledby="trade-project-title" className="mt-8 grid overflow-hidden rounded-[1.75rem] border border-primary/10 bg-secondary/25 lg:grid-cols-2">
+        <div className="flex flex-col justify-center p-6 sm:p-9">
+          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Votre projet, simplement</span>
+          <h2 id="trade-project-title" className="mt-3 font-display text-2xl font-bold leading-tight sm:text-3xl">Du premier contact à votre intervention.</h2>
+          <p className="mt-4 max-w-md text-sm leading-7 text-muted-foreground">{pro.trade_slug_singular === "plombier" ? "Une fuite, un remplacement ou une nouvelle installation ? Présentez votre besoin à votre plombier et choisissez le créneau qui vous convient." : "Un dépannage, une installation ou une rénovation électrique ? Présentez votre besoin à votre électricien et choisissez votre créneau."}</p>
+          <div className="mt-5 flex flex-wrap gap-2 text-xs font-medium text-primary"><span className="rounded-full bg-white px-3 py-2">Contact direct</span><span className="rounded-full bg-white px-3 py-2">Réservation en ligne</span><span className="rounded-full bg-white px-3 py-2">Sans commission</span></div>
+          <Link href="#reserver" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary">Découvrir les interventions <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+        </div>
+        <figure className="relative min-h-[250px] sm:min-h-[320px]">
+          <Image src={tradeVisual} alt={`Illustration du métier de ${trade.toLowerCase()}`} fill sizes="(min-width: 1024px) 550px, 100vw" className="object-cover" />
+          <figcaption className="absolute bottom-3 right-3 rounded-full bg-white/90 px-3 py-1 text-[10px] text-primary">Photo d’illustration</figcaption>
+        </figure>
+      </section>}
 
       <section id="reserver" className="mt-9 scroll-mt-44 sm:mt-12">
         <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
@@ -353,7 +369,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
                 aria-hidden="true"
                 className="h-4 w-4 fill-accent text-accent"
               />
-              {formatRating(pro.rating_avg)}/5 · {pro.rating_count} avis Plan B
+              {formatRating(pro.rating_avg)}/5 · {pro.rating_count} avis Le Plan B
             </p>
           ) : null}
         </div>
@@ -397,7 +413,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
           </>
         ) : (
           <p className="mt-4 text-sm text-muted-foreground">
-            Pas encore d’avis sur Plan B.
+            Pas encore d’avis sur Le Plan B.
           </p>
         )}
       </section>
@@ -427,7 +443,7 @@ function ReviewCard({ review }: { review: Review }) {
         </blockquote>
       ) : null}
       <figcaption className="mt-3 text-xs text-muted-foreground">
-        Avis Plan B ·{" "}
+        Avis Le Plan B ·{" "}
         <time dateTime={review.created_at}>
           {new Date(review.created_at).toLocaleDateString("fr-FR", {
             month: "long",

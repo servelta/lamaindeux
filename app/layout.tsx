@@ -28,8 +28,8 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: {
-    default: "Plan B — Trouvez un artisan près de chez vous",
-    template: "%s | Plan B",
+    default: "Le Plan B — Trouvez un artisan près de chez vous",
+    template: "%s | Le Plan B",
   },
   description:
     "Recherchez un artisan vérifié près de chez vous, comparez les prix et réservez en ligne. Sans commission, sans frais pour le client.",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     apple: { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
   },
   openGraph: {
-    siteName: "Plan B",
+    siteName: "Le Plan B",
     locale: "fr_FR",
     type: "website",
   },

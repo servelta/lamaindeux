@@ -1,4 +1,5 @@
 "use server";
+import { provisionDefaultHours } from "@/lib/professional/provision-default-hours";
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -228,6 +229,7 @@ export async function professionalSignUpAction(
           createProvisioningClient(),
           data.user.id,
         );
+        await provisionDefaultHours(createProvisioningClient(), data.user.id);
       } catch {
         // Signup remains usable; the authenticated dashboard and daily sync retry.
         console.error(

@@ -1,3 +1,4 @@
+import { provisionDefaultHours } from "@/lib/professional/provision-default-hours";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email/send";
@@ -28,6 +29,7 @@ export async function GET(request: Request) {
   const supabase = createAdminClient();
   try {
     await provisionPlumbingServices(supabase);
+    await provisionDefaultHours(supabase);
   } catch {
     // Keep booking reminders independent of catalog maintenance.
     console.error("daily sync: standard plumbing service provisioning failed.");

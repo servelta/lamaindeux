@@ -11,7 +11,7 @@ export function organizationSchema() {
     "@context": "https://schema.org",
     "@type": "Organization",
     "@id": `${SITE_URL}/#organization`,
-    name: "Plan B",
+    name: "Le Plan B",
     url: SITE_URL,
     description:
       "Plateforme de mise en relation entre clients et artisans vérifiés en France (plomberie, électricité, peinture, chauffage...). Réservation en ligne gratuite, sans commission sur les interventions.",
@@ -31,7 +31,7 @@ export function websiteSchema(primaryTradeSlugPlural: string = "plombiers") {
     "@type": "WebSite",
     "@id": `${SITE_URL}/#website`,
     url: SITE_URL,
-    name: "Plan B",
+    name: "Le Plan B",
     inLanguage: "fr-FR",
     potentialAction: {
       "@type": "SearchAction",
@@ -161,7 +161,7 @@ export function cityServiceSchema(params: {
     },
     provider: {
       "@type": "Organization",
-      name: "Plan B",
+      name: "Le Plan B",
       url: SITE_URL,
     },
     url: `${SITE_URL}${params.url}`,

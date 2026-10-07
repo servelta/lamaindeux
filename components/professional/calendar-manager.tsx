@@ -41,6 +41,7 @@ export function WeeklyAvailabilityManager({ slots }: { slots: Slot[] }) {
 
   return (
     <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">Par défaut : 10h–20h, tous les jours. Pour changer un horaire, supprimez le créneau puis ajoutez le nouveau. Supprimez tous les créneaux d’un jour pour le fermer.</p>
       <div className="grid gap-2">
         {byDay.map(({ weekday, slots: daySlots }) => (
           <div key={weekday} className="flex flex-wrap items-center gap-2 rounded-md border border-border p-3">
@@ -80,11 +81,11 @@ export function WeeklyAvailabilityManager({ slots }: { slots: Slot[] }) {
         </div>
         <div className="space-y-1">
           <Label htmlFor="startTime" className="text-xs">Début</Label>
-          <Input id="startTime" name="startTime" type="time" required defaultValue="08:00" className="w-28" />
+          <Input id="startTime" name="startTime" type="time" required defaultValue="10:00" className="w-28" />
         </div>
         <div className="space-y-1">
           <Label htmlFor="endTime" className="text-xs">Fin</Label>
-          <Input id="endTime" name="endTime" type="time" required defaultValue="18:00" className="w-28" />
+          <Input id="endTime" name="endTime" type="time" required defaultValue="20:00" className="w-28" />
         </div>
         <SubmitButton className="w-auto">Ajouter</SubmitButton>
       </form>

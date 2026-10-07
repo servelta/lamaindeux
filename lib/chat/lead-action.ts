@@ -68,11 +68,11 @@ export async function submitChatLeadAction(
       supportEmail,
       "Nouvelle question via le chatbot",
       wrapEmail(
-        `<h2>Demande de réponse personnelle — Plan B</h2><p><strong>Nom :</strong> ${escapeHtml(name)}</p><p><strong>E-mail :</strong> ${escapeHtml(email)}</p><p><strong>Téléphone :</strong> ${escapeHtml(phone || "Non renseigné")}</p><h3>Question</h3><p>${escapeHtml(message).replace(/\n/g, "<br>")}</p><h3>Conversation</h3><p>${escapeHtml(transcript).replace(/\n/g, "<br>")}</p><p>Le visiteur a accepté d’être contacté au sujet de cette demande.</p>`
+        `<h2>Demande de réponse personnelle — Le Plan B</h2><p><strong>Nom :</strong> ${escapeHtml(name)}</p><p><strong>E-mail :</strong> ${escapeHtml(email)}</p><p><strong>Téléphone :</strong> ${escapeHtml(phone || "Non renseigné")}</p><h3>Question</h3><p>${escapeHtml(message).replace(/\n/g, "<br>")}</p><h3>Conversation</h3><p>${escapeHtml(transcript).replace(/\n/g, "<br>")}</p><p>Le visiteur a accepté d’être contacté au sujet de cette demande.</p>`
       ), email
     );
     if (!sent) return { error: "Votre demande n’a pas été envoyée. Réessayez ou utilisez la page Contact." };
-    return { success: "Votre demande a été envoyée à l’équipe Plan B. Vous recevrez une réponse personnelle par email ou téléphone." };
+    return { success: "Votre demande a été envoyée à l’équipe Le Plan B. Vous recevrez une réponse personnelle par email ou téléphone." };
   } catch (error) {
     console.error("submitChatLeadAction:", error);
     return { error: "Impossible d'envoyer votre message pour le moment." };

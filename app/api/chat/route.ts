@@ -11,5 +11,5 @@ export async function POST(request: Request) {
   if(!parsed.success) return NextResponse.json({error:"Écrivez une question de 600 caractères maximum."},{status:400});
   const [cities,trades]=await Promise.all([getActiveCities(),getAllTrades()]);
   return NextResponse.json(answerQuestion(parsed.data.question,{cities,trades},parsed.data.topic),{headers:{"Cache-Control":"no-store"}});
- }catch {return NextResponse.json({text:"Je ne peux pas répondre pour le moment. L’équipe Plan B peut vous répondre personnellement.",handoff:true,topic:"contact"},{headers:{"Cache-Control":"no-store"}});}
+ }catch {return NextResponse.json({text:"Je ne peux pas répondre pour le moment. L’équipe Le Plan B peut vous répondre personnellement.",handoff:true,topic:"contact"},{headers:{"Cache-Control":"no-store"}});}
 }
