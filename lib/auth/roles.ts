@@ -13,6 +13,7 @@ export const PROTECTED_ROUTES: { prefix: string; roles: UserRole[] }[] = [
   { prefix: "/profil", roles: ["professional"] },
   { prefix: "/mes-services", roles: ["professional"] },
   { prefix: "/calendrier", roles: ["professional"] },
+  { prefix: "/devis-factures", roles: ["professional"] },
   { prefix: "/documents", roles: ["professional"] },
   { prefix: "/reservations", roles: ["professional"] },
   { prefix: "/admin", roles: ["admin"] },

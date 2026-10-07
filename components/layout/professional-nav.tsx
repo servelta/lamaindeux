@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: "/profil", label: "Mon profil", icon: User },
   { href: "/mes-services", label: "Mes services", icon: Wrench },
   { href: "/calendrier", label: "Calendrier", icon: CalendarDays },
+  { href: "/devis-factures", label: "Devis et factures", icon: FileText },
   { href: "/documents", label: "Documents", icon: FileText },
 ];
 

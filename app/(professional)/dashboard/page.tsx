@@ -74,7 +74,7 @@ export default async function ProfessionalDashboardPage() {
         </Card>
       </div>
 
-      <div className="mt-8 grid gap-3 sm:grid-cols-3">
+      <div className="mt-8 grid gap-3 sm:grid-cols-2">
         <Button asChild variant="outline" className="justify-start">
           <Link href="/profil">Compléter mon profil</Link>
         </Button>
@@ -85,6 +85,8 @@ export default async function ProfessionalDashboardPage() {
           <Link href="/calendrier">Définir mes disponibilités</Link>
         </Button>
       </div>
+
+      <Button asChild className="mt-4"><Link href="/devis-factures">Créer un devis ou une facture</Link></Button>
 
       {!isActive && (
         <p className="mt-6 rounded-md bg-secondary p-4 text-sm">
