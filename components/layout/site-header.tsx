@@ -1,138 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { usePathname } from "next/navigation";
+import { ArrowUpRight, Menu, Search, UserRound, X } from "lucide-react";
 import { AccountMenu } from "@/components/layout/account-menu";
 import { BrandLogo } from "@/components/layout/brand-logo";
-import { TradeNav, type TradeNavCity, type TradeNavTrade } from "@/components/layout/trade-nav";
 
-export type CurrentUser = {
-  firstName: string;
-  avatarUrl: string | null;
-  role: string;
-} | null;
-
-// Order matters twice over: it is the order shown, and a signed-in
-// customer sees only the first entry (slice below), which must stay
-// "Trouver un artisan".
+export type CurrentUser = { firstName: string; avatarUrl: string | null; role: string } | null;
 const NAV_LINKS = [
   { href: "/recherche", label: "Trouver un artisan" },
   { href: "/inscription/professionnel", label: "Devenir artisan" },
   { href: "/contact", label: "Contact" },
 ];
 
-export function SiteHeader({
-  currentUser = null,
-  trades = [],
-  cities = [],
-}: {
-  currentUser?: CurrentUser;
-  trades?: TradeNavTrade[];
-  cities?: TradeNavCity[];
-}) {
+export function SiteHeader({ currentUser = null }: { currentUser?: CurrentUser }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const visibleNavLinks = currentUser === null
-    ? NAV_LINKS
-    : currentUser.role === "customer"
-      ? NAV_LINKS.slice(0, 1)
-      : [];
-
+  const pathname = usePathname();
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const visibleLinks = !currentUser ? NAV_LINKS : currentUser.role === "customer" ? NAV_LINKS.slice(0, 1) : [];
+  useEffect(() => {
+    if (!mobileOpen) return;
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") { setMobileOpen(false); toggleRef.current?.focus(); }
+    }
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [mobileOpen]);
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur">
-      <div className="container flex h-20 items-center justify-between">
-        <BrandLogo />
-
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
-          {visibleNavLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="hover:text-primary">
-              {link.label}
-            </Link>
-          ))}
+    <header className="sticky top-0 z-40 border-b border-primary/10 bg-background/95 shadow-[0_4px_24px_-16px_rgba(24,73,85,0.3)] backdrop-blur-xl">
+      <div className="container flex h-[76px] items-center justify-between gap-3 md:h-[88px]">
+        <BrandLogo imageClassName="h-12 w-auto sm:h-14" className="shrink-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40" />
+        <nav aria-label="Navigation principale" className="hidden items-center gap-1 rounded-full bg-primary/[0.04] p-1 lg:flex">
+          {visibleLinks.map((link, index) => <Link key={link.href} href={link.href} aria-current={pathname === link.href ? "page" : undefined} className={"inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 " + (pathname === link.href ? "bg-white text-primary shadow-sm" : "text-foreground/75 hover:bg-white hover:text-primary")}>
+            {index === 0 ? <Search aria-hidden="true" className="h-4 w-4" /> : null}{link.label}{link.href === "/inscription/professionnel" ? <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" /> : null}
+          </Link>)}
         </nav>
-
-        <div className="flex items-center gap-2">
-          {currentUser ? (
-            <AccountMenu
-              firstName={currentUser.firstName}
-              avatarUrl={currentUser.avatarUrl}
-              role={currentUser.role}
-            />
-          ) : (
-            <Button asChild size="sm" className="hidden md:inline-flex">
-              <Link href="/connexion">Se connecter</Link>
-            </Button>
-          )}
-
-          {/* Mobile menu toggle — this is what was entirely missing before:
-              on small screens the desktop nav is hidden and there was no
-              replacement, so "Connexion" and "Devenir artisan" were
-              completely unreachable on a phone. */}
-          <button
-            type="button"
-            onClick={() => setMobileOpen((v) => !v)}
-            className="rounded-md p-2 text-foreground hover:bg-secondary md:hidden"
-            aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
-            aria-expanded={mobileOpen}
-          >
-            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+        <div className="flex shrink-0 items-center gap-2">
+          {currentUser ? <AccountMenu firstName={currentUser.firstName} avatarUrl={currentUser.avatarUrl} role={currentUser.role} /> : <Link href="/connexion" className="hidden items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 lg:inline-flex"><UserRound aria-hidden="true" className="h-4 w-4" />Se connecter</Link>}
+          <button ref={toggleRef} type="button" onClick={() => setMobileOpen(v => !v)} className="flex h-11 w-11 items-center justify-center rounded-full border border-primary/10 bg-white text-primary transition hover:bg-secondary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 lg:hidden" aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"} aria-expanded={mobileOpen} aria-controls="mobile-navigation">{mobileOpen ? <X aria-hidden="true" className="h-5 w-5" /> : <Menu aria-hidden="true" className="h-5 w-5" />}</button>
         </div>
       </div>
-
-      {/* Trade bar — hover-driven, so desktop only. Phones get the same
-          trades inside the mobile panel below, as plain links. */}
-      <div className="hidden md:block">
-        <TradeNav trades={trades} cities={cities} />
-      </div>
-
-      {/* Mobile menu panel */}
-      {mobileOpen && (
-        <nav className="flex flex-col gap-1 border-t border-border/60 bg-background px-4 py-3 md:hidden">
-          {visibleNavLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileOpen(false)}
-              className="rounded-md px-3 py-2.5 text-sm font-medium hover:bg-secondary"
-            >
-              {link.label}
-            </Link>
-          ))}
-
-          {trades.length > 0 && (
-            <>
-              <p className="mt-3 px-3 pb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Métiers
-              </p>
-              {trades.map((trade) =>
-                trade.active ? (
-                  <Link
-                    key={trade.slug_plural}
-                    href={`/${trade.slug_plural}`}
-                    onClick={() => setMobileOpen(false)}
-                    className="rounded-md px-3 py-2.5 text-sm font-medium hover:bg-secondary"
-                  >
-                    {trade.name}
-                  </Link>
-                ) : (
-                  <span
-                    key={trade.slug_plural}
-                    className="flex items-center justify-between gap-2 px-3 py-2.5 text-sm text-muted-foreground"
-                  >
-                    {trade.name}
-                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-secondary-foreground">
-                      Bientôt disponible
-                    </span>
-                  </span>
-                )
-              )}
-            </>
-          )}
-        </nav>
-      )}
+      {mobileOpen ? <nav id="mobile-navigation" aria-label="Navigation mobile" className="container pb-4 lg:hidden"><div className="space-y-1 rounded-2xl border border-primary/10 bg-white p-2 shadow-sm">
+        {visibleLinks.map(link => <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} aria-current={pathname === link.href ? "page" : undefined} className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-primary transition hover:bg-secondary/40">{link.label}<ArrowUpRight aria-hidden="true" className="h-4 w-4" /></Link>)}
+        {!currentUser ? <Link href="/connexion" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground"><UserRound aria-hidden="true" className="h-4 w-4" />Se connecter</Link> : null}
+      </div></nav> : null}
     </header>
   );
 }
