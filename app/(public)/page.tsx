@@ -132,16 +132,28 @@ export default async function HomePage() {
             )}
           </div>
 
-          <div className="relative aspect-[3/2] overflow-hidden rounded-3xl bg-white/10 shadow-xl lg:aspect-[4/3]">
-            <Image
-              src="/images/new image on the landing page.png"
-              alt="Deux artisans prêts à vous accompagner dans votre maison"
-              fill
-              priority
-              className="object-cover object-center"
-              sizes="(min-width: 1024px) 40vw, (min-width: 640px) 80vw, 100vw"
-            />
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-5 pt-16"><p className="flex items-center gap-2 text-sm font-medium text-white"><ShieldCheck aria-hidden="true" className="h-5 w-5" />Des professionnels. Un vrai coup de main.</p></div>
+          <div className="relative isolate min-w-0 lg:pl-2">
+            <div aria-hidden="true" className="absolute -right-3 -top-3 -z-10 h-32 w-32 rounded-full border border-secondary/40 sm:-right-5 sm:-top-5 sm:h-44 sm:w-44" />
+            <div aria-hidden="true" className="absolute -bottom-4 -left-3 -z-10 h-24 w-24 rounded-[2rem] bg-secondary/15" />
+            <figure className="overflow-hidden rounded-[2rem] rounded-br-[3.5rem] bg-[#f6f1e7] p-2.5 text-primary shadow-2xl shadow-black/20 ring-1 ring-white/20 sm:rounded-[2.5rem] sm:rounded-br-[4rem] sm:p-3.5">
+              <div className="relative aspect-[3/2] overflow-hidden rounded-[1.5rem] rounded-br-[3rem] sm:rounded-[1.75rem] sm:rounded-br-[3.5rem]">
+                <Image
+                  src="/images/nEW_BACKGROUND IMAGE.webp"
+                  alt="Artisan souriant avec les outils pour vos travaux à la maison"
+                  fill
+                  priority
+                  className="object-cover object-center"
+                  sizes="(min-width: 1280px) 480px, (min-width: 1024px) 40vw, (min-width: 640px) 80vw, 100vw"
+                />
+              </div>
+              <figcaption className="flex items-center gap-3 px-2 py-4 sm:px-3 sm:py-5">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm"><ShieldCheck aria-hidden="true" className="h-5 w-5" /></span>
+                <div className="min-w-0">
+                  <p className="font-display text-sm font-semibold sm:text-base">Un vrai coup de main, près de chez vous.</p>
+                  <p className="mt-1 text-xs leading-5 text-primary/70">Comparez les profils. Choisissez en confiance.</p>
+                </div>
+              </figcaption>
+            </figure>
           </div>
         </div>
       </section>
