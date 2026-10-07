@@ -7,7 +7,7 @@ const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide.").refine(va
 }, "Date invalide.");
 export const billingSchema = z.object({
   kind: z.enum(["quote", "invoice"]),
-  number: required(50).regex(/^[A-Za-z0-9][A-Za-z0-9/_-]*$/, "Utilisez des lettres, chiffres, tirets ou barres obliques."),
+  number: required(50).refine(value => !/[\u0000-\u001f\u007f]/.test(value), "La référence du document doit tenir sur une seule ligne.").transform(value => value.normalize("NFC")),
   issuedOn: date, serviceOn: date, deadline: date,
   issuerName: required(), issuerAddress: required(400), issuerId: required(14).regex(/^\d{9}(\d{5})?$/, "SIREN (9 chiffres) ou SIRET (14 chiffres)."),
   issuerEmail: z.string().trim().email("Email professionnel invalide."), issuerPhone: required(40),

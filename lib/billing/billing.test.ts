@@ -10,6 +10,8 @@ export const sample: BillingDocument = {
   lines:[{description:"Pose et fournitures",priceCents:18518,vatRate:20,duration:"1 h 30"},{description:"Pièces",priceCents:1998,vatRate:5.5,duration:""}],
 };
 describe("billing amounts and validation",()=>{
+  it.each(["Facture 2026 001", "DEV.2026.001", "Devis n° 12 / été", "#FAC-2026-001", "FAC–2026–001"])("accepts common document reference %s",number=>expect(billingSchema.parse({...sample,number}).number).toBe(number));
+  it("rejects multiline references with a specific error",()=>{expect(billingSchema.safeParse({...sample,number:"FAC\n001"}).success).toBe(false);});
   it("accepts comma prices and converts them to exact integer cents",()=>{expect(eurosToCents("12,34")).toBe(1234);expect(eurosToCents("0.10")).toBe(10);expect(eurosToCents("120")).toBe(12000);});
   it.each(["-1","1.999","1e3","NaN",""])("rejects invalid price %s",value=>expect(Number.isNaN(eurosToCents(value))).toBe(true));
   it("rounds VAT per line and sums mixed VAT rates",()=>{const totals=calculateTotals(sample);expect(totals.lines[0]).toEqual({net:18518,tax:3704,rate:20,gross:22222});expect(totals.lines[1]).toEqual({net:1998,tax:110,rate:5.5,gross:2108});expect(totals.gross).toBe(24330);});

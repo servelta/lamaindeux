@@ -21,7 +21,9 @@ export async function generateBillingPdf(input: BillingDocument, fontBytes: Uint
   function newPage() {
     page = pdf.addPage([595.28, 841.89]); y = 765;
     page.drawRectangle({ x: 0, y: 797, width: 595.28, height: 45, color: teal });
-    page.drawText(`${doc.kind === "invoice" ? "FACTURE" : "DEVIS"} · ${doc.number}`, { x: 40, y: 813, font, size: 12, color: rgb(1,1,1) });
+    const title = `${doc.kind === "invoice" ? "FACTURE" : "DEVIS"} · ${doc.number}`;
+    const titleSize = Math.min(12, 12 * 515 / font.widthOfTextAtSize(title, 12));
+    page.drawText(title, { x: 40, y: 813, font, size: titleSize, color: rgb(1,1,1) });
   }
   const widths = new Map<string, number>();
   function charWidth(char: string, size: number) {
