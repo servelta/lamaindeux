@@ -74,8 +74,9 @@ export function ProfileForm({ professional }: { professional: Professional }) {
           <Input id="publicPhone" name="publicPhone" type="tel" defaultValue={professional.public_phone ?? ""} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="publicEmail">E-mail public (optionnel)</Label>
+          <Label htmlFor="publicEmail">Email de contact privé (optionnel)</Label>
           <Input id="publicEmail" name="publicEmail" type="email" defaultValue={professional.public_email ?? ""} />
+          <p className="text-xs text-muted-foreground">Cet email ne figure pas sur votre profil public.</p>
         </div>
       </div>
 

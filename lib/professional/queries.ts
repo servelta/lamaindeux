@@ -19,7 +19,10 @@ export async function getOwnProfessional(professionalId: string) {
     .select("*")
     .eq("profile_id", professionalId)
     .single();
-  return data;
+  if (!data) return null;
+  const { data: { user } } = await supabase.auth.getUser();
+  const contact = user?.id === professionalId ? user.app_metadata.professional_contact_email : null;
+  return { ...data, public_email: typeof contact === "string" ? contact : data.public_email };
 }
 
 export async function getOwnProfessionalServices(professionalId: string) {

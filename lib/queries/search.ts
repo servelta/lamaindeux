@@ -171,7 +171,7 @@ export async function getProfessionalBySlug(slug: string) {
 
   const { data: professional } = await supabase
     .from("public_professional_profiles")
-    .select("*")
+    .select("profile_id,trade_id,trade_name_singular,trade_slug_singular,trade_slug_plural,company_name,slug,description,business_address,business_city,business_postcode,public_phone,rating_avg,rating_count,completed_jobs_count,google_rating,google_review_count,first_name,last_name,avatar_url")
     .eq("slug", slug)
     .single();
 
@@ -225,8 +225,14 @@ export async function getProfessionalBySlug(slug: string) {
     .order("sort_order")
     .order("created_at");
 
+  const { data: hours } = await supabase.from("availability")
+    .select("weekday,start_time,end_time")
+    .eq("professional_id", publicProfessional.profile_id)
+    .order("weekday").order("start_time");
+
   return {
     professional: publicProfessional,
+    hours: hours ?? [],
     services: services ?? [],
     reviews: reviews ?? [],
     areas: areas ?? [],

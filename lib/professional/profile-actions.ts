@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireUserId } from "@/lib/professional/queries";
 import { updateProfileSchema } from "@/lib/professional/validation";
+import { createProvisioningClient } from "@/lib/professional/provision-plumbing-services";
 
 export type ActionResult = { error?: string; success?: string } | void;
 
@@ -32,6 +33,15 @@ export async function updatePlumberProfileAction(
   }
 
   const supabase = await createClient();
+  const { data: ownProfessional } = await supabase.from("professionals")
+    .select("profile_id").eq("profile_id", professionalId).single();
+  if (!ownProfessional) return { error: "Profil artisan introuvable." };
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.id !== professionalId) return { error: "Connexion requise." };
+  const { error: contactError } = await createProvisioningClient().auth.admin.updateUserById(professionalId, {
+    app_metadata: { ...user.app_metadata, professional_contact_email: parsed.data.publicEmail || null },
+  });
+  if (contactError) return { error: "Impossible d’enregistrer votre email privé." };
   const { error } = await supabase
     .from("professionals")
     // Only non-sensitive fields — the DB trigger from migration 0006 also
@@ -46,7 +56,7 @@ export async function updatePlumberProfileAction(
       business_city: parsed.data.businessCity,
       business_postcode: parsed.data.businessPostcode,
       public_phone: parsed.data.publicPhone || null,
-      public_email: parsed.data.publicEmail || null,
+      public_email: null,
       google_rating: parsed.data.googleRating ?? null,
       google_review_count: parsed.data.googleReviewCount ?? null,
     })

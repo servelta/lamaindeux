@@ -21,7 +21,7 @@ type Profile = NonNullable<Awaited<ReturnType<typeof getProfessionalBySlug>>>;
 type Review = Profile["reviews"][number];
 
 export function PublicProfileLanding({ profile }: { profile: Profile }) {
-  const { professional: pro, services, reviews, areas, gallery } = profile;
+  const { professional: pro, services, reviews, areas, gallery, hours } = profile;
   const trade = pro.trade_name_singular ?? "Professionnel";
   const bookingUrl = `/artisan/${pro.slug}/reserver`;
   const phoneUrl = `tel:${pro.public_phone}`;
@@ -223,14 +223,6 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
               {address}
             </p>
           ) : null}
-          {pro.public_email ? (
-            <a
-              href={`mailto:${pro.public_email}`}
-              className="mt-3 inline-block break-all text-sm font-medium text-primary hover:underline"
-            >
-              {pro.public_email}
-            </a>
-          ) : null}
           <p className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
             <BadgeCheck
               aria-hidden="true"
@@ -239,6 +231,25 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
             Profil vérifié par l’équipe Plan B.
           </p>
         </div>
+      </section>
+
+      <section aria-labelledby="working-hours-title" className="mt-5 rounded-2xl border border-border bg-card p-6">
+        <h2 id="working-hours-title" className="flex items-center gap-2 font-display text-xl font-semibold">
+          <Clock3 aria-hidden="true" className="h-5 w-5 text-primary" />
+          Horaires de travail
+        </h2>
+        {hours.length ? <>
+          <p className="mt-2 text-sm text-muted-foreground">Horaires habituels, heure de Paris. Consultez les créneaux pour réserver.</p>
+          <dl className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {([1, 2, 3, 4, 5, 6, 0] as const).map((day) => {
+              const slots = hours.filter((slot) => slot.weekday === day);
+              return <div key={day} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-muted/50 px-4 py-3 text-sm">
+                <dt className="font-medium">{["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"][day]}</dt>
+                <dd className={slots.length ? "text-primary" : "text-muted-foreground"}>{slots.length ? slots.map((slot) => `${slot.start_time.slice(0, 5).replace(":", "h")} – ${slot.end_time.slice(0, 5).replace(":", "h")}`).join(" · ") : "Fermé"}</dd>
+              </div>;
+            })}
+          </dl>
+        </> : <p className="mt-3 text-sm text-muted-foreground">Horaires non renseignés. Consultez les créneaux de réservation ou contactez l’artisan.</p>}
       </section>
 
       <section id="reserver" className="mt-9 scroll-mt-44 sm:mt-12">
