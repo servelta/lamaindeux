@@ -5,6 +5,8 @@ import {
   BadgeCheck,
   ChevronRight,
   Clock3,
+  CalendarCheck2,
+  FileText,
   ExternalLink,
   MapPin,
   Phone,
@@ -180,6 +182,16 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
         </div>
       </section>
 
+
+      <section aria-label="Vos repères de confiance" className="mt-5 grid gap-3 rounded-[1.75rem] border border-primary/10 bg-primary/[0.03] p-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { icon: BadgeCheck, title: "Dossier vérifié", detail: "Par l’équipe Plan B" },
+          { icon: CalendarCheck2, title: "Créneau choisi", detail: "Une intervention planifiée" },
+          { icon: FileText, title: "Prix ou devis affiché", detail: "Les détails avant de réserver" },
+          { icon: Phone, title: "Contact direct", detail: "Avec votre artisan" },
+        ].map(({icon: Icon, title, detail}) => <div key={title} className="flex items-center gap-3 rounded-2xl bg-white/80 p-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary/50 text-primary"><Icon aria-hidden="true" className="h-5 w-5" /></span><div><p className="text-sm font-semibold text-primary">{title}</p><p className="mt-1 text-xs text-muted-foreground">{detail}</p></div></div>)}
+      </section>
+
       <section
         id="presentation"
         className="mt-8 grid scroll-mt-44 gap-5 lg:grid-cols-[1.3fr_1fr]"
@@ -224,6 +236,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
               {address}
             </p>
           ) : null}
+          {pro.public_phone ? <a href={phoneUrl} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-white/75 px-3 py-2 text-sm font-semibold text-primary transition hover:bg-white"><Phone aria-hidden="true" className="h-4 w-4" />{pro.public_phone}</a> : null}
           <p className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
             <BadgeCheck
               aria-hidden="true"
@@ -234,15 +247,15 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
         </div>
       </section>
 
-      <section aria-labelledby="working-hours-title" className="mt-5 rounded-2xl border border-border bg-card p-6">
+      <section aria-labelledby="working-hours-title" className="mt-5 rounded-[1.75rem] border border-primary/10 bg-gradient-to-br from-white to-teal-50/40 p-6 sm:p-7">
         <h2 id="working-hours-title" className="flex items-center gap-2 font-display text-xl font-semibold">
           <Clock3 aria-hidden="true" className="h-5 w-5 text-primary" />
           Horaires de travail
         </h2>
         {hours.length ? <>
           <p className="mt-2 text-sm text-muted-foreground">Horaires habituels, heure de Paris. Consultez les créneaux pour réserver.</p>
-          <dl className="mt-4 max-w-2xl divide-y divide-border/60">
-            {workingHoursRows(hours).map(row => <div key={row.label} className="flex flex-col gap-1 py-3 text-sm sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+          <dl className="mt-4 max-w-2xl space-y-2">
+            {workingHoursRows(hours).map(row => <div key={row.label} className="flex flex-col gap-1 rounded-xl bg-white/80 px-4 py-3 text-sm ring-1 ring-primary/5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
               <dt className="font-medium">{row.label}</dt>
               <dd className={row.closed ? "text-muted-foreground" : "font-medium tabular-nums text-primary"}>{row.times}</dd>
             </div>)}
@@ -278,14 +291,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
                     </p>
                   ) : null}
                   {item.description || service?.description ? (
-                    <details className="mt-2 text-sm text-muted-foreground">
-                      <summary className="w-fit cursor-pointer hover:text-primary">
-                        Détails du service
-                      </summary>
-                      <p className="mt-2 whitespace-pre-line leading-6">
-                        {item.description || service?.description}
-                      </p>
-                    </details>
+                    <p className="mt-2 max-w-xl whitespace-pre-line text-sm leading-6 text-muted-foreground">{service?.description || item.description}</p>
                   ) : null}
                 </div>
                 <div className="flex shrink-0 items-center justify-between gap-5 sm:gap-8">
@@ -316,6 +322,18 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
         <p className="mt-3 text-xs text-muted-foreground">
           Paiement directement à l’artisan, sans commission.
         </p>
+      </section>
+
+
+      <section aria-labelledby="prepare-project-title" className="mt-8 grid gap-6 rounded-[1.75rem] bg-secondary/35 p-6 sm:p-8 lg:grid-cols-[1.2fr_1fr]">
+        <div><p className="text-xs font-semibold uppercase tracking-wider text-primary">Votre projet, simplement</p><h2 id="prepare-project-title" className="mt-2 font-display text-2xl font-semibold">Une question avant de réserver ?</h2>
+          <div className="mt-5 space-y-2">{[
+            {question:"Que préciser à l’artisan ?",answer:"Décrivez le problème, l’équipement concerné et l’adresse. Ajoutez une photo si vous en avez : l’artisan pourra mieux préparer son intervention."},
+            {question:"Puis-je réserver sans compte ?",answer:"Oui. Choisissez votre service et votre créneau, puis continuez sans connexion et renseignez vos coordonnées."},
+            {question:"Comment connaître le montant ?",answer:"Consultez le prix ou la mention « Sur devis » du service. Décrivez votre besoin pour permettre à l’artisan de préciser le montant. Le paiement se règle directement avec lui."},
+          ].map(item=><details key={item.question} className="group rounded-xl border border-primary/10 bg-white/75 px-4 py-3"><summary className="cursor-pointer text-sm font-semibold text-primary">{item.question}</summary><p className="mt-3 text-sm leading-6 text-muted-foreground">{item.answer}</p></details>)}</div>
+        </div>
+        <div className="flex flex-col justify-center rounded-2xl bg-primary p-6 text-white"><BadgeCheck aria-hidden="true" className="h-8 w-8 text-secondary" /><h3 className="mt-4 font-display text-xl font-semibold">Trouvez le bon artisan pour vous</h3><p className="mt-2 text-sm leading-6 text-white/75">Consultez les avis de ce professionnel ou comparez les autres profils avant de choisir.</p><div className="mt-5 flex flex-col gap-3"><Button asChild className="bg-secondary text-primary hover:bg-secondary/90"><a href="#avis">Lire les avis<Star aria-hidden="true" className="ml-2 h-4 w-4" /></a></Button><Link href={pro.trade_slug_plural ? "/recherche?metier=" + encodeURIComponent(pro.trade_slug_plural) : "/recherche"} className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/25 px-4 py-3 text-sm font-medium hover:bg-white/10">Comparer d’autres artisans<ArrowRight aria-hidden="true" className="h-4 w-4" /></Link></div></div>
       </section>
 
       <section id="avis" className="mt-9 scroll-mt-44 sm:mt-12">

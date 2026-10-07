@@ -1,7 +1,7 @@
 // Server-side provisioning only. Never import this module into a client component.
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
-import { DEFAULT_PLUMBING_SERVICES } from "./default-plumbing-services";
+import { standardServices } from "./default-plumbing-services";
 
 export function createProvisioningClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -19,14 +19,15 @@ export async function provisionPlumbingServices(
   client: SupabaseClient<Database>,
   professionalId?: string,
 ) {
-  const { data: trade, error: tradeError } = await client
+  const { data: trades, error: tradeError } = await client
     .from("trades")
-    .select("id")
-    .eq("slug_singular", "plombier")
-    .single();
-  if (tradeError || !trade)
-    throw new Error("Unable to read the plumbing trade.");
+    .select("id,slug_singular").order("id");
+  if (tradeError || !trades?.length)
+    throw new Error("Unable to read the artisan trades.");
 
+  let total = 0;
+  for (const trade of trades) {
+  const DEFAULT_PLUMBING_SERVICES = standardServices(trade.slug_singular);
   const slugs = DEFAULT_PLUMBING_SERVICES.map((service) => service.slug);
   const { error: catalogError } = await client.from("services").upsert(
     DEFAULT_PLUMBING_SERVICES.map((service, index) => ({
@@ -40,7 +41,7 @@ export async function provisionPlumbingServices(
   );
   if (catalogError)
     throw new Error(
-      `Unable to provision the plumbing catalog: ${catalogError.code}`,
+      `Unable to provision the standard catalog: ${catalogError.code}`,
     );
 
   const { data: catalog, error: readError } = await client
@@ -53,22 +54,23 @@ export async function provisionPlumbingServices(
     catalog.some((service) => service.trade_id !== trade.id)
   )
     throw new Error(
-      "The standard plumbing catalog is incomplete or belongs to another trade.",
+      "The standard catalog is incomplete or belongs to another trade.",
     );
   const serviceIds = catalog.map((service) => service.id);
   for (const [index, standard] of DEFAULT_PLUMBING_SERVICES.entries()) {
     const { error } = await client
       .from("services")
-      .update({ active: true, sort_order: index - 1 })
+      .update({ active: true, sort_order: index - 1, name: standard.name, description: standard.description })
       .eq("slug", standard.slug)
       .eq("trade_id", trade.id);
     if (error)
       throw new Error(
-        `Unable to activate a standard plumbing service: ${error.code}`,
+        `Unable to activate a standard service: ${error.code}`,
       );
   }
 
-  let total = 0;
+  const { error: archiveCatalogError } = await client.from("services").update({ active: false }).eq("trade_id", trade.id).not("id", "in", `(${serviceIds.join(",")})`);
+  if (archiveCatalogError) throw new Error("Unable to archive legacy services.");
   for (let offset = 0; ; offset += 100) {
     let query = client
       .from("professionals")
@@ -78,7 +80,7 @@ export async function provisionPlumbingServices(
       .range(offset, offset + 99);
     if (professionalId) query = query.eq("profile_id", professionalId);
     const { data: plumbers, error } = await query;
-    if (error) throw new Error(`Unable to read plumbers: ${error.code}`);
+    if (error) throw new Error(`Unable to read artisans: ${error.code}`);
     if (!plumbers?.length) break;
     const professionalIds = plumbers.map((plumber) => plumber.profile_id);
     const assignments = plumbers.flatMap((plumber) =>
@@ -99,16 +101,16 @@ export async function provisionPlumbingServices(
       });
     if (insertError)
       throw new Error(
-        `Unable to assign plumbing services: ${insertError.code}`,
+        `Unable to assign standard services: ${insertError.code}`,
       );
     const { error: activeError } = await client
       .from("professional_services")
-      .update({ active: true })
+      .update({ active: true, description: null })
       .in("professional_id", professionalIds)
       .in("service_id", serviceIds);
     if (activeError)
       throw new Error(
-        `Unable to activate plumbing services: ${activeError.code}`,
+        `Unable to activate standard services: ${activeError.code}`,
       );
     // Retain legacy rows for booking history, but only offer the standard set.
     const { error: extraError } = await client
@@ -118,7 +120,7 @@ export async function provisionPlumbingServices(
       .not("service_id", "in", `(${serviceIds.join(",")})`);
     if (extraError)
       throw new Error(
-        `Unable to archive nonstandard plumbing services: ${extraError.code}`,
+        `Unable to archive nonstandard services: ${extraError.code}`,
       );
     const { data: assigned, error: verifyError } = await client
       .from("professional_services")
@@ -134,9 +136,10 @@ export async function provisionPlumbingServices(
           serviceIds.length,
       )
     )
-      throw new Error("Plumbing service verification failed.");
+      throw new Error("Standard service verification failed.");
     total += plumbers.length;
     if (professionalId || plumbers.length < 100) break;
   }
-  return { plumbers: total, servicesPerPlumber: serviceIds.length };
+  }
+  return { professionals: total, servicesPerProfessional: 2 };
 }

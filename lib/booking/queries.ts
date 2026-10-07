@@ -6,11 +6,13 @@ const BOOKING_SELECT = `
   contact_first_name, contact_last_name, contact_phone, contact_email,
   address_line, postcode, city, description, photo_urls,
   price_cents, is_quote_request, cancelled_reason, created_at,
-  professional_id,
+  professional_id, professional_service_id,
   professional_services(id, price_cents, duration_minutes, services(name))
 `;
 
-async function attachPublicProfessionals<T extends { professional_id: string }>(rows: T[]) {
+type ServiceSummary = { id: string; price_cents: number | null; duration_minutes: number | null; services: { name: string } | null };
+type PublicProfessional = { profile_id: string | null; company_name: string | null; slug: string | null };
+async function attachPublicProfessionals<T extends { professional_id: string; professional_service_id: string; professional_services: ServiceSummary | null }>(rows: T[]): Promise<(Omit<T, "professional_services"> & { professional_services: ServiceSummary | null; professionals: PublicProfessional | null })[]> {
   if (rows.length === 0) return rows.map((row) => ({ ...row, professionals: null }));
 
   const supabase = await createClient();
@@ -21,7 +23,15 @@ async function attachPublicProfessionals<T extends { professional_id: string }>(
     .in("profile_id", professionalIds);
 
   const byId = new Map((professionals ?? []).map((professional) => [professional.profile_id, professional]));
-  return rows.map((row) => ({ ...row, professionals: byId.get(row.professional_id) ?? null }));
+  // These booking rows have already passed owner RLS or a signed guest receipt.
+  // Archived offerings are hidden by public service RLS but remain part of the
+  // customer's existing reservation; fetch only its referenced service IDs.
+  const missingIds = [...new Set(rows.filter(row => !row.professional_services && row.professional_service_id).map(row => row.professional_service_id))];
+  const { data: archivedServices } = missingIds.length ? await createAdminClient()
+    .from("professional_services").select("id,price_cents,duration_minutes,services(name)").in("id", missingIds) : { data: [] };
+  const archivedById = new Map((archivedServices ?? []).map(service => [service.id, service]));
+  return rows.map((row) => ({ ...row, professionals: byId.get(row.professional_id) ?? null,
+    professional_services: row.professional_services ?? archivedById.get(row.professional_service_id) ?? null }));
 }
 
 export async function getCustomerBookings(customerId: string) {

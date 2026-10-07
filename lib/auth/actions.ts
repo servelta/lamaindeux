@@ -222,7 +222,7 @@ export async function professionalSignUpAction(
         business_postcode: businessPostcode,
       })
       .eq("profile_id", data.user.id);
-    if (tradeSlug === "plombier") {
+    {
       try {
         await provisionPlumbingServices(
           createProvisioningClient(),
@@ -231,7 +231,7 @@ export async function professionalSignUpAction(
       } catch {
         // Signup remains usable; the authenticated dashboard and daily sync retry.
         console.error(
-          "professional signup: standard plumbing service provisioning failed.",
+          "professional signup: standard service provisioning failed.",
         );
       }
     }

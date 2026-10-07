@@ -11,7 +11,7 @@ async function main() {
   }
   const result = await provisionPlumbingServices(createProvisioningClient());
   console.log(
-    `[plumbing services] Verified ${result.plumbers} plumbers with ${result.servicesPerPlumber} standard services each.`,
+    `[plumbing services] Verified ${result.professionals} artisans with ${result.servicesPerProfessional} standard services each.`,
   );
 }
 

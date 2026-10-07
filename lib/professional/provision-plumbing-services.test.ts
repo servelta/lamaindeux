@@ -53,7 +53,7 @@ describe("automatic plumbing services", () => {
       { id: "legacy", professional_id: "plumber-000", service_id: "nonstandard", active: true },
       { id: "electric-service", professional_id: "electrician", service_id: "electric", active: true },
     );
-    expect(await provisionPlumbingServices(client)).toEqual({ plumbers: 1, servicesPerPlumber: 7 });
+    expect(await provisionPlumbingServices(client)).toEqual({ professionals: 1, servicesPerProfessional: 2 });
     expect(tables.professional_services.find(row => row.id === "booked-service")).toMatchObject({ pricing_type: "fixed", price_cents: 9900, duration_minutes: 60, active: true });
     expect(tables.professional_services.find(row => row.id === "legacy")).toMatchObject({ active: false });
     expect(tables.professional_services.find(row => row.id === "electric-service")).toMatchObject({ active: true });
@@ -65,13 +65,23 @@ describe("automatic plumbing services", () => {
   it("assigns a new plumber without modifying another plumber", async () => {
     const { client, tables } = fixture(2);
     await provisionPlumbingServices(client, "plumber-001");
-    expect(tables.professional_services).toHaveLength(7);
+    expect(tables.professional_services).toHaveLength(2);
     expect(tables.professional_services.every(row => row.professional_id === "plumber-001" && row.pricing_type === "quote" && row.price_cents === null)).toBe(true);
   });
 
   it("covers all plumbers across pages under the API row limit", async () => {
     const { client, tables } = fixture(150);
-    expect(await provisionPlumbingServices(client)).toEqual({ plumbers: 150, servicesPerPlumber: 7 });
-    expect(tables.professional_services).toHaveLength(1050);
+    expect(await provisionPlumbingServices(client)).toEqual({ professionals: 150, servicesPerProfessional: 2 });
+    expect(tables.professional_services).toHaveLength(300);
+  });
+  it("assigns two services to electricians too and archives their previous offerings", async () => {
+    const {client,tables}=fixture();
+    tables.trades.push({id:"electric",slug_singular:"electricien"});
+    tables.services.push({id:"old-electric-service",trade_id:"electric",slug:"electric-legacy",active:true});
+    tables.professional_services.push({id:"old-electric-assignment",professional_id:"electrician",service_id:"old-electric-service",active:true});
+    expect(await provisionPlumbingServices(client)).toEqual({professionals:2,servicesPerProfessional:2});
+    expect(tables.professional_services.filter(row=>row.professional_id==="electrician"&&row.active)).toHaveLength(2);
+    expect(tables.professional_services.find(row=>row.id==="old-electric-assignment")?.active).toBe(false);
+    expect(tables.services.find(row=>row.id==="old-electric-service")?.active).toBe(false);
   });
 });
