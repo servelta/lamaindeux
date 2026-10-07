@@ -3,6 +3,20 @@ import { getPlatformSettings } from "@/lib/notifications/platform-settings";
 
 let resendClient: Resend | null = null;
 
+/** Contact requests have no saved booking to fall back on: report provider failure. */
+export async function sendRequiredEmail(to: string, subject: string, html: string, replyTo: string): Promise<boolean> {
+  const settings = await getPlatformSettings();
+  const client = getResendClient();
+  if (settings?.email_enabled === false || !client) return false;
+  try {
+    const { data, error } = await client.emails.send({
+      from: (process.env.EMAIL_FROM ?? "Plan B <onboarding@resend.dev>").replace(/^\s*(?:LaMainDeux|Plan b)(?=\s*<)/i, "Plan B"),
+      to, subject, html, replyTo,
+    });
+    return !error && Boolean(data?.id);
+  } catch { return false; }
+}
+
 function getResendClient(): Resend | null {
   if (!process.env.RESEND_API_KEY) return null;
   if (!resendClient) resendClient = new Resend(process.env.RESEND_API_KEY);
