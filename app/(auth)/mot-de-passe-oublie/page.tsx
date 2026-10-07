@@ -12,7 +12,7 @@ export default function MotDePasseOubliePage() {
   const [state, formAction] = useActionState<ActionResult, FormData>(requestPasswordResetAction, undefined);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
+    <div className="flex min-h-[calc(100svh-104px)] items-center justify-center bg-muted/40 px-4 pb-12 pt-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Mot de passe oublié</CardTitle>

@@ -21,7 +21,7 @@ export default function InscriptionPage() {
   );
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4 py-12">
+    <div className="flex min-h-[calc(100svh-104px)] items-center justify-center bg-muted/40 px-4 pb-12 pt-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Créer mon compte</CardTitle>

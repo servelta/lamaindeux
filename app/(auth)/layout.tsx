@@ -2,9 +2,9 @@ import { BrandLogo } from "@/components/layout/brand-logo";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative">
-      <div className="pointer-events-none absolute inset-x-0 top-16 z-10 flex justify-center">
-        <BrandLogo className="pointer-events-auto" />
+    <div className="min-h-screen bg-muted/40">
+      <div className="flex h-[104px] items-center justify-center px-4">
+        <BrandLogo />
       </div>
       {children}
     </div>
