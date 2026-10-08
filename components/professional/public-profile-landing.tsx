@@ -130,7 +130,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
                   aria-hidden="true"
                   className="h-4 w-4 fill-secondary text-secondary"
                 />
-                {formatRating(pro.rating_avg)}/5 · {pro.rating_count} avis Le Plan B
+                {formatRating(pro.rating_avg)}/5 · {pro.rating_count} avis LaMain2
               </a>
             ) : pro.google_rating != null ? (
               <a
@@ -189,7 +189,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
               ) : null}
             </div>
             <p className="mt-4 text-xs text-white/70">
-              Réservation gratuite sur Le Plan B.
+              Réservation gratuite sur LaMain2.
             </p>
           </div>
           <ProfilePhotoCarousel key={pro.slug} photos={photos} />
@@ -199,7 +199,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
 
       <section aria-label="Vos repères de confiance" className="mt-5 grid gap-3 rounded-[1.75rem] border border-primary/10 bg-primary/[0.03] p-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { icon: BadgeCheck, title: "Dossier vérifié", detail: "Par l’équipe Le Plan B" },
+          { icon: BadgeCheck, title: "Dossier vérifié", detail: "Par l’équipe LaMain2" },
           { icon: CalendarCheck2, title: "Créneau choisi", detail: "Une intervention planifiée" },
           { icon: FileText, title: "Prix ou devis affiché", detail: "Les détails avant de réserver" },
           { icon: Phone, title: "Contact direct", detail: "Avec votre artisan" },
@@ -230,7 +230,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
           ) : null}
           {pro.completed_jobs_count > 0 ? (
             <p className="mt-4 text-xs font-medium text-primary">
-              {pro.completed_jobs_count} interventions réalisées sur Le Plan B
+              {pro.completed_jobs_count} interventions réalisées sur LaMain2
             </p>
           ) : null}
         </div>
@@ -346,7 +346,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
                 aria-hidden="true"
                 className="h-4 w-4 fill-accent text-accent"
               />
-              {formatRating(pro.rating_avg)}/5 · {pro.rating_count} avis Le Plan B
+              {formatRating(pro.rating_avg)}/5 · {pro.rating_count} avis LaMain2
             </p>
           ) : null}
         </div>
@@ -390,7 +390,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
           </>
         ) : (
           <p className="mt-4 text-sm text-muted-foreground">
-            Pas encore d’avis sur Le Plan B.
+            Pas encore d’avis sur LaMain2.
           </p>
         )}
       </section>
@@ -420,7 +420,7 @@ function ReviewCard({ review }: { review: Review }) {
         </blockquote>
       ) : null}
       <figcaption className="mt-3 text-xs text-muted-foreground">
-        Avis Le Plan B ·{" "}
+        Avis LaMain2 ·{" "}
         <time dateTime={review.created_at}>
           {new Date(review.created_at).toLocaleDateString("fr-FR", {
             month: "long",

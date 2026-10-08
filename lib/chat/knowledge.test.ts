@@ -1,7 +1,7 @@
 ﻿import { describe, expect, it } from "vitest";
 import { answerQuestion, type ChatCatalog } from "./knowledge";
 const catalog: ChatCatalog = { cities:[{name:"Paris",slug:"paris"},{name:"Marseille",slug:"marseille"}], trades:[{name:"Plomberie",name_singular:"Plombier",slug_plural:"plombiers",active:true},{name:"Peinture",name_singular:"Peintre",slug_plural:"peintres",active:false}] };
-describe("Le Plan B chat knowledge",()=>{
+describe("LaMain2 chat knowledge",()=>{
  it("recognizes free-text guest booking without asking for contact details",()=>{const answer=answerQuestion("Puis-je réserver sans créer de compte ?",catalog);expect(answer.topic).toBe("guest");expect(answer.handoff).not.toBe(true);});
  it("uses live city and trade slugs without asserting availability",()=>{const answer=answerQuestion("Je cherche un plombier à Marseille",catalog);expect(answer.href).toBe("/recherche?ville=marseille&metier=plombiers");expect(answer.text).not.toContain("disponible aujourd’hui");});
  it("does not confuse substrings with a city",()=>{expect(answerQuestion("Je suis parisien",catalog).handoff).toBe(true);});

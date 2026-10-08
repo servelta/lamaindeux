@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Le Plan B — Trouvez un artisan près de chez vous";
+export const alt = "LaMain2 — Trouvez un artisan près de chez vous";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -22,7 +22,7 @@ export default function Image() {
         }}
       >
         <div style={{ display: "flex", width: 64, height: 6, backgroundColor: "#B8703B", marginBottom: 32 }} />
-        <div style={{ fontSize: 30, opacity: 0.8, display: "flex" }}>Le Plan B</div>
+        <div style={{ fontSize: 30, opacity: 0.8, display: "flex" }}>LaMain2</div>
         <div style={{ fontSize: 64, fontWeight: 700, marginTop: 16, display: "flex", lineHeight: 1.15 }}>
           Un artisan fiable,
         </div>

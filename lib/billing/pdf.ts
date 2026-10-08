@@ -16,7 +16,7 @@ export async function generateBillingPdf(input: BillingDocument, fontBytes: Uint
   const title = doc.kind === "invoice" ? "Facture" : "Devis";
   pdf.setTitle(`${title} ${doc.number}`);
   pdf.setAuthor(doc.issuerName);
-  pdf.setCreator("Le Plan B");
+  pdf.setCreator("LaMain2");
   pdf.setLanguage("fr-FR");
 
   const teal = rgb(0.09, 0.3, 0.34), ink = rgb(0.12, 0.19, 0.21), muted = rgb(0.39, 0.46, 0.48);
@@ -163,7 +163,7 @@ export async function generateBillingPdf(input: BillingDocument, fontBytes: Uint
     const footer = `${title} ${doc.number} · Page ${index + 1}/${pages.length}`;
     const footerSize = Math.min(7, 7 * 410 / Math.max(font.widthOfTextAtSize(footer, 7), 1));
     at(footer, 40, 27, footerSize, muted);
-    right("Créé avec Le Plan B", 555, 27, 7, muted, 90);
+    right("Créé avec LaMain2", 555, 27, 7, muted, 90);
   });
   return pdf.save();
 }

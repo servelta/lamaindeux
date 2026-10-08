@@ -10,18 +10,18 @@ import type { ChatAnswer } from "@/lib/chat/knowledge";
 import { SubmitButton } from "@/components/auth/submit-button";
 
 type Message = ChatAnswer & { id: number; role: "assistant" | "visitor" };
-const WELCOME: Message = { id: 0, role: "assistant", text: "Bonjour et bienvenue sur Le Plan B 👋 Je vous accompagne sur toute la plateforme : artisans, réservations, comptes, horaires, devis et factures. Comment puis-je vous aider ?" };
+const WELCOME: Message = { id: 0, role: "assistant", text: "Bonjour et bienvenue sur LaMain2 👋 Je vous accompagne sur toute la plateforme : artisans, réservations, comptes, horaires, devis et factures. Comment puis-je vous aider ?" };
 const SUGGESTIONS = ["Trouver un artisan", "Réserver sans compte", "Quels sont les prix ?", "Devenir artisan", "Créer une facture PDF", "Modifier mes horaires"];
 const FIELD = "mt-1.5 w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15";
 
 function Avatar({ size = 40 }: { size?: number }) {
-  return <Image src="/images/chat-assistant.webp" alt="Portrait illustratif de l’assistant Le Plan B" width={size} height={size} className="shrink-0 rounded-full object-cover" />;
+  return <Image src="/images/chat-assistant.webp" alt="Portrait illustratif de l’assistant LaMain2" width={size} height={size} className="shrink-0 rounded-full object-cover" />;
 }
 function PersonalReplyForm({ messages, question, onClose }: { messages: Message[]; question: string; onClose: () => void }) {
   const [state, action] = useActionState<ChatLeadResult, FormData>(submitChatLeadAction, undefined);
   return <div className="rounded-2xl border border-primary/10 bg-white p-4 shadow-sm">
     <h3 className="font-display text-base font-semibold text-primary">Une réponse personnelle</h3>
-    <p className="mt-1 text-xs leading-5 text-muted-foreground">L’équipe Le Plan B prendra le relais. Vos coordonnées et cette conversation lui seront envoyées.</p>
+    <p className="mt-1 text-xs leading-5 text-muted-foreground">L’équipe LaMain2 prendra le relais. Vos coordonnées et cette conversation lui seront envoyées.</p>
     {state?.success ? <p role="status" className="mt-4 rounded-xl bg-teal-50 p-3 text-sm leading-6 text-primary"><CheckCheck aria-hidden="true" className="mb-1 h-5 w-5" />{state.success}</p> : <form action={action} className="mt-4 space-y-3">
       <input type="hidden" name="transcript" value={messages.slice(-12).map(m => (m.role === "visitor" ? "Visiteur : " : "Assistant : ") + m.text.slice(0, 1000)).join("\n\n")} />
       <input name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
@@ -29,7 +29,7 @@ function PersonalReplyForm({ messages, question, onClose }: { messages: Message[
       <div><label htmlFor="chat-email" className="text-xs font-semibold">Votre email</label><input id="chat-email" name="email" type="email" autoComplete="email" required maxLength={254} className={FIELD} /></div>
       <div><label htmlFor="chat-phone" className="text-xs font-semibold">Téléphone <span className="font-normal text-muted-foreground">(optionnel)</span></label><input id="chat-phone" name="phone" type="tel" autoComplete="tel" maxLength={32} className={FIELD} /></div>
       <div><label htmlFor="chat-question" className="text-xs font-semibold">Votre question</label><textarea id="chat-question" name="message" required maxLength={2000} rows={3} defaultValue={question} className={FIELD + " resize-y"} /></div>
-      <label className="flex items-start gap-2 text-xs leading-5 text-muted-foreground"><input type="checkbox" name="consent" required className="mt-1 shrink-0 accent-primary" /><span>J’accepte que Le Plan B me contacte au sujet de cette demande. <Link href="/confidentialite" className="underline">Confidentialité</Link></span></label>
+      <label className="flex items-start gap-2 text-xs leading-5 text-muted-foreground"><input type="checkbox" name="consent" required className="mt-1 shrink-0 accent-primary" /><span>J’accepte que LaMain2 me contacte au sujet de cette demande. <Link href="/confidentialite" className="underline">Confidentialité</Link></span></label>
       {state?.error ? <p role="alert" className="text-xs leading-5 text-destructive">{state.error} <Link href="/contact" className="underline">Contact</Link></p> : null}
       <SubmitButton className="w-full rounded-xl" pendingText="Envoi en cours…">Demander une réponse <ArrowUpRight aria-hidden="true" className="ml-2 h-4 w-4" /></SubmitButton>
     </form>}
@@ -76,16 +76,16 @@ export function ChatWidget() {
       setMessages(previous => [...previous, { ...answer, id: counter.current++, role: "assistant" }]);
       setTopic(answer.topic); setContactOpen(Boolean(answer.handoff));
     } catch {
-      setMessages(previous => [...previous, { id: counter.current++, role: "assistant", text: "Je ne peux pas répondre pour le moment. Laissez vos coordonnées pour recevoir une réponse personnelle de l’équipe Le Plan B.", handoff: true }]);
+      setMessages(previous => [...previous, { id: counter.current++, role: "assistant", text: "Je ne peux pas répondre pour le moment. Laissez vos coordonnées pour recevoir une réponse personnelle de l’équipe LaMain2.", handoff: true }]);
       setContactOpen(true);
     } finally { clearTimeout(timeout); setBusy(false); }
   }
   function submit(event: FormEvent) { event.preventDefault(); void sendQuestion(draft); }
   return <div className="fixed bottom-4 right-4 z-50 sm:bottom-6 sm:right-6">
-    {open ? <section id="plan-b-chat" role="dialog" aria-label="Conversation avec l’assistant Le Plan B" className="mb-3 flex h-[min(620px,calc(100dvh-108px))] w-[calc(100vw-2rem)] max-w-[390px] flex-col overflow-hidden rounded-[1.75rem] border border-primary/10 bg-[#f6f8f7] shadow-[0_20px_70px_-15px_rgba(24,73,85,0.4)]">
+    {open ? <section id="plan-b-chat" role="dialog" aria-label="Conversation avec l’assistant LaMain2" className="mb-3 flex h-[min(620px,calc(100dvh-108px))] w-[calc(100vw-2rem)] max-w-[390px] flex-col overflow-hidden rounded-[1.75rem] border border-primary/10 bg-[#f6f8f7] shadow-[0_20px_70px_-15px_rgba(24,73,85,0.4)]">
       <div className="flex shrink-0 items-center gap-3 bg-primary px-5 py-4 text-primary-foreground">
         <div className="rounded-full border-2 border-white/30"><Avatar size={44} /></div>
-        <div className="min-w-0 flex-1"><h2 className="font-display text-base font-semibold">Votre assistant Le Plan B</h2><p className="mt-0.5 text-xs text-white/75">Assistant automatique · relais humain</p></div>
+        <div className="min-w-0 flex-1"><h2 className="font-display text-base font-semibold">Votre assistant LaMain2</h2><p className="mt-0.5 text-xs text-white/75">Assistant automatique · relais humain</p></div>
         <button type="button" onClick={() => setOpen(false)} aria-label="Réduire le chat" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"><ChevronDown aria-hidden="true" className="h-5 w-5" /></button>
       </div>
       <div ref={scrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-5">

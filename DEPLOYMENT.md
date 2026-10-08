@@ -1,4 +1,4 @@
-# Deploying Plan B
+# Deploying LaMain2
 
 A checklist for taking this from local development to a live, low-cost
 production deployment. Follow in order — several steps depend on earlier
@@ -24,7 +24,7 @@ ones.
    (private), `booking-photos` (private). The migrations create these
    automatically, but it's worth a visual check before launch.
 5. Under Authentication → Email Templates, consider customizing the
-   confirmation/recovery email templates to match Plan B's branding
+   confirmation/recovery email templates to match LaMain2's branding
    (optional — Supabase's defaults work fine to start).
 
 ## 2. Environment variables
@@ -52,7 +52,7 @@ environment:
 2. Verify your sending domain (or use Resend's shared domain to start,
    though a verified domain improves deliverability).
 3. Set `EMAIL_FROM` to an address on that domain, e.g.
-   `"Plan B <contact@lamaindeux.fr>"`.
+   `"LaMain2 <contact@lamaindeux.fr>"`.
 
 ## 4. Deploy to Vercel
 

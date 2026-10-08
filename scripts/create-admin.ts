@@ -30,7 +30,7 @@ async function main() {
   const email = arg("email");
   const password = arg("password");
   const firstName = arg("firstName") ?? "Admin";
-  const lastName = arg("lastName") ?? "Plan B";
+  const lastName = arg("lastName") ?? "LaMain2";
   const secret = arg("secret");
 
   if (!email || !password) {

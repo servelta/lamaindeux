@@ -13,7 +13,7 @@ export function wrapEmail(bodyHtml: string): string {
           <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;">
             <tr>
               <td style="background-color:#1D4E5C;padding:20px 32px;">
-                <span style="color:#ffffff;font-size:18px;font-weight:700;">Le Plan B</span>
+                <span style="color:#ffffff;font-size:18px;font-weight:700;">LaMain2</span>
               </td>
             </tr>
             <tr>
@@ -23,7 +23,7 @@ export function wrapEmail(bodyHtml: string): string {
             </tr>
             <tr>
               <td style="padding:16px 32px;background-color:#F5F6F5;color:#6b7280;font-size:12px;">
-                Le Plan B — Le paiement de l'intervention se règle directement avec le professionnel.
+                LaMain2 — Le paiement de l'intervention se règle directement avec le professionnel.
               </td>
             </tr>
           </table>

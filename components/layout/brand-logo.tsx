@@ -7,11 +7,11 @@ export function BrandLogo({ className = "", imageClassName = "h-12 w-auto" }: {
 }) {
   const frameHeight = imageClassName.replace(/\bw-auto\b/g, "");
   return (
-    <Link href="/" className={`inline-flex shrink-0 items-center ${className}`} aria-label="Le Plan B — accueil">
+    <Link href="/" className={`inline-flex shrink-0 items-center ${className}`} aria-label="LaMain2 — accueil">
       <span className={`relative block w-[196px] overflow-hidden sm:w-[224px] ${frameHeight}`}>
         <Image
-          src="/images/Le Plan B house logo.png"
-          alt="Le Plan B"
+          src="/images/LaMain2.png"
+          alt="LaMain2"
           width={2172}
           height={724}
           priority

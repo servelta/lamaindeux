@@ -10,7 +10,7 @@ export async function sendRequiredEmail(to: string, subject: string, html: strin
   if (settings?.email_enabled === false || !client) return false;
   try {
     const { data, error } = await client.emails.send({
-      from: (process.env.EMAIL_FROM ?? "Le Plan B <onboarding@resend.dev>").replace(/^\s*(?:LaMainDeux|Plan b|Le Plan b)(?=\s*<)/i, "Le Plan B"),
+      from: (process.env.EMAIL_FROM ?? "LaMain2 <onboarding@resend.dev>").replace(/^\s*(?:LaMainDeux|Plan b|Le Plan b)(?=\s*<)/i, "LaMain2"),
       to, subject, html, replyTo,
     });
     return !error && Boolean(data?.id);
@@ -44,8 +44,8 @@ export async function sendEmail(to: string, subject: string, html: string): Prom
 
   try {
     const { error } = await client.emails.send({
-      from: (process.env.EMAIL_FROM ?? "Le Plan B <onboarding@resend.dev>")
-        .replace(/^\s*(?:LaMainDeux|Plan b|Le Plan b)(?=\s*<)/i, "Le Plan B"),
+      from: (process.env.EMAIL_FROM ?? "LaMain2 <onboarding@resend.dev>")
+        .replace(/^\s*(?:LaMainDeux|Plan b|Le Plan b)(?=\s*<)/i, "LaMain2"),
       to,
       subject,
       html,

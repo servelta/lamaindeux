@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   ]);
   if (!city || !service) return {};
 
-  const title = `${service.name} ${city.name} — ${trade.name_singular} vérifié | Le Plan B`;
+  const title = `${service.name} ${city.name} — ${trade.name_singular} vérifié | LaMain2`;
   const description = `Besoin d'un service "${service.name.toLowerCase()}" à ${city.name} ? Comparez les ${pluralise(trade.name_singular.toLowerCase())} vérifiés, consultez les prix et réservez en ligne.`;
   const path = `/${trade.slug_plural}/${city.slug}/${service.slug}`;
 

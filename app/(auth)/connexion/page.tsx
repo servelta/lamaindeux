@@ -31,7 +31,7 @@ function ConnexionForm() {
         <CardHeader>
           <h1 className="text-xl font-semibold leading-none tracking-tight">Connexion</h1>
           <CardDescription>
-            Accédez à votre compte Le Plan B.
+            Accédez à votre compte LaMain2.
           </CardDescription>
         </CardHeader>
         <CardContent>

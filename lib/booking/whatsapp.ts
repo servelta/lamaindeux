@@ -19,7 +19,7 @@ export function bookingWhatsAppUrl(phone: string | null | undefined, booking: Bo
   else if (/^\+[1-9]\d{7,14}$/.test(number)) number = number.slice(1);
   else if (!/^33[1-9]\d{8}$/.test(number)) return null;
   const message = [
-    `Le Plan B — ${booking.is_quote_request ? "Demande de devis" : "Réservation"} ${booking.booking_number}`,
+    `LaMain2 — ${booking.is_quote_request ? "Demande de devis" : "Réservation"} ${booking.booking_number}`,
     `Service : ${serviceName}`,
     `${booking.is_quote_request ? "Date souhaitée" : "Rendez-vous"} : ${formatDateFr(booking.scheduled_date)}${booking.is_quote_request ? "" : ` à ${formatTimeFr(booking.scheduled_time)}`}`,
     `Client : ${booking.contact_first_name} ${booking.contact_last_name}`,

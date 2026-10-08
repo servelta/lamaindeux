@@ -28,21 +28,21 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: {
-    default: "Le Plan B — Trouvez un artisan près de chez vous",
-    template: "%s | Le Plan B",
+    default: "LaMain2 — Trouvez un artisan près de chez vous",
+    template: "%s | LaMain2",
   },
   description:
     "Recherchez un artisan vérifié près de chez vous, comparez les prix et réservez en ligne. Sans commission, sans frais pour le client.",
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-plan-b.png", type: "image/png", sizes: "64x64" },
+      { url: "/favicon.ico?v=lamain2", sizes: "any" },
+      { url: "/favicon-lamain2.png", type: "image/png", sizes: "64x64" },
     ],
-    shortcut: "/favicon.ico",
-    apple: { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    shortcut: "/favicon.ico?v=lamain2",
+    apple: { url: "/apple-touch-icon.png?v=lamain2", sizes: "180x180", type: "image/png" },
   },
   openGraph: {
-    siteName: "Le Plan B",
+    siteName: "LaMain2",
     locale: "fr_FR",
     type: "website",
   },
