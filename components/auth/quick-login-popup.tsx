@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { homeForRole } from "@/lib/auth/roles";
@@ -19,13 +19,7 @@ export function QuickLoginPopup() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (DEFAULT_EMAIL && DEFAULT_PASSWORD) {
-      void handleQuickLogin(DEFAULT_EMAIL, DEFAULT_PASSWORD);
-    }
-  }, []);
-
-  async function handleQuickLogin(loginEmail: string, loginPassword: string) {
+  const handleQuickLogin = useCallback(async (loginEmail: string, loginPassword: string) => {
     if (!loginEmail || !loginPassword) {
       setOpen(true);
       return;
@@ -62,7 +56,13 @@ export function QuickLoginPopup() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [router]);
+
+  useEffect(() => {
+    if (DEFAULT_EMAIL && DEFAULT_PASSWORD) {
+      void handleQuickLogin(DEFAULT_EMAIL, DEFAULT_PASSWORD);
+    }
+  }, [handleQuickLogin]);
 
   if (!open) return null;
 

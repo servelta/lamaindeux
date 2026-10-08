@@ -2,6 +2,7 @@ import { defineConfig } from "vitest/config";
 import path from "path";
 
 export default defineConfig({
+  oxc: { jsx: { runtime: "automatic" } },
   test: {
     environment: "node",
     include: ["lib/**/*.test.ts", "tests/**/*.test.ts"],
@@ -10,7 +11,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "."),
+      "@": path.resolve(import.meta.dirname, "."),
     },
   },
 });

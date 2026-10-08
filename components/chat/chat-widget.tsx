@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { useFormState as useActionState } from "react-dom";
+import { useActionState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, CheckCheck, ChevronDown, LoaderCircle, MessageCircle, Send, X } from "lucide-react";
@@ -49,7 +49,7 @@ export function ChatWidget() {
   const inputRef = useRef<HTMLInputElement>(null);
   const launcherRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const requestRef = useRef<AbortController>();
+  const requestRef = useRef<AbortController | null>(null);
   useEffect(() => () => requestRef.current?.abort(), []);
   useEffect(() => { if (open && !contactOpen) inputRef.current?.focus(); }, [open, contactOpen]);
   useEffect(() => {

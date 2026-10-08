@@ -1,12 +1,12 @@
 "use client";
 
-import { useFormState as useActionState } from "react-dom";
+import { useActionState } from "react";
 import Link from "next/link";
 import { requestPasswordResetAction, type ActionResult } from "@/lib/auth/password-reset-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/auth/submit-button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 
 export default function MotDePasseOubliePage() {
   const [state, formAction] = useActionState<ActionResult, FormData>(requestPasswordResetAction, undefined);
@@ -15,7 +15,7 @@ export default function MotDePasseOubliePage() {
     <div className="flex min-h-[calc(100svh-104px)] items-center justify-center bg-muted/40 px-4 pb-12 pt-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Mot de passe oublié</CardTitle>
+          <h1 className="text-xl font-semibold leading-none tracking-tight">Mot de passe oublié</h1>
           <CardDescription>
             Indiquez votre adresse e-mail, nous vous enverrons un lien pour réinitialiser votre mot de passe.
           </CardDescription>

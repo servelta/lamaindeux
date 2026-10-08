@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormState as useActionState } from "react-dom";
+import { useActionState } from "react";
 import { useEffect, useState } from "react";
 import { CalendarDays, Camera, ShieldCheck } from "lucide-react";
 import { validateBookingPhotos } from "@/lib/booking/photos";

@@ -10,15 +10,17 @@ export const contactReasonSchema = z.enum([
 
 export const contactFormSchema = z.object({
   role: z.enum(["client", "artisan"]),
-  reason: z.string().min(1, "Le motif de la demande est requis."),
-  firstName: z.string().min(1, "Le prénom est requis."),
-  lastName: z.string().min(1, "Le nom est requis."),
+  reason: contactReasonSchema,
+  firstName: z.string().trim().max(100).min(1, "Le prénom est requis."),
+  lastName: z.string().trim().max(100).min(1, "Le nom est requis."),
   phone: z
     .string()
-    .regex(/^(0|\+33)[1-9](\d{2}){4}$/, "Numéro de téléphone français invalide."),
-  email: z.string().email("Adresse e-mail invalide."),
+    .transform(value => value.replace(/[\s.()-]/g, ""))
+    .pipe(z.string().regex(/^(0|\+33)[1-9](\d{2}){4}$/, "Numéro de téléphone français invalide.")),
+  email: z.string().trim().max(254).email("Adresse e-mail invalide."),
   description: z
     .string()
+    .trim()
     .min(1, "La description est requise.")
     .max(2000, "La description ne peut pas dépasser 2000 caractères."),
   consent: z.literal(true, {

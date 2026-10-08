@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormState as useActionState } from "react-dom";
+import { useActionState } from "react";
 import Link from "next/link";
 import { professionalSignUpAction, type ActionResult } from "@/lib/auth/actions";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,6 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 
 type Trade = { slug_singular: string; name_singular: string };
@@ -26,7 +25,7 @@ export function ProfessionalSignUpForm({ trades }: { trades: Trade[] }) {
     <div className="flex min-h-[calc(100svh-104px)] items-center justify-center bg-muted/40 px-4 pb-12 pt-4">
       <Card className="w-full max-w-lg">
         <CardHeader>
-          <CardTitle>Devenir artisan partenaire</CardTitle>
+          <h1 className="text-xl font-semibold leading-none tracking-tight">Devenir artisan partenaire</h1>
           <CardDescription>
             Inscription gratuite. Recevez de nouveaux clients sans commission
             sur vos interventions. Votre compte sera vérifié par notre équipe

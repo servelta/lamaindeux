@@ -1,12 +1,12 @@
 "use client";
 
-import { useFormState as useActionState } from "react-dom";
+import { useActionState } from "react";
 import { useRouter } from "next/navigation";
 import { updatePasswordAction, type ActionResult } from "@/lib/auth/password-reset-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/auth/submit-button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export default function ReinitialiserMotDePassePage() {
@@ -17,7 +17,7 @@ export default function ReinitialiserMotDePassePage() {
     <div className="flex min-h-[calc(100svh-104px)] items-center justify-center bg-muted/40 px-4 pb-12 pt-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Réinitialiser le mot de passe</CardTitle>
+          <h1 className="text-xl font-semibold leading-none tracking-tight">Réinitialiser le mot de passe</h1>
           <CardDescription>Choisissez un nouveau mot de passe pour votre compte.</CardDescription>
         </CardHeader>
         <CardContent>

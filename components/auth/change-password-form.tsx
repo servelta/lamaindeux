@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useFormState as useActionState } from "react-dom";
+import { useActionState } from "react";
 import { changePasswordAction, type ActionResult } from "@/lib/auth/change-password-action";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

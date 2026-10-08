@@ -11,7 +11,7 @@ const BOOKING_SELECT = `
 `;
 
 type ServiceSummary = { id: string; price_cents: number | null; duration_minutes: number | null; services: { name: string } | null };
-type PublicProfessional = { profile_id: string | null; company_name: string | null; slug: string | null };
+type PublicProfessional = { profile_id: string | null; company_name: string | null; slug: string | null; public_phone: string | null };
 async function attachPublicProfessionals<T extends { professional_id: string; professional_service_id: string; professional_services: ServiceSummary | null }>(rows: T[]): Promise<(Omit<T, "professional_services"> & { professional_services: ServiceSummary | null; professionals: PublicProfessional | null })[]> {
   if (rows.length === 0) return rows.map((row) => ({ ...row, professionals: null }));
 
@@ -19,7 +19,7 @@ async function attachPublicProfessionals<T extends { professional_id: string; pr
   const professionalIds = [...new Set(rows.map((row) => row.professional_id))];
   const { data: professionals } = await supabase
     .from("public_professional_profiles")
-    .select("profile_id, company_name, slug")
+    .select("profile_id, company_name, slug, public_phone")
     .in("profile_id", professionalIds);
 
   const byId = new Map((professionals ?? []).map((professional) => [professional.profile_id, professional]));

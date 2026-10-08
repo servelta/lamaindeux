@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormState as useActionState } from "react-dom";
+import { useActionState } from "react";
 import { updatePlatformSettingsAction, type ActionResult } from "@/lib/admin/settings-actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

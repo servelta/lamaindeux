@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormState as useActionState } from "react-dom";
+import { useActionState } from "react";
 import { useState } from "react";
 import { Star } from "lucide-react";
 import { createReviewAction, type ActionResult } from "@/lib/reviews/actions";

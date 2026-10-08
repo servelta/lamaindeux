@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 import Link from "next/link";
 import { contactAction, type ActionResult } from "@/lib/contact/actions";
 import { Input } from "@/components/ui/input";
@@ -25,11 +25,12 @@ const roleReasons: Record<"client" | "artisan", string[]> = {
 };
 
 export function ContactForm({ role }: { role: "client" | "artisan" }) {
-  const [state, formAction] = useFormState<ActionResult, FormData>(contactAction, undefined);
+  const [state, formAction] = useActionState<ActionResult, FormData>(contactAction, undefined);
 
   return (
     <form action={formAction} className="space-y-5">
       <input type="hidden" name="role" value={role} />
+      <div className="hidden" aria-hidden="true"><input name="website" tabIndex={-1} autoComplete="off" /></div>
 
       <div className="space-y-2">
         <Label htmlFor="reason">Motif de la demande</Label>

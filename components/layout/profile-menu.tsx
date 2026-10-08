@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { LogOut, Settings, UserCircle2 } from "lucide-react";
 import { logoutAction } from "@/lib/auth/actions";
@@ -50,7 +51,7 @@ export function ProfileMenu({
         className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-border bg-background shadow-sm ring-2 ring-transparent transition hover:ring-primary/20 focus:outline-none focus:ring-2 focus:ring-primary/40"
       >
         {avatarUrl ? (
-          <img src={avatarUrl} alt={name} className="h-full w-full object-cover" />
+          <Image src={avatarUrl} alt={name} width={40} height={40} unoptimized className="h-full w-full object-cover" />
         ) : (
           <span className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary to-primary/70 text-xs font-bold text-primary-foreground">
             {initials}
@@ -63,7 +64,7 @@ export function ProfileMenu({
           <div className="flex items-center gap-3 border-b border-border px-4 py-3">
             <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-secondary text-xs font-semibold text-foreground">
               {avatarUrl ? (
-                <img src={avatarUrl} alt={name} className="h-full w-full object-cover" />
+                <Image src={avatarUrl} alt={name} width={40} height={40} unoptimized className="h-full w-full object-cover" />
               ) : (
                 initials
               )}

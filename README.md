@@ -1,4 +1,4 @@
-# Plan B
+# Le Plan B
 
 Marketplace connecting French customers with verified home-service
 professionals — plumbers, electricians, painters, HVAC technicians, general
@@ -9,14 +9,14 @@ active (**Plomberie**) — every other trade already exists in the database,
 inactive, so switching one on later is an admin toggle plus adding its
 services, not a schema change.
 
-**Status: all 10 phases complete**, plus a subsequent generalization pass
+**Status: core features implemented; legal publication and live integration checks remain**, plus a subsequent generalization pass
 (originally built plumbing-only as "MonPlombier", then generalized to
 multi-trade and rebranded to "Plan B" — see "Multi-trade
 generalization" below for exactly what that involved).
 
 ## Stack
 
-Next.js 14 (App Router) · TypeScript · Tailwind CSS · Supabase (Postgres,
+Next.js 15.5 (App Router) · React 19 · TypeScript · Tailwind CSS · Supabase (Postgres,
 Auth, Storage) · Resend (email) · Twilio (SMS, optional) · Stripe Payment
 Links · Vercel.
 

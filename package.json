@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "tsx scripts/privatize-professional-emails.ts && tsx scripts/sync-plumbing-services.ts && tsx scripts/provision-default-hours.ts && tsx scripts/check-notification-configuration.ts && tsx scripts/verify-guest-booking.ts",
+    "prebuild": "tsx scripts/privatize-professional-emails.ts && tsx scripts/sync-plumbing-services.ts && tsx scripts/provision-default-hours.ts && tsx scripts/check-notification-configuration.ts && tsx scripts/verify-public-privacy.ts && tsx scripts/verify-guest-booking.ts",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint . --ext .ts,.tsx,.mts",
     "test": "vitest run lib",
     "test:integration": "vitest run tests/integration",
     "test:all": "vitest run",
@@ -29,10 +29,10 @@
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
     "lucide-react": "^0.446.0",
-    "next": "14.2.15",
+    "next": "15.5.27",
     "pdf-lib": "1.17.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
     "react-hook-form": "^7.53.0",
     "resend": "^4.0.0",
     "tailwind-merge": "^2.5.2",
@@ -41,17 +41,22 @@
   },
   "devDependencies": {
     "@types/node": "^22.7.4",
-    "@types/react": "^18.3.10",
-    "@types/react-dom": "^18.3.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "autoprefixer": "^10.4.20",
     "dotenv": "^16.4.5",
     "eslint": "^8.57.1",
-    "eslint-config-next": "14.2.15",
-    "postcss": "^8.4.47",
+    "eslint-config-next": "15.5.27",
+    "postcss": "8.5.29",
     "tailwindcss": "^3.4.13",
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.19.1",
     "typescript": "^5.6.2",
-    "vitest": "^2.1.1"
+    "vitest": "4.1.11"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "8.5.29"
+    }
   }
 }

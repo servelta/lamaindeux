@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormState as useActionState } from "react-dom";
+import { useActionState } from "react";
 import { useTransition } from "react";
 import { X } from "lucide-react";
 import {

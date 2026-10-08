@@ -6,13 +6,14 @@ export const runtime = "edge";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-type Props = { params: { trade: string; city: string; service: string } };
+type Props = { params: Promise<{ trade: string; city: string; service: string }> };
 
 export default async function Image({ params }: Props) {
-  const trade = await getTradeBySlugPlural(params.trade);
+  const resolvedParams = await params;
+  const trade = await getTradeBySlugPlural(resolvedParams.trade);
   const [city, service] = await Promise.all([
-    getCityBySlug(params.city),
-    trade ? getServiceBySlug(params.service, trade.id) : Promise.resolve(null),
+    getCityBySlug(resolvedParams.city),
+    trade ? getServiceBySlug(resolvedParams.service, trade.id) : Promise.resolve(null),
   ]);
 
   const heading = service && city ? `${service.name} à ${city.name}` : "Professionnel vérifié";
