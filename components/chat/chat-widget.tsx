@@ -10,8 +10,8 @@ import type { ChatAnswer } from "@/lib/chat/knowledge";
 import { SubmitButton } from "@/components/auth/submit-button";
 
 type Message = ChatAnswer & { id: number; role: "assistant" | "visitor" };
-const WELCOME: Message = { id: 0, role: "assistant", text: "Bonjour et bienvenue sur Le Plan B 👋 Je vous aide à trouver un artisan et à préparer votre réservation. Comment puis-je vous aider ?" };
-const SUGGESTIONS = ["Trouver un artisan", "Réserver sans compte", "Quels sont les prix ?", "Devenir artisan"];
+const WELCOME: Message = { id: 0, role: "assistant", text: "Bonjour et bienvenue sur Le Plan B 👋 Je vous accompagne sur toute la plateforme : artisans, réservations, comptes, horaires, devis et factures. Comment puis-je vous aider ?" };
+const SUGGESTIONS = ["Trouver un artisan", "Réserver sans compte", "Quels sont les prix ?", "Devenir artisan", "Créer une facture PDF", "Modifier mes horaires"];
 const FIELD = "mt-1.5 w-full rounded-xl border border-border bg-white px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/15";
 
 function Avatar({ size = 40 }: { size?: number }) {
