@@ -25,7 +25,7 @@ type Profile = NonNullable<Awaited<ReturnType<typeof getProfessionalBySlug>>>;
 type Review = Profile["reviews"][number];
 
 export function PublicProfileLanding({ profile }: { profile: Profile }) {
-  const { professional: pro, services, reviews, areas, gallery, hours } = profile;
+  const { professional: pro, services, reviews, gallery, hours } = profile;
   const hoursRows = workingHoursRows(hours);
   const hoursPreview = hoursRows.find(row => !row.closed) ?? hoursRows[0];
   const allWeekSame = hoursRows.length === 3 && hoursRows.every(row => !row.closed && row.times === hoursPreview?.times);
@@ -38,10 +38,6 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
     pro.business_postcode,
     pro.business_city,
   );
-  const cities = areas.flatMap((area) => {
-    const city = Array.isArray(area.cities) ? area.cities[0] : area.cities;
-    return city?.name ? [city.name] : [];
-  });
   const photos = gallery.length
     ? gallery.map((photo, index) => ({
         id: photo.id,
@@ -151,6 +147,12 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
                   : ""}
               </a>
             ) : null}
+            {(address || pro.public_phone) ? (
+              <div aria-label="Coordonnées de l’artisan" className="mt-4 max-w-md space-y-2 text-xs leading-5 text-white/85">
+                {address ? <p className="flex items-start gap-2"><MapPin aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-secondary" /><span>{address}</span></p> : null}
+                {pro.public_phone ? <a href={phoneUrl} className="inline-flex items-center gap-2 rounded-md font-semibold text-white underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"><Phone aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-secondary" />{pro.public_phone}</a> : null}
+              </div>
+            ) : null}
             {hours.length ? <details className="group mt-4 max-w-md rounded-xl border border-white/15 bg-white/[0.06]">
               <summary className="flex cursor-pointer list-none items-center gap-2.5 px-3 py-2.5 text-xs [&::-webkit-details-marker]:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary">
                 <Clock3 aria-hidden="true" className="h-4 w-4 shrink-0 text-secondary" />
@@ -206,7 +208,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
 
       <section
         id="presentation"
-        className="mt-8 grid scroll-mt-44 gap-5 lg:grid-cols-[1.3fr_1fr]"
+        className="mt-8 scroll-mt-44"
       >
         <div className="rounded-2xl border border-border bg-card p-6">
           <h2 className="font-display text-xl font-semibold">
@@ -231,31 +233,6 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
               {pro.completed_jobs_count} interventions réalisées sur Le Plan B
             </p>
           ) : null}
-        </div>
-        <div className="rounded-2xl bg-secondary/45 p-6">
-          <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-            <MapPin aria-hidden="true" className="h-5 w-5 text-primary" />
-            Zone d’intervention
-          </h2>
-          <p className="mt-3 text-sm leading-7">
-            {cities.length
-              ? cities.join(", ")
-              : pro.business_city ||
-                "Contactez l’artisan pour vérifier votre secteur."}
-          </p>
-          {address ? (
-            <p className="mt-2 text-xs leading-6 text-muted-foreground">
-              {address}
-            </p>
-          ) : null}
-          {pro.public_phone ? <a href={phoneUrl} className="mt-3 inline-flex items-center gap-2 rounded-xl bg-white/75 px-3 py-2 text-sm font-semibold text-primary transition hover:bg-white"><Phone aria-hidden="true" className="h-4 w-4" />{pro.public_phone}</a> : null}
-          <p className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-            <BadgeCheck
-              aria-hidden="true"
-              className="h-4 w-4 shrink-0 text-verified"
-            />
-            Profil vérifié par l’équipe Le Plan B.
-          </p>
         </div>
       </section>
 
