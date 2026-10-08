@@ -1,8 +1,24 @@
 import Link from "next/link";
 import Image from "next/image";
-export function BrandLogo({ className = "", imageClassName = "h-12 w-auto" }: { className?: string; imageClassName?: string; }) {
-  return <Link href="/" className={`inline-flex shrink-0 items-center gap-2 ${className}`} aria-label="Le Plan B — accueil">
-    <Image src="/apple-touch-icon.png" alt="" width={56} height={56} priority className={imageClassName} />
-    <span className="whitespace-nowrap font-display text-2xl font-bold tracking-tight text-primary sm:text-3xl">Le Plan B</span>
-  </Link>;
+
+export function BrandLogo({ className = "", imageClassName = "h-12 w-auto" }: {
+  className?: string;
+  imageClassName?: string;
+}) {
+  const frameHeight = imageClassName.replace(/\bw-auto\b/g, "");
+  return (
+    <Link href="/" className={`inline-flex shrink-0 items-center ${className}`} aria-label="Le Plan B — accueil">
+      <span className={`relative block w-[196px] overflow-hidden sm:w-[224px] ${frameHeight}`}>
+        <Image
+          src="/images/Le Plan B house logo.png"
+          alt="Le Plan B"
+          width={2172}
+          height={724}
+          priority
+          sizes="(min-width: 640px) 224px, 196px"
+          className="absolute left-0 top-1/2 h-auto w-full -translate-y-1/2"
+        />
+      </span>
+    </Link>
+  );
 }
