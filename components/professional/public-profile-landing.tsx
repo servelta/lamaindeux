@@ -32,6 +32,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
   const tradeVisual = pro.trade_slug_singular === "plombier" ? "/images/le-plan-b-plumber-landing.webp" : pro.trade_slug_singular === "electricien" ? "/images/le-plan-b-electrician-landing.webp" : null;
   const trade = pro.trade_name_singular ?? "Professionnel";
   const bookingUrl = `/artisan/${pro.slug}/reserver`;
+  const defaultService = profile.services.find(item => { const service = Array.isArray(item.services) ? item.services[0] : item.services; return service?.name === "Intervention classique"; }) ?? profile.services[0];
   const phoneUrl = `tel:${pro.public_phone}`;
   const address = formatAddress(
     pro.business_address,
@@ -163,16 +164,21 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
             </details> : <p className="mt-4 inline-flex items-center gap-2 text-xs text-white/65"><Clock3 aria-hidden="true" className="h-3.5 w-3.5" />Horaires non renseignés</p>}
             <div className="mt-6 flex flex-wrap gap-3">
               {services.length ? (
+                <>
                 <Button
                   asChild
                   size="lg"
-                  className="bg-secondary text-primary hover:bg-secondary/90"
+                  className="bg-secondary text-primary hover:bg-secondary/90 sm:hidden"
                 >
-                  <a href="#reserver">
-                    Choisir un service
+                  <Link href={defaultService ? `${bookingUrl}?service=${defaultService.id}` : "#reserver"}>
+                    Réserver
                     <ArrowRight aria-hidden="true" className="ml-2 h-4 w-4" />
-                  </a>
+                  </Link>
                 </Button>
+                <Button asChild size="lg" className="hidden bg-secondary text-primary hover:bg-secondary/90 sm:inline-flex">
+                  <a href="#reserver">Choisir un service<ArrowRight aria-hidden="true" className="ml-2 h-4 w-4" /></a>
+                </Button>
+                </>
               ) : null}
               {pro.public_phone ? (
                 <Button

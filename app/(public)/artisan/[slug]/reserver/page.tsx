@@ -6,15 +6,18 @@ import { BookingAccessChoice } from "@/components/booking/booking-access-choice"
 
 type Props = {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ service?: string }>;
+  searchParams: Promise<{ service?: string; mode?: string; date?: string; time?: string }>;
 };
 
 export const metadata = { title: "Réserver" };
 
 export default async function ReserverPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const { service: professionalServiceId } = await searchParams;
-  const returnTo = `/artisan/${slug}/reserver?service=${professionalServiceId ?? ""}`;
+  const { service: professionalServiceId, mode, date, time } = await searchParams;
+  const context = new URLSearchParams({ service: professionalServiceId ?? "" });
+  if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) context.set("date", date);
+  if (time && /^\d{2}:\d{2}$/.test(time)) context.set("time", time);
+  const returnTo = `/artisan/${encodeURIComponent(slug)}/reserver?${context}`;
 
   if (!professionalServiceId) notFound();
 
@@ -59,6 +62,8 @@ export default async function ReserverPage({ params, searchParams }: Props) {
     isQuoteRequest={professionalService.pricing_type === "quote"}
     returnTo={returnTo}
     isGuest={!user}
+    initialDate={context.get("date") ?? undefined}
+    initialTime={context.get("time") ?? undefined}
     prefill={{ fullName: [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || undefined, phone: profile?.phone ?? undefined, email: user?.email ?? undefined }}
   />;
 
@@ -70,13 +75,12 @@ export default async function ReserverPage({ params, searchParams }: Props) {
           ← Retour à {professional.company_name}
         </Link>
       </p>
-      <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-primary">Un coup de main, simplement</p>
-      <h1 className="mt-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">{professionalService.pricing_type === "quote" ? "Parlez-nous de votre besoin." : "Préparons votre rendez-vous."}</h1>
-      <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">Quelques informations suffisent pour transmettre votre demande à {professional.company_name}.</p>
-
-      <div className="mt-8">
-        {user ? bookingForm : <BookingAccessChoice returnTo={returnTo}>{bookingForm}</BookingAccessChoice>}
+      <h1 className="mt-5 font-display text-2xl font-bold tracking-tight sm:text-4xl">Votre réservation</h1>
+      <p className="mt-2 break-words text-sm text-muted-foreground">{professional.company_name} · {service?.name}</p>
+      <div className="mt-5">
+        {user || mode === "guest" ? bookingForm : <BookingAccessChoice returnTo={returnTo} />}
       </div>
+
     </div>
     </div>
   );

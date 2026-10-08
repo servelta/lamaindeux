@@ -88,7 +88,7 @@ export function SearchFilters({ trades, cities }: { trades: Trade[]; cities: Cit
         <button
           type="button"
           onClick={() => router.push("/recherche", { scroll: false })}
-          className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          className="mt-3 inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-primary hover:underline sm:min-h-0"
         >
           <X className="h-4 w-4" />
           Réinitialiser les filtres

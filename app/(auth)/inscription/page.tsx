@@ -1,7 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { Suspense, useActionState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { safeReturnTo } from "@/lib/auth/safe-return-to";
 import { customerSignUpAction, type ActionResult } from "@/lib/auth/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,11 +15,13 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 
-export default function InscriptionPage() {
+function InscriptionForm() {
   const [state, formAction] = useActionState<ActionResult, FormData>(
     customerSignUpAction,
     undefined
   );
+
+  const returnTo = safeReturnTo(useSearchParams().get("next"));
 
   return (
     <div className="flex min-h-[calc(100svh-104px)] items-center justify-center bg-muted/40 px-4 pb-12 pt-4">
@@ -30,6 +34,7 @@ export default function InscriptionPage() {
         </CardHeader>
         <CardContent>
           <form action={formAction} className="space-y-4">
+            <input type="hidden" name="returnTo" value={returnTo ?? ""} />
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">Prénom</Label>
@@ -92,7 +97,7 @@ export default function InscriptionPage() {
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Déjà un compte ?{" "}
-            <Link href="/connexion" className="font-medium text-primary hover:underline">
+            <Link href={`/connexion${returnTo ? `?next=${encodeURIComponent(returnTo)}` : ""}`} className="font-medium text-primary hover:underline">
               Se connecter
             </Link>
           </p>
@@ -100,4 +105,8 @@ export default function InscriptionPage() {
       </Card>
     </div>
   );
+}
+
+export default function InscriptionPage() {
+  return <Suspense fallback={null}><InscriptionForm /></Suspense>;
 }

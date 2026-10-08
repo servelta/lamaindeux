@@ -22,6 +22,8 @@ type BookingFormProps = {
   isQuoteRequest: boolean;
   returnTo: string;
   isGuest?: boolean;
+  initialDate?: string;
+  initialTime?: string;
   prefill?: {
     fullName?: string;
     email?: string;
@@ -44,10 +46,12 @@ export function BookingForm({
   returnTo,
   isGuest = false,
   prefill,
+  initialDate,
+  initialTime,
 }: BookingFormProps) {
   const [state, formAction] = useActionState<ActionResult, FormData>(createBookingAction, undefined);
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
+  const [date, setDate] = useState(initialDate ?? "");
+  const [time, setTime] = useState(initialTime ?? "");
   const [slots, setSlots] = useState<string[] | null>(null);
   const [isPending, setPending] = useState(false);
   const [slotError, setSlotError] = useState("");
@@ -57,21 +61,26 @@ export function BookingForm({
   useEffect(() => {
     let cancelled = false;
     if (!date || isQuoteRequest) return;
-    setTime("");
     setSlots(null);
     setPending(true);
     setSlotError("");
     getAvailableSlotsAction(professionalId, date, durationMinutes ?? 60)
-      .then((result) => { if (!cancelled) setSlots(result); })
+      .then((result) => { if (!cancelled) { setSlots(result); setTime(current => result.includes(current) ? current : ""); } })
       .catch(() => { if (!cancelled) setSlotError("Impossible de charger les horaires. Choisissez une autre date pour réessayer."); })
       .finally(() => { if (!cancelled) setPending(false); });
     return () => { cancelled = true; };
   }, [date, professionalId, durationMinutes, isQuoteRequest]);
 
+  const currentReturn = new URL(returnTo, "https://lamain2.invalid");
+  if (date) currentReturn.searchParams.set("date", date);
+  else currentReturn.searchParams.delete("date");
+  if (time) currentReturn.searchParams.set("time", time);
+  else currentReturn.searchParams.delete("time");
+
   return (
     <form action={formAction} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
       <input type="hidden" name="professionalServiceId" value={professionalServiceId} />
-      <input type="hidden" name="returnTo" value={returnTo} />
+      <input type="hidden" name="returnTo" value={currentReturn.pathname + currentReturn.search} />
       <input type="hidden" name="bookingMode" value={isGuest ? "guest" : "account"} />
       <div className="hidden" aria-hidden="true"><label htmlFor="booking-website">Site web</label><input id="booking-website" name="website" tabIndex={-1} autoComplete="off" /></div>
 

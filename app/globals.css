@@ -72,3 +72,31 @@
 .connector-joint {
   fill: hsl(var(--accent));
 }
+
+/* iOS focus zoom is avoided with readable fields, while pinch zoom remains enabled. */
+@media (max-width: 639px), (pointer: coarse) {
+  :is(input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]), textarea, select) {
+    font-size: 16px;
+    min-width: 0;
+    max-width: 100%;
+    scroll-margin-block: 100px 24px;
+  }
+}
+
+@media (max-width: 639px), (max-width: 1023px) and (pointer: coarse) {
+  .chat-launcher-open, .chat-launcher-editing { display: none; }
+  .chat-panel {
+    position: fixed;
+    top: var(--chat-top, 0px);
+    left: var(--chat-left, 0px);
+    width: var(--chat-width, 100%);
+    height: var(--chat-height, 100dvh);
+    max-width: none;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    outline: none;
+  }
+  .chat-header { padding-top: max(0.75rem, env(safe-area-inset-top)); }
+  .chat-composer { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+}

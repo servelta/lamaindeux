@@ -111,10 +111,14 @@ export async function customerSignUpAction(
   const supabase = await createClient();
   const { firstName, lastName, email, phone, password } = parsed.data;
 
-  const { error } = await supabase.auth.signUp({
+  const returnTo = safeReturnTo(formData.get("returnTo"));
+  const confirmationUrl = new URL("/auth/callback", process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000");
+  confirmationUrl.searchParams.set("next", returnTo ?? "/mon-compte");
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
+      emailRedirectTo: confirmationUrl.toString(),
       data: {
         role: "customer",
         first_name: firstName,
@@ -138,7 +142,8 @@ export async function customerSignUpAction(
     console.error("customerSignUpAction welcome email failed:", err);
   }
 
-  redirect("/connexion?message=verifiez-votre-email");
+  if (data.session) redirect(returnTo ?? "/mon-compte");
+  redirect(`/connexion?message=verifiez-votre-email${returnTo ? `&next=${encodeURIComponent(returnTo)}` : ""}`);
 }
 
 export async function professionalSignUpAction(

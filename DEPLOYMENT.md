@@ -26,6 +26,13 @@ ones.
 5. Under Authentication → Email Templates, consider customizing the
    confirmation/recovery email templates to match LaMain2's branding
    (optional — Supabase's defaults work fine to start).
+6. Under Authentication → URL Configuration, set Site URL to the live
+   `NEXT_PUBLIC_SITE_URL` and allow that site's `/auth/callback` redirect,
+   including its `next` query parameter. Customer signup uses this callback
+   to return to the selected artisan, service, date and time. Confirm this
+   with a real confirmation email in the browser that started registration;
+   the PKCE verifier is stored in that browser's cookies. An isolated test
+   backend cannot verify the hosted project's redirect allow-list or emails.
 
 ## 2. Environment variables
 

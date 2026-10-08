@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { loginAction, type ActionResult } from "@/lib/auth/actions";
+import { safeReturnTo } from "@/lib/auth/safe-return-to";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +25,8 @@ function ConnexionForm() {
   const searchParams = useSearchParams();
   const justSignedUp = searchParams.get("message") === "verifiez-votre-email";
   const callbackError = searchParams.get("error");
+  const returnTo = safeReturnTo(searchParams.get("next"));
+  const registrationUrl = `/inscription${returnTo ? `?next=${encodeURIComponent(returnTo)}` : ""}`;
 
   return (
     <div className="flex min-h-[calc(100svh-104px)] items-center justify-center bg-muted/40 px-4 pb-12 pt-4">
@@ -48,7 +51,7 @@ function ConnexionForm() {
           )}
 
           <form action={formAction} className="space-y-4">
-            <input type="hidden" name="returnTo" value={searchParams.get("next") ?? ""} />
+            <input type="hidden" name="returnTo" value={returnTo ?? ""} />
             <div className="space-y-2">
               <Label htmlFor="email">Adresse e-mail</Label>
               <Input id="email" name="email" type="email" required autoComplete="email" />
@@ -78,13 +81,9 @@ function ConnexionForm() {
             <SubmitButton>Se connecter</SubmitButton>
           </form>
 
+          <Button asChild variant="outline" className="mt-3 min-h-11 w-full"><Link href={registrationUrl}>Créer un compte</Link></Button>
+
           <div className="mt-6 space-y-2 text-center text-sm text-muted-foreground">
-            <p>
-              Pas encore de compte ?{" "}
-              <Link href="/inscription" className="font-medium text-primary hover:underline">
-                Créer un compte client
-              </Link>
-            </p>
             <p>
               Vous êtes artisan ?{" "}
               <Link
