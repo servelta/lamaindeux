@@ -150,7 +150,7 @@ export default async function HomePage() {
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm"><ShieldCheck aria-hidden="true" className="h-5 w-5" /></span>
                 <div className="min-w-0">
                   <p className="font-display text-sm font-semibold sm:text-base">Un vrai coup de main, près de chez vous.</p>
-                  <p className="mt-1 text-xs leading-5 text-primary/70">Comparez les profils. Choisissez en confiance.</p>
+                  <p className="mt-1 text-xs leading-5 text-primary">Comparez les profils. Choisissez en confiance.</p>
                 </div>
               </figcaption>
             </figure>
