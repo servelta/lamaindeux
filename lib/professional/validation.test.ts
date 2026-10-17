@@ -21,6 +21,7 @@ describe("addProfessionalServiceSchema", () => {
       addProfessionalServiceSchema.safeParse({
         serviceId,
         pricingType: "quote",
+        durationMinutes: 60,
         description: "",
       }).success
     ).toBe(true);
@@ -30,6 +31,7 @@ describe("addProfessionalServiceSchema", () => {
     const result = addProfessionalServiceSchema.safeParse({
       serviceId,
       pricingType: "fixed",
+      durationMinutes: 60,
       description: "",
     });
     expect(result.success).toBe(false);
@@ -40,6 +42,7 @@ describe("addProfessionalServiceSchema", () => {
       serviceId,
       pricingType: "fixed",
       priceCents: 0,
+      durationMinutes: 60,
       description: "",
     });
     expect(result.success).toBe(false);

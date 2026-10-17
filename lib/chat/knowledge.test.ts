@@ -15,7 +15,7 @@ describe("LaMain2 chat knowledge",()=>{
 
 describe("platform feature guidance", () => {
  it("Comment modifier mes horaires ?",()=>{const answer=answerQuestion("Comment modifier mes horaires ?",catalog);expect(answer.topic).toBe("calendar");expect(answer.href).toBe("/calendrier");expect(answer.handoff).not.toBe(true);});
- it("Puis-je ajouter un service ?",()=>{const answer=answerQuestion("Puis-je ajouter un service ?",catalog);expect(answer.topic).toBe("services");expect(answer.href).toBe("/recherche");expect(answer.handoff).not.toBe(true);});
+ it("Puis-je ajouter un service ?",()=>{const answer=answerQuestion("Puis-je ajouter un service ?",catalog);expect(answer.topic).toBe("services");expect(answer.href).toBe("/mes-services");expect(answer.text).toContain("Sur devis");expect(answer.text).toContain("minutes");expect(answer.handoff).not.toBe(true);});
  it("Comment changer ma photo ?",()=>{const answer=answerQuestion("Comment changer ma photo ?",catalog);expect(answer.topic).toBe("profile");expect(answer.href).toBe("/profil");expect(answer.handoff).not.toBe(true);});
  it("Quels documents envoyer pour la vérification ?",()=>{const answer=answerQuestion("Quels documents envoyer pour la vérification ?",catalog);expect(answer.topic).toBe("verification");expect(answer.href).toBe("/documents");expect(answer.handoff).not.toBe(true);});
  it("Est-ce que WhatsApp envoie automatiquement ?",()=>{const answer=answerQuestion("Est-ce que WhatsApp envoie automatiquement ?",catalog);expect(answer.topic).toBe("notifications");expect(answer.href).toBe("/contact");expect(answer.handoff).not.toBe(true);});

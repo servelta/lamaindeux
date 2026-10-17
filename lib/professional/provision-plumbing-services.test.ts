@@ -54,8 +54,8 @@ describe("automatic plumbing services", () => {
       { id: "electric-service", professional_id: "electrician", service_id: "electric", active: true },
     );
     expect(await provisionPlumbingServices(client)).toEqual({ professionals: 1, servicesPerProfessional: 2 });
-    expect(tables.professional_services.find(row => row.id === "booked-service")).toMatchObject({ pricing_type: "fixed", price_cents: 9900, duration_minutes: 60, active: true });
-    expect(tables.professional_services.find(row => row.id === "legacy")).toMatchObject({ active: false });
+    expect(tables.professional_services.find(row => row.id === "booked-service")).toMatchObject({ pricing_type: "fixed", price_cents: 9900, duration_minutes: 60, active: false });
+    expect(tables.professional_services.find(row => row.id === "legacy")).toMatchObject({ active: true });
     expect(tables.professional_services.find(row => row.id === "electric-service")).toMatchObject({ active: true });
     const count = tables.professional_services.length;
     await provisionPlumbingServices(client);
@@ -74,14 +74,14 @@ describe("automatic plumbing services", () => {
     expect(await provisionPlumbingServices(client)).toEqual({ professionals: 150, servicesPerProfessional: 2 });
     expect(tables.professional_services).toHaveLength(300);
   });
-  it("assigns two services to electricians too and archives their previous offerings", async () => {
+  it("assigns defaults to electricians without archiving their chosen offerings", async () => {
     const {client,tables}=fixture();
     tables.trades.push({id:"electric",slug_singular:"electricien"});
     tables.services.push({id:"old-electric-service",trade_id:"electric",slug:"electric-legacy",active:true});
     tables.professional_services.push({id:"old-electric-assignment",professional_id:"electrician",service_id:"old-electric-service",active:true});
     expect(await provisionPlumbingServices(client)).toEqual({professionals:2,servicesPerProfessional:2});
-    expect(tables.professional_services.filter(row=>row.professional_id==="electrician"&&row.active)).toHaveLength(2);
-    expect(tables.professional_services.find(row=>row.id==="old-electric-assignment")?.active).toBe(false);
-    expect(tables.services.find(row=>row.id==="old-electric-service")?.active).toBe(false);
+    expect(tables.professional_services.filter(row=>row.professional_id==="electrician"&&row.active)).toHaveLength(3);
+    expect(tables.professional_services.find(row=>row.id==="old-electric-assignment")?.active).toBe(true);
+    expect(tables.services.find(row=>row.id==="old-electric-service")?.active).toBe(true);
   });
 });

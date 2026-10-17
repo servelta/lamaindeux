@@ -20,7 +20,7 @@ export const addProfessionalServiceSchema = z.object({
   serviceId: z.string().uuid("Service invalide."),
   pricingType: z.enum(["fixed", "quote"]),
   priceCents: z.coerce.number().int().min(0).optional(),
-  durationMinutes: z.coerce.number().int().min(5).max(600).optional(),
+  durationMinutes: z.coerce.number().int().min(5, "Indiquez une durée entre 5 et 600 minutes.").max(600, "Indiquez une durée entre 5 et 600 minutes."),
   description: z.string().max(500).optional().or(z.literal("")),
 }).refine(
   (data) => data.pricingType === "quote" || (data.priceCents != null && data.priceCents > 0),
