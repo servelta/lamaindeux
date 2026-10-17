@@ -50,7 +50,7 @@ export default async function ProfilPage() {
           <CardTitle className="text-base">Informations générales</CardTitle>
         </CardHeader>
         <CardContent>
-          <ProfileForm professional={professional} />
+          <ProfileForm professional={professional} cities={cities ?? []} />
         </CardContent>
       </Card>
 
@@ -73,11 +73,11 @@ export default async function ProfilPage() {
         <CardHeader>
           <CardTitle className="text-base">Zone d'intervention</CardTitle>
           <CardDescription>
-            Villes et codes postaux où vous acceptez les interventions.
+            La ville renseignée dans votre profil est ajoutée automatiquement lors de l’enregistrement. Vous pouvez ajouter d’autres villes si besoin.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ServiceAreasManager areas={areas} cities={cities ?? []} />
+          <ServiceAreasManager areas={areas} cities={cities ?? []} profileCity={professional.business_city} />
         </CardContent>
       </Card>
 

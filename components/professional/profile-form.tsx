@@ -21,7 +21,7 @@ type Professional = {
   google_review_count: number | null;
 };
 
-export function ProfileForm({ professional }: { professional: Professional }) {
+export function ProfileForm({ professional, cities }: { professional: Professional; cities: { id: string; name: string }[] }) {
   const [state, formAction] = useActionState<ActionResult, FormData>(
     updatePlumberProfileAction,
     undefined
@@ -83,7 +83,9 @@ export function ProfileForm({ professional }: { professional: Professional }) {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="businessCity">Ville</Label>
-          <Input id="businessCity" name="businessCity" defaultValue={professional.business_city ?? ""} required />
+          <Input id="businessCity" name="businessCity" list="profile-cities" aria-describedby="profile-city-hint" defaultValue={professional.business_city ?? ""} required />
+          <datalist id="profile-cities">{cities.map(city => <option key={city.id} value={city.name} />)}</datalist>
+          <p id="profile-city-hint" className="text-xs text-muted-foreground">Votre ville devient automatiquement une zone d’intervention si elle est proposée par LaMain2.</p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="businessPostcode">Code postal</Label>
