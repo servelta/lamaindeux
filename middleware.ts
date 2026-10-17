@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
   // Every route under a protected prefix requires a logged-in user.
   if (!user) {
     const redirectUrl = new URL("/connexion", request.url);
-    redirectUrl.searchParams.set("next", pathname);
+    redirectUrl.searchParams.set("next", pathname + request.nextUrl.search);
     return NextResponse.redirect(redirectUrl);
   }
 
