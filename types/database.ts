@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: "14.15"
   }
   public: {
     Tables: {
@@ -92,6 +92,13 @@ export type Database = {
             referencedRelation: "professionals"
             referencedColumns: ["profile_id"]
           },
+          {
+            foreignKeyName: "availability_plumber_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "public_professional_profiles"
+            referencedColumns: ["profile_id"]
+          },
         ]
       }
       availability_exceptions: {
@@ -137,12 +144,20 @@ export type Database = {
             referencedRelation: "professionals"
             referencedColumns: ["profile_id"]
           },
+          {
+            foreignKeyName: "availability_exceptions_plumber_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "public_professional_profiles"
+            referencedColumns: ["profile_id"]
+          },
         ]
       }
       bookings: {
         Row: {
           address_line: string
           booking_number: string
+          booking_period: string | null
           cancelled_at: string | null
           cancelled_reason: string | null
           city: string
@@ -169,6 +184,7 @@ export type Database = {
         Insert: {
           address_line: string
           booking_number?: string
+          booking_period?: string | null
           cancelled_at?: string | null
           cancelled_reason?: string | null
           city: string
@@ -195,6 +211,7 @@ export type Database = {
         Update: {
           address_line?: string
           booking_number?: string
+          booking_period?: string | null
           cancelled_at?: string | null
           cancelled_reason?: string | null
           city?: string
@@ -238,6 +255,13 @@ export type Database = {
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "professionals"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "bookings_plumber_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "public_professional_profiles"
             referencedColumns: ["profile_id"]
           },
           {
@@ -323,6 +347,13 @@ export type Database = {
             referencedRelation: "professionals"
             referencedColumns: ["profile_id"]
           },
+          {
+            foreignKeyName: "contracts_plumber_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "public_professional_profiles"
+            referencedColumns: ["profile_id"]
+          },
         ]
       }
       customers: {
@@ -351,6 +382,52 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_availability: {
+        Row: {
+          afternoon: boolean
+          date: string
+          evening: boolean
+          morning: boolean
+          professional_id: string
+        }
+        Insert: {
+          afternoon?: boolean
+          date: string
+          evening?: boolean
+          morning?: boolean
+          professional_id: string
+        }
+        Update: {
+          afternoon?: boolean
+          date?: string
+          evening?: boolean
+          morning?: boolean
+          professional_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_availability_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "active_professionals"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "daily_availability_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "daily_availability_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "public_professional_profiles"
+            referencedColumns: ["profile_id"]
           },
         ]
       }
@@ -524,6 +601,13 @@ export type Database = {
             referencedColumns: ["profile_id"]
           },
           {
+            foreignKeyName: "plumber_documents_plumber_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "public_professional_profiles"
+            referencedColumns: ["profile_id"]
+          },
+          {
             foreignKeyName: "plumber_documents_verified_by_fkey"
             columns: ["verified_by"]
             isOneToOne: false
@@ -534,32 +618,46 @@ export type Database = {
       }
       professional_gallery_photos: {
         Row: {
+          created_at: string
           id: string
           professional_id: string
-          storage_path: string
           sort_order: number
-          created_at: string
+          storage_path: string
         }
         Insert: {
+          created_at?: string
           id?: string
           professional_id: string
-          storage_path: string
           sort_order?: number
-          created_at?: string
+          storage_path: string
         }
         Update: {
+          created_at?: string
           id?: string
           professional_id?: string
-          storage_path?: string
           sort_order?: number
-          created_at?: string
+          storage_path?: string
         }
         Relationships: [
           {
             foreignKeyName: "professional_gallery_photos_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
+            referencedRelation: "active_professionals"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "professional_gallery_photos_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
             referencedRelation: "professionals"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "professional_gallery_photos_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "public_professional_profiles"
             referencedColumns: ["profile_id"]
           },
         ]
@@ -606,6 +704,13 @@ export type Database = {
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "professionals"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "plumber_service_areas_plumber_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "public_professional_profiles"
             referencedColumns: ["profile_id"]
           },
         ]
@@ -663,6 +768,13 @@ export type Database = {
             referencedColumns: ["profile_id"]
           },
           {
+            foreignKeyName: "plumber_services_plumber_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "public_professional_profiles"
+            referencedColumns: ["profile_id"]
+          },
+          {
             foreignKeyName: "plumber_services_service_id_fkey"
             columns: ["service_id"]
             isOneToOne: false
@@ -682,11 +794,13 @@ export type Database = {
           contract_status: Database["public"]["Enums"]["contract_status"]
           created_at: string
           description: string | null
+          google_rating: number | null
+          google_review_count: number | null
           payment_date: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
+          profile_id: string
           public_email: string | null
           public_phone: string | null
-          profile_id: string
           rating_avg: number
           rating_count: number
           siren: string | null
@@ -695,8 +809,6 @@ export type Database = {
           status: Database["public"]["Enums"]["professional_status"]
           status_reason: string | null
           stripe_payment_link_url: string | null
-          google_rating: number | null
-          google_review_count: number | null
           subscription_end: string | null
           subscription_start: string | null
           trade_id: string
@@ -714,11 +826,13 @@ export type Database = {
           contract_status?: Database["public"]["Enums"]["contract_status"]
           created_at?: string
           description?: string | null
+          google_rating?: number | null
+          google_review_count?: number | null
           payment_date?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          profile_id: string
           public_email?: string | null
           public_phone?: string | null
-          profile_id: string
           rating_avg?: number
           rating_count?: number
           siren?: string | null
@@ -727,8 +841,6 @@ export type Database = {
           status?: Database["public"]["Enums"]["professional_status"]
           status_reason?: string | null
           stripe_payment_link_url?: string | null
-          google_rating?: number | null
-          google_review_count?: number | null
           subscription_end?: string | null
           subscription_start?: string | null
           trade_id: string
@@ -746,11 +858,13 @@ export type Database = {
           contract_status?: Database["public"]["Enums"]["contract_status"]
           created_at?: string
           description?: string | null
+          google_rating?: number | null
+          google_review_count?: number | null
           payment_date?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          profile_id?: string
           public_email?: string | null
           public_phone?: string | null
-          profile_id?: string
           rating_avg?: number
           rating_count?: number
           siren?: string | null
@@ -759,8 +873,6 @@ export type Database = {
           status?: Database["public"]["Enums"]["professional_status"]
           status_reason?: string | null
           stripe_payment_link_url?: string | null
-          google_rating?: number | null
-          google_review_count?: number | null
           subscription_end?: string | null
           subscription_start?: string | null
           trade_id?: string
@@ -899,6 +1011,13 @@ export type Database = {
             referencedRelation: "professionals"
             referencedColumns: ["profile_id"]
           },
+          {
+            foreignKeyName: "reviews_plumber_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "public_professional_profiles"
+            referencedColumns: ["profile_id"]
+          },
         ]
       }
       services: {
@@ -992,6 +1111,13 @@ export type Database = {
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "professionals"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "subscriptions_plumber_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "public_professional_profiles"
             referencedColumns: ["profile_id"]
           },
         ]
@@ -1096,29 +1222,44 @@ export type Database = {
       }
       public_professional_profiles: {
         Row: {
-          profile_id: string | null
-          trade_id: string | null
-          trade_name_singular: string | null
-          trade_slug_singular: string | null
-          trade_slug_plural: string | null
-          company_name: string | null
-          slug: string | null
-          description: string | null
+          avatar_url: string | null
           business_address: string | null
           business_city: string | null
           business_postcode: string | null
-          public_phone: string | null
-          public_email: string | null
-          rating_avg: number | null
-          rating_count: number | null
+          company_name: string | null
           completed_jobs_count: number | null
+          description: string | null
+          first_name: string | null
           google_rating: number | null
           google_review_count: number | null
-          first_name: string | null
           last_name: string | null
-          avatar_url: string | null
+          profile_id: string | null
+          public_email: string | null
+          public_phone: string | null
+          rating_avg: number | null
+          rating_count: number | null
+          slug: string | null
+          trade_id: string | null
+          trade_name_singular: string | null
+          trade_slug_plural: string | null
+          trade_slug_singular: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "plumbers_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professionals_trade_id_fkey"
+            columns: ["trade_id"]
+            isOneToOne: false
+            referencedRelation: "trades"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
@@ -1174,12 +1315,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1203,11 +1344,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1228,11 +1369,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1253,11 +1394,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1270,11 +1411,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

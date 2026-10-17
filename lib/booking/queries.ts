@@ -2,7 +2,7 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { verifyReceiptToken } from "@/lib/booking/receipt-token";
 
 const BOOKING_SELECT = `
-  id, booking_number, status, scheduled_date, scheduled_time,
+  id, booking_number, status, scheduled_date, scheduled_time, booking_period,
   contact_first_name, contact_last_name, contact_phone, contact_email,
   address_line, postcode, city, description, photo_urls,
   price_cents, is_quote_request, cancelled_reason, created_at,

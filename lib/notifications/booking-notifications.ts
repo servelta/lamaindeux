@@ -1,10 +1,11 @@
+import { bookingPeriodText } from "@/lib/booking/periods";
 import { sendEmail } from "@/lib/email/send";
 import { createAdminClient } from "@/lib/supabase/server";
 import { customerBookingLink } from "@/lib/booking/customer-link";
 import { sendSms, toE164France } from "@/lib/sms/send";
 import { createNotification } from "@/lib/notifications/create";
 import { getProfessionalContact } from "@/lib/notifications/get-professional-contact";
-import { formatDateFr, formatTimeFr } from "@/lib/utils/date-fr";
+import { formatDateFr } from "@/lib/utils/date-fr";
 import { newBookingSmsBody, bookingConfirmedSmsBody, bookingCancelledSmsBody } from "@/lib/sms/messages";
 import {
   bookingConfirmationCustomerEmail,
@@ -20,6 +21,7 @@ type BookingLike = {
   professional_id: string;
   scheduled_date: string;
   scheduled_time: string;
+  booking_period?: string | null;
   contact_first_name: string;
   contact_last_name?: string;
   description?: string | null;
@@ -37,7 +39,7 @@ type BookingLike = {
 export async function notifyBookingCreated(booking: BookingLike, serviceName: string, options: { isGuest?: boolean; customerBookingUrl?: string } = {}) {
   const professional = await getProfessionalContact(booking.professional_id);
   const date = formatDateFr(booking.scheduled_date);
-  const time = formatTimeFr(booking.scheduled_time);
+  const time = bookingPeriodText(booking);
   let photoLinks: string[] = [];
   if (booking.photo_urls?.length) {
     try {
@@ -67,6 +69,7 @@ export async function notifyBookingCreated(booking: BookingLike, serviceName: st
     postcode: booking.postcode,
     city: booking.city,
     phone: booking.contact_phone,
+    bookingPeriod: booking.booking_period,
     isQuoteRequest: booking.is_quote_request,
   };
 
@@ -81,7 +84,7 @@ export async function notifyBookingCreated(booking: BookingLike, serviceName: st
       customerName: emailData.customerFullName,
       phone: booking.contact_phone,
       date,
-      time: booking.is_quote_request ? undefined : time,
+      time: booking.is_quote_request && !booking.booking_period ? undefined : time,
       isQuoteRequest: booking.is_quote_request,
       bookingUrl,
     }));
@@ -159,7 +162,7 @@ export async function notifyBookingAccepted(booking: BookingLike, serviceName: s
     serviceName,
     professionalCompanyName: professional.companyName,
     date: formatDateFr(booking.scheduled_date),
-    time: formatTimeFr(booking.scheduled_time),
+    time: bookingPeriodText(booking),
     customerBookingUrl: await customerBookingLink(booking),
   });
   await sendEmail(booking.contact_email, subject, html);

@@ -1,9 +1,10 @@
-import { formatDateFr, formatTimeFr } from "@/lib/utils/date-fr";
+import { bookingPeriodText } from "@/lib/booking/periods";
+import { formatDateFr } from "@/lib/utils/date-fr";
 import { formatPrice } from "@/lib/utils/format";
 
 type BookingMessage = {
   booking_number: string; is_quote_request: boolean;
-  scheduled_date: string; scheduled_time: string;
+  scheduled_date: string; scheduled_time: string; booking_period?: string | null;
   contact_first_name: string; contact_last_name: string;
   contact_phone: string; contact_email: string;
   address_line: string; postcode: string; city: string;
@@ -21,7 +22,7 @@ export function bookingWhatsAppUrl(phone: string | null | undefined, booking: Bo
   const message = [
     `LaMain2 — ${booking.is_quote_request ? "Demande de devis" : "Réservation"} ${booking.booking_number}`,
     `Service : ${serviceName}`,
-    `${booking.is_quote_request ? "Date souhaitée" : "Rendez-vous"} : ${formatDateFr(booking.scheduled_date)}${booking.is_quote_request ? "" : ` à ${formatTimeFr(booking.scheduled_time)}`}`,
+    `${booking.is_quote_request ? "Date souhaitée" : "Rendez-vous"} : ${formatDateFr(booking.scheduled_date)}${booking.is_quote_request && !booking.booking_period ? "" : ` · ${bookingPeriodText(booking)}`}`,
     `Client : ${booking.contact_first_name} ${booking.contact_last_name}`,
     `Téléphone : ${booking.contact_phone}`,
     `Email : ${booking.contact_email}`,

@@ -10,7 +10,7 @@ import { createNotification } from "@/lib/notifications/create";
 type TransitionResult = { error?: string } | void;
 
 const BOOKING_NOTIFY_SELECT =
-  "id, booking_number, customer_id, professional_id, scheduled_date, scheduled_time, contact_first_name, contact_email, contact_phone, address_line, postcode, city, is_quote_request, professionals(company_name), professional_services(services(name))";
+  "id, booking_number, customer_id, professional_id, scheduled_date, scheduled_time, booking_period, contact_first_name, contact_email, contact_phone, address_line, postcode, city, is_quote_request, professionals(company_name), professional_services(services(name))";
 
 function extractServiceName(booking: any): string {
   const ps = Array.isArray(booking.professional_services) ? booking.professional_services[0] : booking.professional_services;
@@ -56,6 +56,8 @@ export async function customerCancelBookingAction(bookingId: string): Promise<Tr
     }
   }
 
+  revalidatePath("/calendrier");
+  revalidatePath("/artisan/[slug]/reserver","page");
   revalidatePath("/mes-reservations");
   revalidatePath(`/mes-reservations/${bookingId}`);
 }
@@ -89,6 +91,8 @@ export async function professionalAcceptBookingAction(bookingId: string): Promis
     }
   }
 
+  revalidatePath("/calendrier");
+  revalidatePath("/artisan/[slug]/reserver","page");
   revalidatePath("/reservations");
   revalidatePath(`/reservations/${bookingId}`);
 }
@@ -149,6 +153,8 @@ export async function professionalCompleteBookingAction(bookingId: string): Prom
     }
   }
 
+  revalidatePath("/calendrier");
+  revalidatePath("/artisan/[slug]/reserver","page");
   revalidatePath("/reservations");
   revalidatePath(`/reservations/${bookingId}`);
 }
@@ -189,6 +195,8 @@ export async function professionalCancelBookingAction(
     }
   }
 
+  revalidatePath("/calendrier");
+  revalidatePath("/artisan/[slug]/reserver","page");
   revalidatePath("/reservations");
   revalidatePath(`/reservations/${bookingId}`);
 }

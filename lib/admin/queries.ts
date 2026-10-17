@@ -130,7 +130,7 @@ export async function listAllBookings(filters: AdminBookingFilters) {
   let query = supabase
     .from("bookings")
     .select(
-      "id, booking_number, status, scheduled_date, scheduled_time, city, contact_first_name, contact_last_name, professionals(company_name), professional_services(services(name))"
+      "id, booking_number, status, scheduled_date, scheduled_time, booking_period, city, contact_first_name, contact_last_name, professionals(company_name), professional_services(services(name))"
     )
     .order("scheduled_date", { ascending: false })
     .limit(100);

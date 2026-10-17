@@ -12,6 +12,13 @@ const booking = { id: "booking-id", booking_number: "PB-456", customer_id: "clie
 
 describe("created booking notification pipeline", () => {
   beforeEach(() => { vi.clearAllMocks(); mocks.signed.mockResolvedValue({ data: [{ signedUrl: "https://example.com/private-photo" }], error: null }); });
+  it("includes the reserved period in quote emails and the artisan SMS", async () => {
+    await notifyBookingCreated({ ...booking, scheduled_time: "10:00", booking_period: "morning" }, "Fuite");
+    for (const recipient of ["artisan@example.com", booking.contact_email]) {
+      expect(mocks.sendEmail).toHaveBeenCalledWith(recipient, expect.any(String), expect.stringContaining("Matin · 10:00–13:00"));
+    }
+    expect(mocks.sendSms).toHaveBeenCalledWith("+33611111111", expect.stringContaining("Matin · 10:00–13:00"));
+  });
   it("sends all submitted information to the assigned artisan, with a signed photo and detail link", async () => {
     await notifyBookingCreated(booking, "Fuite");
     expect(mocks.signed).toHaveBeenCalledWith(booking.photo_urls, 604800);

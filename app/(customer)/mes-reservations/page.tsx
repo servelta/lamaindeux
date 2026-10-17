@@ -1,3 +1,4 @@
+import { bookingPeriodText } from "@/lib/booking/periods";
 import Link from "next/link";
 import { requireUserId } from "@/lib/professional/queries";
 import { getCustomerBookings } from "@/lib/booking/queries";
@@ -65,7 +66,7 @@ function Section({
                 <p className="mt-1 font-mono-data text-xs text-muted-foreground">
                   {new Date(b.scheduled_date).toLocaleDateString("fr-FR", { dateStyle: "medium" })}
                   {" · "}
-                  {b.scheduled_time.slice(0, 5)}
+                  {bookingPeriodText(b)}
                   {" · "}
                   {b.is_quote_request ? "Sur devis" : formatPrice(b.price_cents)}
                 </p>

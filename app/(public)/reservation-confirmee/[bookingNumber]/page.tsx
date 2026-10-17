@@ -1,3 +1,4 @@
+import { bookingPeriodText } from "@/lib/booking/periods";
 import { bookingWhatsAppUrl } from "@/lib/booking/whatsapp";
 import { formatDateFr } from "@/lib/utils/date-fr";
 import { notFound } from "next/navigation";
@@ -54,7 +55,7 @@ export default async function ReservationConfirmeePage({ params, searchParams }:
           <span className="text-muted-foreground">Service</span>
           <span className="min-w-0 break-words text-right font-medium">{service?.name}</span>
         </div>
-        {!booking.is_quote_request && (
+        {(!booking.is_quote_request || booking.booking_period) && (
           <>
             <div className="flex justify-between gap-4">
               <span className="text-muted-foreground">Date</span>
@@ -63,8 +64,8 @@ export default async function ReservationConfirmeePage({ params, searchParams }:
               </span>
             </div>
             <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground">Heure</span>
-              <span className="font-mono-data font-medium">{booking.scheduled_time.slice(0, 5)}</span>
+              <span className="text-muted-foreground">{booking.booking_period ? "Plage" : "Heure"}</span>
+              <span className="min-w-0 break-words text-right font-mono-data font-medium">{bookingPeriodText(booking)}</span>
             </div>
           </>
         )}

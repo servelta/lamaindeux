@@ -9,6 +9,9 @@ import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { BOOKING_PHOTO_TYPES, validateBookingPhotos } from "@/lib/booking/photos";
 import { createBookingSchema } from "@/lib/booking/validation";
 import { parseAddress, splitFullName } from "@/lib/booking/parse-contact";
+import { getDayPeriods } from "@/lib/booking/day-availability";
+import { BOOKING_PERIODS } from "@/lib/booking/periods";
+import { revalidatePath } from "next/cache";
 import { getAvailableSlots } from "@/lib/booking/availability";
 import { notifyBookingCreated } from "@/lib/notifications/booking-notifications";
 import { checkRateLimit } from "@/lib/security/rate-limit";
@@ -65,6 +68,7 @@ export async function createBookingAction(
   }
 
   const parsed = createBookingSchema.safeParse({
+    bookingPeriod: formData.get("bookingPeriod") || undefined,
     professionalServiceId: formData.get("professionalServiceId"),
     date: formData.get("date"),
     time: formData.get("time"),
@@ -79,7 +83,7 @@ export async function createBookingAction(
     return { error: parsed.error.issues[0]?.message ?? "Formulaire invalide." };
   }
 
-  const { professionalServiceId, date, time, description, fullName, address, ...contact } = parsed.data;
+  const { professionalServiceId, date, time, bookingPeriod, description, fullName, address, ...contact } = parsed.data;
   const { firstName, lastName } = splitFullName(fullName);
   const { addressLine, postcode, city } = parseAddress(address);
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
@@ -105,7 +109,12 @@ export async function createBookingAction(
 
   // Re-check availability server-side right before insert — the client-side
   // slot list can go stale between page load and submit.
-  if (!isQuoteRequest) {
+  if (bookingPeriod) {
+    const selected=BOOKING_PERIODS.find(p=>p.id===bookingPeriod);
+    if(!selected || time!==selected.start) return {error:"Choisissez une plage valide."};
+    try { if(!(await getDayPeriods(service.professional_id,date)).some(p=>p.id===bookingPeriod&&p.available)) return {error:"Cette plage n’est plus disponible. Choisissez-en une autre."}; }
+    catch { return {error:"Impossible de vérifier les disponibilités. Réessayez."}; }
+  } else if (!isQuoteRequest) {
     let available: string[];
     try { available = await getAvailableSlots(service.professional_id, date, duration); }
     catch { return { error: "Impossible de vérifier cet horaire. Merci de réessayer." }; }
@@ -149,7 +158,8 @@ export async function createBookingAction(
       professional_service_id: service.id,
       status: isQuoteRequest ? "PENDING" : "CONFIRMED",
       scheduled_date: date,
-      scheduled_time: isQuoteRequest ? "09:00" : time,
+      booking_period: bookingPeriod ?? null,
+      scheduled_time: bookingPeriod ? time : isQuoteRequest ? "09:00" : time,
       contact_first_name: firstName,
       contact_last_name: lastName,
       contact_phone: contact.phone,
@@ -163,14 +173,14 @@ export async function createBookingAction(
       is_quote_request: isQuoteRequest,
     })
     .select(
-      "id, booking_number, customer_id, professional_id, scheduled_date, scheduled_time, contact_first_name, contact_last_name, contact_email, contact_phone, address_line, postcode, city, description, photo_urls, price_cents, is_quote_request"
+      "id, booking_number, customer_id, professional_id, scheduled_date, scheduled_time, booking_period, contact_first_name, contact_last_name, contact_email, contact_phone, address_line, postcode, city, description, photo_urls, price_cents, is_quote_request"
     )
     .single();
 
   if (error) {
     await removeUploadedPhotos();
-    if (error.code === "23505") {
-      return { error: "Ce créneau vient d'être réservé par un autre client. Merci d'en choisir un autre." };
+    if (error.code === "23505" || error.code === "23514") {
+      return { error: "Cette plage n’est plus disponible. Merci d’en choisir une autre." };
     }
     console.error("createBookingAction:", error);
     return { error: "Impossible de créer la réservation." };
@@ -192,5 +202,6 @@ export async function createBookingAction(
     console.error("notifyBookingCreated failed:", err);
   }
 
+  revalidatePath("/calendrier");revalidatePath("/reservations");revalidatePath("/artisan/[slug]/reserver","page");
   redirect(`/reservation-confirmee/${booking.booking_number}`);
 }

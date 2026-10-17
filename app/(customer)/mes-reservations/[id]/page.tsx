@@ -1,3 +1,4 @@
+import { bookingPeriodText } from "@/lib/booking/periods";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getBookingById } from "@/lib/booking/queries";
@@ -42,10 +43,10 @@ export default async function CustomerBookingDetailPage({ params }: Props) {
       <div className="mt-6 space-y-3 rounded-lg border border-border bg-card p-6 text-sm">
         <Row label="Service" value={service?.name ?? "—"} />
         <Row label="Professionnel" value={<Link href={`/artisan/${professional?.slug}`} className="text-primary hover:underline">{professional?.company_name}</Link>} />
-        {!booking.is_quote_request && (
+        {(!booking.is_quote_request || booking.booking_period) && (
           <>
             <Row label="Date" value={new Date(booking.scheduled_date).toLocaleDateString("fr-FR", { dateStyle: "long" })} mono />
-            <Row label="Heure" value={booking.scheduled_time.slice(0, 5)} mono />
+            <Row label={booking.booking_period ? "Plage" : "Heure"} value={bookingPeriodText(booking)} mono />
           </>
         )}
         <Row label="Adresse" value={`${booking.address_line}, ${booking.postcode} ${booking.city}`} />
@@ -82,7 +83,7 @@ function Row({ label, value, mono }: { label: string; value: React.ReactNode; mo
   return (
     <div className="flex justify-between gap-4">
       <span className="shrink-0 text-muted-foreground">{label}</span>
-      <span className={`text-right font-medium ${mono ? "font-mono-data" : ""}`}>{value}</span>
+      <span className={`min-w-0 break-words text-right font-medium ${mono ? "font-mono-data" : ""}`}>{value}</span>
     </div>
   );
 }

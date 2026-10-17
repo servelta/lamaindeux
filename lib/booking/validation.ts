@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const createBookingSchema = z.object({
+  bookingPeriod: z.enum(["morning", "afternoon", "evening"]).optional(),
   professionalServiceId: z.string().uuid("Service invalide."),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide."),
   time: z.string().regex(/^\d{2}:\d{2}$/, "Heure invalide."),

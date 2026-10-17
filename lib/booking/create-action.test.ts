@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   suspended: false,
   pricing: "quote",
   insertError: null as { code: string } | null,
-  insert: vi.fn(), upload: vi.fn(), remove: vi.fn(), deleteUser: vi.fn(), guest: vi.fn(), notify: vi.fn(), rate: vi.fn(), slots: vi.fn(), cookie: vi.fn(),
+  insert: vi.fn(), upload: vi.fn(), remove: vi.fn(), deleteUser: vi.fn(), guest: vi.fn(), notify: vi.fn(), rate: vi.fn(), slots: vi.fn(), periods: vi.fn(), cookie: vi.fn(),
 }));
 const guestId = "00000000-0000-4000-8000-000000000001";
 const serviceId = "00000000-0000-4000-8000-000000000002";
@@ -14,6 +14,8 @@ const proId = "00000000-0000-4000-8000-000000000003";
 const bookingId = "00000000-0000-4000-8000-000000000004";
 const booking = { id: bookingId, booking_number: "PB-123", customer_id: guestId, professional_id: proId };
 
+vi.mock("next/cache",()=>({revalidatePath:vi.fn()}));
+vi.mock("@/lib/booking/day-availability",()=>({getDayPeriods:mocks.periods}));
 vi.mock("next/navigation", () => ({ redirect: (path: string) => { throw new Error(`redirect:${path}`); } }));
 vi.mock("next/headers", () => ({ cookies: async () => ({ set: mocks.cookie }) }));
 vi.mock("@/lib/security/get-client-ip", () => ({ getClientIp: async () => "192.0.2.1" }));
@@ -55,7 +57,7 @@ function form(mode = "guest") {
 describe("account and guest booking submission", () => {
   beforeEach(() => {
     vi.clearAllMocks(); mocks.user = null; mocks.role = "customer"; mocks.suspended = false; mocks.pricing = "quote"; mocks.insertError = null;
-    mocks.guest.mockResolvedValue(guestId); mocks.rate.mockResolvedValue(true); mocks.upload.mockResolvedValue({ error: null }); mocks.slots.mockResolvedValue(["09:00"]);
+    mocks.guest.mockResolvedValue(guestId); mocks.rate.mockResolvedValue(true); mocks.upload.mockResolvedValue({ error: null }); mocks.slots.mockResolvedValue(["09:00"]); mocks.periods.mockResolvedValue([{id:"morning",start:"10:00",available:true}]);
     process.env.SUPABASE_SERVICE_ROLE_KEY = "test-only-secret";
   });
   it("creates a guest booking, preserves entered details, and issues only a private receipt", async () => {
@@ -107,4 +109,19 @@ describe("account and guest booking submission", () => {
     expect(mocks.deleteUser).toHaveBeenCalledWith(guestId);
     expect(mocks.cookie).not.toHaveBeenCalled(); expect(mocks.notify).not.toHaveBeenCalled();
   });
+  it("reserves a selected morning even when the price needs a quote",async()=>{
+    const f=form();f.set("bookingPeriod","morning");f.set("time","10:00");
+    await expect(createBookingAction(undefined,f)).rejects.toThrow("redirect:");
+    expect(mocks.insert).toHaveBeenCalledWith(expect.objectContaining({booking_period:"morning",scheduled_time:"10:00",is_quote_request:true,status:"PENDING"}));
+  });
+  it("rejects a taken period before creating a guest or sending messages",async()=>{
+    mocks.periods.mockResolvedValue([{id:"morning",start:"10:00",available:false}]);const f=form();f.set("bookingPeriod","morning");f.set("time","10:00");expect(await createBookingAction(undefined,f)).toHaveProperty("error");expect(mocks.guest).not.toHaveBeenCalled();expect(mocks.notify).not.toHaveBeenCalled();
+  });
+  it("rejects a mismatched or unknown booking period",async()=>{
+    for(const [period,time] of [["morning","17:00"],["invalid","10:00"]]){const f=form();f.set("bookingPeriod",period);f.set("time",time);expect(await createBookingAction(undefined,f)).toHaveProperty("error");}expect(mocks.insert).not.toHaveBeenCalled();
+  });
+  it("reports a competing database reservation and cleans up the unused guest",async()=>{
+    mocks.insertError={code:"23505"};const f=form();f.set("bookingPeriod","morning");f.set("time","10:00");expect(await createBookingAction(undefined,f)).toEqual({error:"Cette plage n’est plus disponible. Merci d’en choisir une autre."});expect(mocks.deleteUser).toHaveBeenCalled();expect(mocks.notify).not.toHaveBeenCalled();
+  });
+
 });

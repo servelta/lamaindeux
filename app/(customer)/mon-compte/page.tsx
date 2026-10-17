@@ -1,3 +1,4 @@
+import { bookingPeriodText } from "@/lib/booking/periods";
 import Link from "next/link";
 import { CalendarCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -83,7 +84,7 @@ export default async function MonComptePage() {
                   <span className="font-mono-data">
                     {new Date(next.scheduled_date).toLocaleDateString("fr-FR", { dateStyle: "full" })}
                     {" à "}
-                    {next.scheduled_time.slice(0, 5)}
+                    {bookingPeriodText(next)}
                   </span>
                 </p>
                 <p className="mt-1 font-mono-data text-sm text-muted-foreground">

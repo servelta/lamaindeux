@@ -22,6 +22,7 @@ type BookingEmailData = {
   postcode: string;
   city: string;
   phone: string;
+  bookingPeriod?: string | null;
   isQuoteRequest: boolean;
 };
 
@@ -34,16 +35,16 @@ export function bookingConfirmationCustomerEmail(data: BookingEmailData) {
     detailRow("Numéro de réservation", data.bookingNumber) +
     detailRow("Professionnel", data.professionalCompanyName) +
     detailRow("Service", data.serviceName) +
-    (data.isQuoteRequest
+    (data.isQuoteRequest && !data.bookingPeriod
       ? detailRow("Date souhaitée (indicative)", data.date)
-      : detailRow("Date", data.date) + detailRow("Heure", data.time)) +
+      : detailRow("Date", data.date) + detailRow("Plage / heure", data.time)) +
     detailRow("Adresse", `${data.addressLine}, ${data.postcode} ${data.city}`);
 
   const html = wrapEmail(`
     <p>Bonjour ${escapeHtml(data.customerFirstName)},</p>
     <p>${
       data.isQuoteRequest
-        ? "Votre demande de devis a bien été envoyée. Le professionnel vous recontactera prochainement pour convenir d'un rendez-vous et d'un prix."
+        ? data.bookingPeriod ? "Votre demande de devis a été envoyée et la plage choisie est réservée. L’artisan vous recontactera pour préciser l’heure d’arrivée et le prix." : "Votre demande de devis a bien été envoyée. Le professionnel vous recontactera prochainement pour convenir d'un rendez-vous et d'un prix."
         : "Votre réservation est confirmée. Voici le récapitulatif :"
     }</p>
     ${detailTable(rows)}
@@ -62,9 +63,9 @@ export function newBookingPlumberEmail(data: BookingEmailData) {
     detailRow("Téléphone", data.phone) +
     detailRow("E-mail", data.customerEmail ?? "Non renseigné") +
     detailRow("Service", data.serviceName) +
-    (data.isQuoteRequest
+    (data.isQuoteRequest && !data.bookingPeriod
       ? detailRow("Type", "Demande de devis") + detailRow("Date souhaitée (indicative)", data.date)
-      : detailRow("Date", data.date) + detailRow("Heure", data.time)) +
+      : detailRow("Date", data.date) + detailRow("Plage / heure", data.time)) +
     detailRow("Adresse", `${data.addressLine}, ${data.postcode} ${data.city}`) +
     detailRow("Tarif", data.isQuoteRequest ? "Sur devis" : formatPrice(data.priceCents ?? null)) +
     detailRow("Description du problème", data.description || "Non renseignée") +
@@ -144,7 +145,7 @@ export function bookingReminderEmail(
     ${detailTable(
       detailRow("Service", data.serviceName) +
         detailRow("Date", data.date) +
-        detailRow("Heure", data.time) +
+        detailRow("Plage / heure", data.time) +
         detailRow("Adresse", `${data.addressLine}, ${data.postcode} ${data.city}`)
     )}
     ${button(recipientIsCustomer && data.customerBookingUrl ? data.customerBookingUrl : `${SITE_URL}/${recipientIsCustomer ? "mes-reservations" : "reservations"}`, "Voir les détails")}

@@ -1,3 +1,4 @@
+import { bookingPeriodText } from "@/lib/booking/periods";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -52,10 +53,10 @@ export default async function PlumberBookingDetailPage({ params }: Props) {
         <Row label="Téléphone" value={booking.contact_phone} mono />
         <Row label="E-mail" value={booking.contact_email} />
         <Row label="Adresse" value={`${booking.address_line}, ${booking.postcode} ${booking.city}`} />
-        {!booking.is_quote_request && (
+        {(!booking.is_quote_request || booking.booking_period) && (
           <>
             <Row label="Date" value={new Date(booking.scheduled_date).toLocaleDateString("fr-FR", { dateStyle: "long" })} mono />
-            <Row label="Heure" value={booking.scheduled_time.slice(0, 5)} mono />
+            <Row label={booking.booking_period ? "Plage" : "Heure"} value={bookingPeriodText(booking)} mono />
           </>
         )}
         <Row label="Prix" value={booking.is_quote_request ? "Sur devis" : formatPrice(booking.price_cents)} mono />
@@ -89,7 +90,7 @@ function Row({ label, value, mono }: { label: string; value: React.ReactNode; mo
   return (
     <div className="flex justify-between gap-4">
       <span className="shrink-0 text-muted-foreground">{label}</span>
-      <span className={`text-right font-medium ${mono ? "font-mono-data" : ""}`}>{value}</span>
+      <span className={`min-w-0 break-words text-right font-medium ${mono ? "font-mono-data" : ""}`}>{value}</span>
     </div>
   );
 }

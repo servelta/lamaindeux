@@ -1,3 +1,4 @@
+import { bookingPeriodText } from "@/lib/booking/periods";
 import Link from "next/link";
 import { requireUserId } from "@/lib/professional/queries";
 import { getPlumberBookings } from "@/lib/booking/queries";
@@ -75,7 +76,7 @@ function Section({
                 <p className="mt-1 font-mono-data text-xs text-muted-foreground">
                   {new Date(b.scheduled_date).toLocaleDateString("fr-FR", { dateStyle: "medium" })}
                   {" · "}
-                  {b.scheduled_time.slice(0, 5)}
+                  {bookingPeriodText(b)}
                   {" · "}
                   {b.city}
                 </p>

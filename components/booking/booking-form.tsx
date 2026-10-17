@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { CalendarDays, Camera, ShieldCheck } from "lucide-react";
 import { validateBookingPhotos } from "@/lib/booking/photos";
 import { createBookingAction, type ActionResult } from "@/lib/booking/create-action";
-import { getAvailableSlotsAction } from "@/lib/booking/slots-action";
+import { getAvailablePeriodsAction } from "@/lib/booking/periods-action";
+import { type DayPeriod } from "@/lib/booking/periods";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -52,7 +53,7 @@ export function BookingForm({
   const [state, formAction] = useActionState<ActionResult, FormData>(createBookingAction, undefined);
   const [date, setDate] = useState(initialDate ?? "");
   const [time, setTime] = useState(initialTime ?? "");
-  const [slots, setSlots] = useState<string[] | null>(null);
+  const [slots, setSlots] = useState<DayPeriod[] | null>(null);
   const [isPending, setPending] = useState(false);
   const [slotError, setSlotError] = useState("");
   const [photoError, setPhotoError] = useState("");
@@ -60,16 +61,16 @@ export function BookingForm({
 
   useEffect(() => {
     let cancelled = false;
-    if (!date || isQuoteRequest) return;
-    setSlots(null);
-    setPending(true);
-    setSlotError("");
-    getAvailableSlotsAction(professionalId, date, durationMinutes ?? 60)
-      .then((result) => { if (!cancelled) { setSlots(result); setTime(current => result.includes(current) ? current : ""); } })
-      .catch(() => { if (!cancelled) setSlotError("Impossible de charger les horaires. Choisissez une autre date pour réessayer."); })
-      .finally(() => { if (!cancelled) setPending(false); });
-    return () => { cancelled = true; };
-  }, [date, professionalId, durationMinutes, isQuoteRequest]);
+    if (!date) return;
+    setSlots(null);setPending(true);setSlotError("");
+    const load = () => getAvailablePeriodsAction(professionalId,date)
+      .then(result => { if(!cancelled){setSlots(result);setSlotError("");setTime(current => result.some(p=>p.available&&p.start===current)?current:"");} })
+      .catch(()=>{if(!cancelled){setSlots(null);setSlotError("Impossible de charger les disponibilités. Choisissez une autre date pour réessayer.");}})
+      .finally(()=>{if(!cancelled)setPending(false);});
+    void load();const timer=setInterval(()=>void load(),20000);
+    const onFocus=()=>void load();window.addEventListener("focus",onFocus);
+    return()=>{cancelled=true;clearInterval(timer);window.removeEventListener("focus",onFocus);};
+  },[date,professionalId,state]);
 
   const currentReturn = new URL(returnTo, "https://lamain2.invalid");
   if (date) currentReturn.searchParams.set("date", date);
@@ -78,19 +79,20 @@ export function BookingForm({
   else currentReturn.searchParams.delete("time");
 
   return (
-    <form action={formAction} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+    <form action={formAction} onReset={event=>event.preventDefault()} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <input type="hidden" name="bookingPeriod" value={slots?.find(p=>p.start===time&&p.available)?.id ?? ""} />
       <input type="hidden" name="professionalServiceId" value={professionalServiceId} />
       <input type="hidden" name="returnTo" value={currentReturn.pathname + currentReturn.search} />
       <input type="hidden" name="bookingMode" value={isGuest ? "guest" : "account"} />
       <div className="hidden" aria-hidden="true"><label htmlFor="booking-website">Site web</label><input id="booking-website" name="website" tabIndex={-1} autoComplete="off" /></div>
 
-      <div className="min-w-0 space-y-5 [&_input:not([type=hidden]):not([type=file])]:h-12 [&_input]:min-w-0 [&_input]:rounded-xl [&_input]:bg-background/60 [&_input]:text-base [&_textarea]:rounded-xl [&_textarea]:text-base">
+      <div className="min-w-0 space-y-5 [&_input:not([type=hidden]):not([type=file]):not([type=radio])]:h-12 [&_input]:min-w-0 [&_input]:rounded-xl [&_input]:bg-background/60 [&_input]:text-base [&_textarea]:rounded-xl [&_textarea]:text-base">
       <section className="rounded-3xl border border-border/70 bg-white p-5 shadow-sm sm:p-7">
       <div className="mb-6 flex items-start gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">01</span><div><h2 className="font-display text-lg font-semibold">Votre rendez-vous</h2><p className="mt-1 text-sm text-muted-foreground">Choisissez le moment qui vous convient.</p></div></div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="date">Date souhaitée{isQuoteRequest ? " (indicative)" : ""}</Label>
+          <Label htmlFor="date">Date d’intervention</Label>
           <Input
             id="date"
             name="date"
@@ -101,47 +103,14 @@ export function BookingForm({
             required
           />
         </div>
-        {!isQuoteRequest && (
-          <div className="space-y-2">
-            <Label htmlFor="time">Heure</Label>
-            <select
-              id="time"
-              name="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              required
-              disabled={!date || isPending || !slots?.length}
-              className="h-12 w-full rounded-xl border border-input bg-background/60 px-3 text-base text-foreground disabled:opacity-50"
-            >
-              <option value="" disabled>
-                {!date ? "Choisissez d'abord une date" : isPending ? "Chargement..." : "Heure"}
-              </option>
-              {slots?.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-            {slots?.length === 0 && !isPending && (
-              <p className="text-xs text-destructive">
-                Aucun créneau disponible ce jour-là. Essayez une autre date.
-              </p>
-            )}
-            {slotError && <p role="alert" className="text-sm text-destructive">{slotError}</p>}
-          </div>
-        )}
       </div>
-
-      {isQuoteRequest && (
-        <>
-          <input type="hidden" name="time" value="09:00" />
-          <div className="mt-5 rounded-2xl bg-secondary/60 p-4 text-sm leading-relaxed">
-            Cette prestation nécessite un devis. Décrivez votre besoin
-            ci-dessous ; le professionnel vous recontactera pour convenir d'un
-            horaire précis et d'un prix.
-          </div>
-        </>
-      )}
+      <fieldset className="mt-5 min-w-0"><legend className="mb-3 text-sm font-semibold">Plage d’intervention</legend>
+        {!date ? <p className="text-sm text-muted-foreground">Choisissez d’abord une date.</p> : isPending ? <p role="status" className="text-sm text-muted-foreground">Chargement des disponibilités…</p> : <div className="grid gap-3 sm:grid-cols-3">{slots?.filter(p=>p.available).map(p=><label key={p.id} className="relative min-w-0 cursor-pointer"><input type="radio" name="time" value={p.start} checked={time===p.start} onChange={()=>setTime(p.start)} required className="peer sr-only" /><span className="block rounded-2xl border border-border bg-background/50 p-4 transition peer-checked:border-primary peer-checked:bg-primary/5 peer-focus-visible:ring-2 peer-focus-visible:ring-primary"><span className="block font-semibold text-primary">{p.label}</span><span className="mt-1 block text-sm text-muted-foreground">{p.start}–{p.end}</span></span></label>)}</div>}
+        {date&&!isPending&&slots&&!slots.some(p=>p.available)?<p role="status" className="rounded-xl bg-muted p-4 text-sm">Aucune plage disponible ce jour-là. Choisissez une autre date.</p>:null}
+        {slotError?<p role="alert" className="mt-3 text-sm text-destructive">{slotError}</p>:null}
+      </fieldset>
+      <p className="mt-4 text-xs leading-5 text-muted-foreground">Heure de Paris. L’heure précise d’arrivée est à convenir avec l’artisan pendant la plage choisie.</p>
+      {isQuoteRequest ? <p className="mt-4 rounded-2xl bg-secondary/60 p-4 text-sm leading-6">Le tarif reste sur devis. Votre demande réserve cette plage dans le calendrier de l’artisan, qui vous recontactera pour confirmer les détails.</p> : null}
       </section>
 
       <section className="space-y-5 rounded-3xl border border-border/70 bg-white p-5 shadow-sm sm:p-7">
@@ -208,7 +177,7 @@ export function BookingForm({
         </p>
       )}
 
-      <SubmitButton size="lg" disabled={Boolean(photoError) || (!isQuoteRequest && (!date || !time || isPending))} className="h-auto min-h-12 w-full whitespace-normal rounded-xl py-3" pendingText="Envoi en cours…">
+      <SubmitButton size="lg" disabled={Boolean(photoError) || !date || !time || isPending || !slots?.some(p=>p.available&&p.start===time)} className="h-auto min-h-12 w-full whitespace-normal rounded-xl py-3" pendingText="Envoi en cours…">
         {isQuoteRequest ? "Envoyer ma demande de devis" : "Confirmer la réservation"}
       </SubmitButton>
       <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground"><ShieldCheck aria-hidden="true" className="h-4 w-4" />Aucun paiement en ligne</p>

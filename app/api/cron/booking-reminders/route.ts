@@ -1,3 +1,4 @@
+import { bookingPeriodText } from "@/lib/booking/periods";
 import { provisionDefaultHours } from "@/lib/professional/provision-default-hours";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
@@ -5,7 +6,7 @@ import { sendEmail } from "@/lib/email/send";
 import { sendSms, toE164France } from "@/lib/sms/send";
 import { bookingReminderEmail } from "@/lib/email/templates";
 import { bookingReminderSmsBody } from "@/lib/sms/messages";
-import { formatDateFr, formatTimeFr } from "@/lib/utils/date-fr";
+import { formatDateFr } from "@/lib/utils/date-fr";
 import { getProfessionalContact } from "@/lib/notifications/get-professional-contact";
 import { createNotification } from "@/lib/notifications/create";
 import { provisionPlumbingServices } from "@/lib/professional/provision-plumbing-services";
@@ -41,7 +42,7 @@ export async function GET(request: Request) {
   const { data: bookings, error } = await supabase
     .from("bookings")
     .select(
-      "id, booking_number, customer_id, professional_id, scheduled_date, scheduled_time, contact_email, contact_phone, address_line, postcode, city, professional_services(services(name))",
+      "id, booking_number, customer_id, professional_id, scheduled_date, scheduled_time, booking_period, contact_email, contact_phone, address_line, postcode, city, professional_services(services(name))",
     )
     .eq("scheduled_date", tomorrowStr)
     .in("status", ["CONFIRMED", "ACCEPTED"])
@@ -71,7 +72,7 @@ export async function GET(request: Request) {
       bookingNumber: booking.booking_number,
       serviceName,
       date: formatDateFr(booking.scheduled_date),
-      time: formatTimeFr(booking.scheduled_time),
+      time: bookingPeriodText(booking),
       addressLine: booking.address_line,
       postcode: booking.postcode,
       city: booking.city,
