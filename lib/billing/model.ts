@@ -13,6 +13,7 @@ export const billingSchema = z.object({
   issuerEmail: z.string().trim().email("Email professionnel invalide."), issuerPhone: required(40),
   vatNumber: text(40),
   clientName: required(), clientAddress: required(400), clientEmail: z.union([z.literal(""), z.string().trim().email()]),
+  clientPhone: text(40).optional(),
   clientType: z.enum(["individual", "business"]), clientId: text(14), clientVat: text(40),
   taxMode: z.enum(["vat", "exempt"]), paymentMethod: z.enum(["card", "transfer", "cash", "cheque"]), lateTerms: required(400), notes: text(1500),
   quoteFeeCents: z.number().int().min(0).max(10000000),
@@ -25,6 +26,7 @@ export const billingSchema = z.object({
 });
 export type BillingDocument = z.infer<typeof billingSchema>;
 export type BillingIssuer = { name: string; address: string; id: string; email: string; phone: string };
+export type BookingBillingPrefill = { bookingId: string; bookingNumber: string; clientName: string; clientAddress: string; clientEmail: string; clientPhone: string; serviceOn: string; description: string; duration: string };
 export function eurosToCents(value: string): number {
   const normalized = value.trim().replace(",", ".");
   if (!/^\d+(?:\.\d{1,2})?$/.test(normalized)) return NaN;

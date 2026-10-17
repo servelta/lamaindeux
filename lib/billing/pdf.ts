@@ -79,7 +79,7 @@ export async function generateBillingPdf(input: BillingDocument, fontBytes: Uint
   newPage();
 
   const issuer = [doc.issuerAddress, `SIREN / SIRET : ${doc.issuerId}`, doc.issuerEmail, doc.issuerPhone, ...(doc.vatNumber ? [`TVA : ${doc.vatNumber}`] : [])];
-  const client = [doc.clientName, doc.clientAddress, ...(doc.clientEmail ? [doc.clientEmail] : []), ...(doc.clientType === "business" ? [`SIREN / SIRET : ${doc.clientId}`, ...(doc.clientVat ? [`TVA : ${doc.clientVat}`] : [])] : [])];
+  const client = [doc.clientName, doc.clientAddress, ...(doc.clientEmail ? [doc.clientEmail] : []), ...(doc.clientPhone ? [doc.clientPhone] : []), ...(doc.clientType === "business" ? [`SIREN / SIRET : ${doc.clientId}`, ...(doc.clientVat ? [`TVA : ${doc.clientVat}`] : [])] : [])];
   const columnLines = (values: string[]) => values.flatMap(value => wrap(value, 222, 9));
   const issuerLines = columnLines(issuer), clientLines = columnLines(client);
   const panelHeight = Math.max(issuerLines.length, clientLines.length) * 14 + 43;

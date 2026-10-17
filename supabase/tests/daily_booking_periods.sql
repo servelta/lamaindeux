@@ -60,6 +60,13 @@ begin
   select count(*) into n from public.professional_services where id=s1 and active and pricing_type='quote' and price_cents is null and duration_minutes=120;
   if n<>1 then raise exception 'FAIL: service reactivation and quote pricing';end if;
   execute 'reset role';
+  perform set_config('request.jwt.claims',jsonb_build_object('role','authenticated','sub',pro)::text,true); execute 'set local role authenticated';
+  select count(*) into n from public.bookings where id=b and professional_id=pro and contact_email='fixture@example.invalid' and contact_first_name='Test';
+  if n<>1 then raise exception 'FAIL: owner booking client prefill';end if;
+  perform set_config('request.jwt.claims',jsonb_build_object('role','authenticated','sub',c2)::text,true);
+  select count(*) into n from public.bookings where id=b and professional_id=pro;
+  if n<>0 then raise exception 'FAIL: foreign booking client disclosure';end if;
+  execute 'reset role';
   perform set_config('request.jwt.claims','{}',true); execute 'set local role anon';
   select count(*) into n from public.bookings where professional_id=pro;
   if n<>0 then raise exception 'FAIL: anonymous booking disclosure'; end if;

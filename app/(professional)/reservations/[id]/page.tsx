@@ -15,9 +15,9 @@ export const metadata = { title: "Détail de la réservation" };
 
 export default async function PlumberBookingDetailPage({ params }: Props) {
   const { id } = await params;
-  await requireUserId(); // RLS also enforces this is the professional's own booking
+  const professionalId = await requireUserId();
   const booking = await getBookingById(id);
-  if (!booking) notFound();
+  if (!booking || booking.professional_id !== professionalId) notFound();
 
   const professionalService = Array.isArray(booking.professional_services) ? booking.professional_services[0] : booking.professional_services;
   const service = professionalService
@@ -42,8 +42,8 @@ export default async function PlumberBookingDetailPage({ params }: Props) {
         ← Réservations
       </Link>
 
-      <div className="mt-4 flex items-center justify-between">
-        <h1 className="font-display text-2xl font-bold">Réservation {booking.booking_number}</h1>
+      <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
+        <h1 className="min-w-0 flex-1 break-words font-display text-2xl font-bold">Réservation {booking.booking_number}</h1>
         <BookingStatusBadge status={booking.status} />
       </div>
 

@@ -1,18 +1,18 @@
 "use client";
-import { useState, useRef, type FormEvent, type ReactNode } from "react";
+import { useState, useRef, useId, cloneElement, type FormEvent, type ReactNode, type ReactElement } from "react";
 import { Download, Plus, Trash2, FileText, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PAYMENT_METHODS, billingSchema, calculateTotals, eurosToCents, parisToday, type BillingDocument, type BillingIssuer } from "@/lib/billing/model";
+import { PAYMENT_METHODS, billingSchema, calculateTotals, eurosToCents, parisToday, type BillingDocument, type BillingIssuer, type BookingBillingPrefill } from "@/lib/billing/model";
 import { formatPrice } from "@/lib/utils/format";
-const inputClass = "h-11 w-full min-w-0 rounded-xl border border-input bg-white px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
-const areaClass = "w-full min-w-0 rounded-xl border border-input bg-white p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
+const inputClass = "h-11 w-full min-w-0 rounded-xl border border-input bg-white px-3 text-base sm:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
+const areaClass = "w-full min-w-0 rounded-xl border border-input bg-white p-3 text-base sm:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
 type Line = { id: number; description: string; price: string; vatRate: number; duration: string };
 const newLine = (id: number): Line => ({id,description:"",price:"",vatRate:20,duration:""});
-function Field({label,children,hint}: {label:string;children:ReactNode;hint?:string}) { return <label className="block min-w-0"><span className="mb-2 block text-sm font-medium">{label}</span>{children}{hint && <span className="mt-1.5 block text-xs leading-5 text-muted-foreground">{hint}</span>}</label>; }
+function Field({label,children,hint}: {label:string;children:ReactElement<{id?:string;"aria-describedby"?:string}>;hint?:string}) { const id=useId(); return <div className="min-w-0"><label htmlFor={id} className="mb-2 block text-sm font-medium">{label}</label>{cloneElement(children,{id,...(hint?{"aria-describedby":id+"-hint"}:{})})}{hint && <span id={id+"-hint"} className="mt-1.5 block text-xs leading-5 text-muted-foreground">{hint}</span>}</div>; }
 function Section({title,children}: {title:string;children:ReactNode}) { return <section className="rounded-2xl border bg-white p-5 sm:p-6"><h2 className="mb-5 font-display text-lg font-semibold">{title}</h2>{children}</section>; }
-export function BillingForm({issuer}: {issuer:BillingIssuer}) {
-  const [kind,setKind] = useState<"quote"|"invoice">("quote");
-  const [lines,setLines] = useState<Line[]>([newLine(1)]);
+export function BillingForm({issuer,initialKind="quote",prefill}: {issuer:BillingIssuer;initialKind?:"quote"|"invoice";prefill?:BookingBillingPrefill}) {
+  const [kind,setKind] = useState<"quote"|"invoice">(initialKind);
+  const [lines,setLines] = useState<Line[]>([{...newLine(1),description:prefill?.description??"",duration:prefill?.duration??""}]);
   const nextId = useRef(2);
   const [taxMode,setTaxMode] = useState<""|"vat"|"exempt">("");
   const [clientType,setClientType] = useState<"individual"|"business">("individual");
@@ -35,7 +35,7 @@ export function BillingForm({issuer}: {issuer:BillingIssuer}) {
     const data=new FormData(event.currentTarget);
     const value=(name:string)=>String(data.get(name) || "").trim();
     if(!taxMode){setError("Choisissez votre régime de TVA.");return;}
-    const candidate={kind,number:value("number"),issuedOn:value("issuedOn"),serviceOn:value("serviceOn"),deadline:value("deadline"),issuerName:value("issuerName"),issuerAddress:value("issuerAddress"),issuerId:value("issuerId"),issuerEmail:value("issuerEmail"),issuerPhone:value("issuerPhone"),vatNumber:value("vatNumber"),clientName:value("clientName"),clientAddress:value("clientAddress"),clientEmail:value("clientEmail"),clientType,clientId:value("clientId"),clientVat:value("clientVat"),taxMode,paymentMethod:value("paymentMethod"),lateTerms:value("lateTerms"),notes:value("notes"),quoteFeeCents:kind==="quote"?eurosToCents(value("quoteFee")):0,lines:numericLines};
+    const candidate={kind,number:value("number"),issuedOn:value("issuedOn"),serviceOn:value("serviceOn"),deadline:value("deadline"),issuerName:value("issuerName"),issuerAddress:value("issuerAddress"),issuerId:value("issuerId"),issuerEmail:value("issuerEmail"),issuerPhone:value("issuerPhone"),vatNumber:value("vatNumber"),clientName:value("clientName"),clientAddress:value("clientAddress"),clientEmail:value("clientEmail"),clientPhone:value("clientPhone"),clientType,clientId:value("clientId"),clientVat:value("clientVat"),taxMode,paymentMethod:value("paymentMethod"),lateTerms:value("lateTerms"),notes:value("notes"),quoteFeeCents:kind==="quote"?eurosToCents(value("quoteFee")):0,lines:numericLines};
     const parsed=billingSchema.safeParse(candidate);
     if(!parsed.success){setError(parsed.error.issues.map(issue=>issue.message).filter((message,index,array)=>array.indexOf(message)===index).join(" "));return;}
     setBusy(true);
@@ -62,16 +62,17 @@ export function BillingForm({issuer}: {issuer:BillingIssuer}) {
         <Field label="Numéro de TVA intracommunautaire"><input className={inputClass} name="vatNumber" required={taxMode==="vat"} disabled={taxMode!=="vat"} maxLength={40}/></Field>
       </div><p className="mt-4 text-xs text-muted-foreground">Les modifications saisies ici concernent uniquement ce document.</p></Section>
       <Section title="2. Votre client"><div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Nom du client / entreprise"><input className={inputClass} name="clientName" required maxLength={200}/></Field>
+        <Field label="Nom du client / entreprise"><input className={inputClass} name="clientName" required maxLength={200} defaultValue={prefill?.clientName}/></Field>
         <Field label="Type de client"><select className={inputClass} value={clientType} onChange={event=>setClientType(event.target.value as typeof clientType)}><option value="individual">Particulier</option><option value="business">Professionnel</option></select></Field>
-        <Field label="Adresse de facturation complète"><textarea className={areaClass} name="clientAddress" required rows={2} maxLength={400}/></Field>
-        <Field label="Email du client (facultatif)"><input className={inputClass} name="clientEmail" type="email"/></Field>
+        <Field label="Adresse de facturation complète"><textarea className={areaClass} name="clientAddress" required rows={2} maxLength={400} defaultValue={prefill?.clientAddress}/></Field>
+        <Field label="Email du client (facultatif)"><input className={inputClass} name="clientEmail" type="email" defaultValue={prefill?.clientEmail}/></Field>
+        <Field label="Téléphone du client (facultatif)"><input className={inputClass} name="clientPhone" type="tel" maxLength={40} defaultValue={prefill?.clientPhone}/></Field>
         {clientType==="business"&&<><Field label="SIREN ou SIRET du client"><input className={inputClass} name="clientId" required pattern="[0-9]{9}([0-9]{5})?" maxLength={14}/></Field><Field label="TVA du client (si applicable)"><input className={inputClass} name="clientVat" maxLength={40}/></Field></>}
       </div></Section>
       <Section title="3. Référence et dates"><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Field label={kind==="invoice"?"Numéro de facture":"Référence du devis"} hint={kind==="invoice"?"Suivez votre séquence comptable continue et unique.":"Ex. : DEV-2026-001"}><input className={inputClass} name="number" required maxLength={50} placeholder={kind==="invoice"?"FAC-2026-001":"DEV-2026-001"}/></Field>
         <Field label="Date du document"><input className={inputClass} name="issuedOn" required type="date" defaultValue={today}/></Field>
-        <Field label={kind==="invoice"?"Date de prestation":"Début prévu des travaux"}><input className={inputClass} name="serviceOn" required type="date" defaultValue={today}/></Field>
+        <Field label={kind==="invoice"?"Date de prestation":"Début prévu des travaux"}><input className={inputClass} name="serviceOn" required type="date" defaultValue={prefill?.serviceOn??today}/></Field>
         <Field label={kind==="invoice"?"Échéance de paiement":"Devis valable jusqu’au"}><input className={inputClass} name="deadline" required type="date" defaultValue={defaultDeadline.toISOString().slice(0,10)}/></Field>
       </div></Section>
       <Section title="4. Vos prestations"><div className="space-y-4">{lines.map((line,index)=><div key={line.id} className="rounded-2xl border bg-slate-50/70 p-4"><div className="mb-3 flex items-center justify-between"><h3 className="text-sm font-semibold">Prestation {index+1}</h3><button type="button" disabled={lines.length===1} onClick={()=>setLines(current=>current.filter(item=>item.id!==line.id))} aria-label={`Supprimer la prestation ${index+1}`} className="rounded-lg p-2 text-muted-foreground hover:bg-white hover:text-destructive disabled:opacity-30"><Trash2 aria-hidden="true" className="h-4 w-4"/></button></div>
