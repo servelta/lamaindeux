@@ -66,7 +66,7 @@ export function NotificationBell({ basePath, inline = false }: { basePath: strin
       </button>
 
       {open && (
-        <div className={cn("mt-2 rounded-lg border border-border bg-card shadow-lg", inline ? "w-full" : "absolute right-0 z-50 w-80")}>
+        <div className={cn("mt-2 rounded-lg border border-border bg-card shadow-lg", inline ? "w-full" : "absolute left-0 z-50 w-80")}>
           <div className="flex items-center justify-between border-b border-border px-4 py-2">
             <span className="text-sm font-semibold">Notifications</span>
             {unreadCount > 0 && (
