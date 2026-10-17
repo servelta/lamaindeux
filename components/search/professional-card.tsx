@@ -4,8 +4,9 @@ import { useTransition, type MouseEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUpRight, BadgeCheck, MapPin, Star, BriefcaseBusiness, LoaderCircle, UserRound, CalendarDays } from "lucide-react";
+import { ArrowUpRight, BadgeCheck, MapPin, Star, BriefcaseBusiness, LoaderCircle, UserRound, CalendarDays, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ArtisanCallLink } from "@/components/analytics/artisan-call-link";
 import { formatRating } from "@/lib/utils/format";
 import type { ProfessionalSearchResult } from "@/lib/queries/search";
 
@@ -37,6 +38,17 @@ export function ProfessionalCard({ professional }: { professional: ProfessionalS
         </div>
         {professional.description && <p className="mt-4 line-clamp-2 text-sm leading-6 text-muted-foreground">{professional.description}</p>}
         <div className="relative z-20 mt-auto grid grid-cols-2 gap-2 pt-5">
+          {professional.public_phone ? (
+            <Button asChild variant="outline" className="pointer-events-auto col-span-2 h-11 rounded-xl border-primary/25 bg-primary/5 text-primary hover:bg-primary/10 hover:text-primary">
+              <ArtisanCallLink professionalId={professional.profile_id} phone={professional.public_phone} source="listing" aria-label={"Appeler " + professional.company_name}>
+                <Phone aria-hidden="true" className="mr-2 h-4 w-4 shrink-0" />Appeler
+              </ArtisanCallLink>
+            </Button>
+          ) : (
+            <Button disabled variant="outline" className="pointer-events-auto col-span-2 h-11 rounded-xl" aria-label={"Numéro indisponible pour " + professional.company_name}>
+              <Phone aria-hidden="true" className="mr-2 h-4 w-4 shrink-0" />Numéro indisponible
+            </Button>
+          )}
           <Button asChild variant="outline" className="pointer-events-auto h-11 rounded-xl px-2"><Link href={profileUrl} onClick={event => navigate(event, profileUrl)}><UserRound aria-hidden="true" className="mr-1.5 h-4 w-4 shrink-0" />Voir le profil</Link></Button>
           <Button asChild className="pointer-events-auto h-11 rounded-xl px-2"><Link href={profileUrl + "#reserver"} onClick={event => navigate(event, profileUrl + "#reserver")} aria-label={"Réserver avec " + professional.company_name}><CalendarDays aria-hidden="true" className="mr-1.5 h-4 w-4 shrink-0" />Réserver<ArrowUpRight aria-hidden="true" className="ml-1 h-4 w-4 shrink-0" /></Link></Button>
         </div>

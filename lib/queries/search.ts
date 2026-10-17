@@ -115,6 +115,7 @@ export type ProfessionalSearchResult = {
   rating_count: number;
   google_rating: number | null;
   google_review_count: number | null;
+  public_phone: string | null;
   completed_jobs_count: number;
   avatar_url: string | null;
   professional_service_id: string;
@@ -156,9 +157,9 @@ export async function searchProfessionals(params: {
   if (error || !data) return [];
 
   const ids = [...new Set(data.map((row) => row.profile_id).filter((id): id is string => !!id))];
-  const { data: googleReviews } = await supabase.from("public_professional_profiles")
-    .select("profile_id,google_rating,google_review_count").in("profile_id", ids);
-  const googleById = new Map((googleReviews ?? []).map((row) => [row.profile_id, row]));
+  const { data: publicProfiles } = await supabase.from("public_professional_profiles")
+    .select("profile_id,google_rating,google_review_count,public_phone").in("profile_id", ids);
+  const publicInfoById = new Map((publicProfiles ?? []).map((row) => [row.profile_id, row]));
 
   // De-duplicate: a professional can serve a city via multiple postcode rows,
   // which would otherwise produce repeated cards for the same professional+service.
@@ -168,8 +169,8 @@ export async function searchProfessionals(params: {
     const key = row.profile_id;
     if (seen.has(key)) continue;
     seen.add(key);
-    const google = googleById.get(row.profile_id);
-    results.push({ ...row, google_rating: google?.google_rating ?? null, google_review_count: google?.google_review_count ?? null });
+    const info = publicInfoById.get(row.profile_id);
+    results.push({ ...row, google_rating: info?.google_rating ?? null, google_review_count: info?.google_review_count ?? null, public_phone: info?.public_phone?.trim() || null });
   }
   return results;
 }
