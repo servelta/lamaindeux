@@ -1,3 +1,5 @@
+import { AccountDetails } from "@/components/admin/account-details";
+import { getAdminAccountDetails } from "@/lib/admin/account-details";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { requireAdmin, getProfessionalDetail } from "@/lib/admin/queries";
@@ -22,6 +24,7 @@ export default async function AdminProfessionalDetailPage({ params }: Props) {
   const { id } = await params;
   const { professional, documents, bookings, reviews } = await getProfessionalDetail(id);
   if (!professional) notFound();
+  const account = await getAdminAccountDetails(id);
 
   const profile = Array.isArray(professional.profiles) ? professional.profiles[0] : professional.profiles;
 
@@ -48,9 +51,17 @@ export default async function AdminProfessionalDetailPage({ params }: Props) {
         {profile?.first_name} {profile?.last_name} · {profile?.phone ?? "—"} · {professional.business_city ?? "—"} {professional.business_postcode ?? ""}
       </p>
       {professional.siret && <p className="mt-1 text-xs font-mono-data text-muted-foreground">SIRET : {professional.siret}</p>}
+      <dl className="mt-4 grid gap-3 rounded-xl border border-border p-4 text-sm sm:grid-cols-2">
+        <div className="min-w-0"><dt className="text-xs text-muted-foreground">Adresse de l’entreprise</dt><dd className="mt-1 break-words">{[professional.business_address, professional.business_postcode, professional.business_city].filter(Boolean).join(", ") || "—"}</dd></div>
+        <div><dt className="text-xs text-muted-foreground">Téléphone professionnel</dt><dd className="mt-1">{professional.public_phone || "—"}</dd></div>
+        <div><dt className="text-xs text-muted-foreground">SIRET / SIREN</dt><dd className="mt-1">{professional.siret || professional.siren || "—"}</dd></div>
+        <div className="min-w-0"><dt className="text-xs text-muted-foreground">Site web</dt><dd className="mt-1 break-words [overflow-wrap:anywhere]">{professional.website || "—"}</dd></div>
+      </dl>
       {professional.status_reason && (
         <p className="mt-2 rounded-md bg-secondary p-3 text-sm">Motif : {professional.status_reason}</p>
       )}
+
+      <AccountDetails account={account} accountId={id} name={[profile?.first_name, profile?.last_name].filter(Boolean).join(" ")} phone={profile?.phone ?? null} />
 
       <div className="mt-6">
         <ProfessionalActionsPanel professional={professional} />

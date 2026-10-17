@@ -1,3 +1,5 @@
+import { AccountDetails } from "@/components/admin/account-details";
+import { getAdminAccountDetails } from "@/lib/admin/account-details";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { requireAdmin, getCustomerDetail } from "@/lib/admin/queries";
@@ -13,6 +15,7 @@ export default async function AdminClientDetailPage({ params }: Props) {
   const { id } = await params;
   const { customer, bookings } = await getCustomerDetail(id);
   if (!customer) notFound();
+  const account = await getAdminAccountDetails(id);
 
   const profile = Array.isArray(customer.profiles) ? customer.profiles[0] : customer.profiles;
 
@@ -26,6 +29,8 @@ export default async function AdminClientDetailPage({ params }: Props) {
         {profile?.first_name} {profile?.last_name}
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">{profile?.phone ?? "—"}</p>
+
+      <AccountDetails account={account} accountId={id} name={[profile?.first_name, profile?.last_name].filter(Boolean).join(" ")} phone={profile?.phone ?? null} />
 
       <div className="mt-6">
         <CustomerActionsPanel customerId={customer.profile_id} suspended={!!customer.suspended_at} />
