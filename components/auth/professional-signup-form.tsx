@@ -29,7 +29,7 @@ export function ProfessionalSignUpForm({ trades }: { trades: Trade[] }) {
           <CardDescription>
             Inscription gratuite. Recevez de nouveaux clients sans commission
             sur vos interventions. Votre compte sera vérifié par notre équipe
-            avant activation.
+            avant activation. Aucune pièce d’identité à envoyer.
           </CardDescription>
         </CardHeader>
         <CardContent>

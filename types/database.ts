@@ -153,6 +153,104 @@ export type Database = {
           },
         ]
       }
+      billing_number_allocations: {
+        Row: {
+          created_at: string
+          document_kind: string
+          document_number: string
+          document_year: number
+          payload_hash: string
+          professional_id: string
+          request_id: string
+          sequence_value: number
+        }
+        Insert: {
+          created_at?: string
+          document_kind: string
+          document_number: string
+          document_year: number
+          payload_hash: string
+          professional_id: string
+          request_id: string
+          sequence_value: number
+        }
+        Update: {
+          created_at?: string
+          document_kind?: string
+          document_number?: string
+          document_year?: number
+          payload_hash?: string
+          professional_id?: string
+          request_id?: string
+          sequence_value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_number_allocations_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "active_professionals"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "billing_number_allocations_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "billing_number_allocations_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "public_professional_profiles"
+            referencedColumns: ["profile_id"]
+          },
+        ]
+      }
+      billing_number_counters: {
+        Row: {
+          document_kind: string
+          document_year: number
+          next_value: number
+          professional_id: string
+        }
+        Insert: {
+          document_kind: string
+          document_year: number
+          next_value?: number
+          professional_id: string
+        }
+        Update: {
+          document_kind?: string
+          document_year?: number
+          next_value?: number
+          professional_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_number_counters_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "active_professionals"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "billing_number_counters_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "billing_number_counters_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "public_professional_profiles"
+            referencedColumns: ["profile_id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           address_line: string
@@ -1263,6 +1361,15 @@ export type Database = {
       }
     }
     Functions: {
+      allocate_billing_number: {
+        Args: {
+          p_kind: string
+          p_payload_hash: string
+          p_request_id: string
+          p_year: number
+        }
+        Returns: Json
+      }
       anonymize_own_professional_account: {
         Args: { p_professional_id: string }
         Returns: undefined

@@ -56,10 +56,9 @@ export default async function AdminProfessionalDetailPage({ params }: Props) {
         <ProfessionalActionsPanel professional={professional} />
       </div>
 
-      <section className="mt-8">
-        <h2 className="font-display text-lg font-semibold">Documents</h2>
+      {signedDocs.length > 0 && <section className="mt-8">
+        <h2 className="font-display text-lg font-semibold">Documents antérieurs</h2>
         <div className="mt-3 space-y-2">
-          {signedDocs.length === 0 && <p className="text-sm text-muted-foreground">Aucun document envoyé.</p>}
           {signedDocs.map((doc) => (
             <div key={doc.id} className="flex items-center justify-between rounded-md border border-border px-4 py-3 text-sm">
               <span>{DOC_TYPE_LABELS[doc.doc_type] ?? doc.doc_type}</span>
@@ -73,7 +72,7 @@ export default async function AdminProfessionalDetailPage({ params }: Props) {
             </div>
           ))}
         </div>
-      </section>
+      </section>}
 
       <section className="mt-8">
         <h2 className="font-display text-lg font-semibold">Réservations récentes</h2>

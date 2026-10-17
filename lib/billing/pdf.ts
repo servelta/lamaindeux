@@ -138,14 +138,22 @@ export async function generateBillingPdf(input: BillingDocument, fontBytes: Uint
   rounded(305, y - summaryHeight, 250, 51, teal);
   at("TOTAL TTC", 320, totalTop - 30, 9, white);
   right(money(totals.gross), 540, totalTop - 32, 19, white, 139);
-  at("MODE DE PAIEMENT", 40, y - 14, 7, muted);
-  for (const [index, entry] of wrap(PAYMENT_METHODS[doc.paymentMethod], 230, 13).entries()) at(entry, 40, y - 36 - index * 18, 13, teal);
-  if (doc.taxMode === "exempt") wrap("TVA non applicable, art. 293 B du CGI.", 230, 8).forEach((entry, index) => at(entry, 40, y - 70 - index * 12, 8, muted));
+  if (doc.kind === "invoice" && doc.paymentMethod) {
+    at("MODE DE PAIEMENT", 40, y - 14, 7, muted);
+    for (const [index, entry] of wrap(PAYMENT_METHODS[doc.paymentMethod], 230, 13).entries()) at(entry, 40, y - 36 - index * 18, 13, teal);
+  }
+  if (doc.taxMode === "exempt") wrap("TVA non applicable, art. 293 B du CGI.", 230, 8).forEach((entry, index) => at(entry, 40, y - (doc.kind === "invoice" ? 70 : 14) - index * 12, 8, muted));
   y -= summaryHeight + 16;
 
   if (doc.notes) { heading("INFORMATIONS COMPLÉMENTAIRES"); text(doc.notes); }
   heading(doc.kind === "quote" ? "ACCEPTATION DU DEVIS" : "INFORMATIONS DE PAIEMENT");
   if (doc.kind === "invoice") {
+    if (doc.paymentMethod === "transfer") {
+      text(`Titulaire : ${doc.bankAccountHolder}`, 9);
+      if (doc.bankName) text(`Banque : ${doc.bankName}`, 9);
+      text(`IBAN : ${doc.bankIban?.match(/.{1,4}/g)?.join(" ")}`, 9);
+      if (doc.bankBic) text(`BIC / SWIFT : ${doc.bankBic}`, 9);
+    }
     text("Escompte pour paiement anticipé : néant, sauf accord écrit contraire.", 8);
     if (doc.clientType === "business") { text(doc.lateTerms, 8); text("Indemnité forfaitaire pour frais de recouvrement en cas de retard : 40 € (client professionnel).", 8); }
   } else {

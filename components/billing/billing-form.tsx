@@ -3,6 +3,7 @@ import { useState, useRef, useId, cloneElement, type FormEvent, type ReactNode, 
 import { Download, Plus, Trash2, FileText, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PAYMENT_METHODS, billingSchema, calculateTotals, eurosToCents, parisToday, type BillingDocument, type BillingIssuer, type BookingBillingPrefill } from "@/lib/billing/model";
+import { allocateBillingNumberAction } from "@/lib/billing/number-action";
 import { formatPrice } from "@/lib/utils/format";
 const inputClass = "h-11 w-full min-w-0 rounded-xl border border-input bg-white px-3 text-base sm:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
 const areaClass = "w-full min-w-0 rounded-xl border border-input bg-white p-3 text-base sm:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
@@ -14,6 +15,10 @@ export function BillingForm({issuer,initialKind="quote",prefill}: {issuer:Billin
   const [kind,setKind] = useState<"quote"|"invoice">(initialKind);
   const [lines,setLines] = useState<Line[]>([{...newLine(1),description:prefill?.description??"",duration:prefill?.duration??""}]);
   const nextId = useRef(2);
+  const numberRequest=useRef<{signature:string;id:string}|null>(null);
+  const [documentNumber,setDocumentNumber]=useState("");
+  const [paymentMethod,setPaymentMethod]=useState<keyof typeof PAYMENT_METHODS|"">("");
+  const [bank,setBank]=useState({holder:issuer.name,iban:"",bic:"",name:""});
   const [taxMode,setTaxMode] = useState<""|"vat"|"exempt">("");
   const [clientType,setClientType] = useState<"individual"|"business">("individual");
   const [busy,setBusy] = useState(false);
@@ -35,21 +40,30 @@ export function BillingForm({issuer,initialKind="quote",prefill}: {issuer:Billin
     const data=new FormData(event.currentTarget);
     const value=(name:string)=>String(data.get(name) || "").trim();
     if(!taxMode){setError("Choisissez votre régime de TVA.");return;}
-    const candidate={kind,number:value("number"),issuedOn:value("issuedOn"),serviceOn:value("serviceOn"),deadline:value("deadline"),issuerName:value("issuerName"),issuerAddress:value("issuerAddress"),issuerId:value("issuerId"),issuerEmail:value("issuerEmail"),issuerPhone:value("issuerPhone"),vatNumber:value("vatNumber"),clientName:value("clientName"),clientAddress:value("clientAddress"),clientEmail:value("clientEmail"),clientPhone:value("clientPhone"),clientType,clientId:value("clientId"),clientVat:value("clientVat"),taxMode,paymentMethod:value("paymentMethod"),lateTerms:value("lateTerms"),notes:value("notes"),quoteFeeCents:kind==="quote"?eurosToCents(value("quoteFee")):0,lines:numericLines};
+    const candidate={kind,number:"AUTO",issuedOn:value("issuedOn"),serviceOn:value("serviceOn"),deadline:value("deadline"),issuerName:value("issuerName"),issuerAddress:value("issuerAddress"),issuerId:value("issuerId"),issuerEmail:value("issuerEmail"),issuerPhone:value("issuerPhone"),vatNumber:value("vatNumber"),clientName:value("clientName"),clientAddress:value("clientAddress"),clientEmail:value("clientEmail"),clientPhone:value("clientPhone"),clientType,clientId:value("clientId"),clientVat:value("clientVat"),taxMode,paymentMethod:kind==="invoice"?(value("paymentMethod")||undefined):undefined,bankAccountHolder:kind==="invoice"&&paymentMethod==="transfer"?value("bankAccountHolder"):undefined,bankIban:kind==="invoice"&&paymentMethod==="transfer"?value("bankIban"):undefined,bankBic:kind==="invoice"&&paymentMethod==="transfer"?value("bankBic"):undefined,bankName:kind==="invoice"&&paymentMethod==="transfer"?value("bankName"):undefined,lateTerms:value("lateTerms"),notes:value("notes"),quoteFeeCents:kind==="quote"?eurosToCents(value("quoteFee")):0,lines:numericLines};
     const parsed=billingSchema.safeParse(candidate);
     if(!parsed.success){setError(parsed.error.issues.map(issue=>issue.message).filter((message,index,array)=>array.indexOf(message)===index).join(" "));return;}
     setBusy(true);
     try{
       const [module,fontResponse]=await Promise.all([import("@/lib/billing/pdf"),fetch("/fonts/NotoSans-Regular.ttf")]);
       if(!fontResponse.ok)throw new Error("Impossible de charger la police du PDF. Réessayez.");
-      const bytes=await module.generateBillingPdf(parsed.data,new Uint8Array(await fontResponse.arrayBuffer()));
-      const name=`${kind==="invoice"?"facture":"devis"}-${parsed.data.number.replace(/[^a-zA-Z0-9_-]/g,"-")}.pdf`;
+      const fontBytes=new Uint8Array(await fontResponse.arrayBuffer());
+      // Verify the PDF and font before consuming a reference.
+      await module.generateBillingPdf({...parsed.data,number:(kind==="invoice"?"FAC-":"DEV-")+parsed.data.issuedOn.slice(0,4)+"-0000"},fontBytes);
+      const signature=JSON.stringify(parsed.data);
+      if(!numberRequest.current||numberRequest.current.signature!==signature)numberRequest.current={signature,id:crypto.randomUUID()};
+      const allocation=await allocateBillingNumberAction(numberRequest.current.id,parsed.data);
+      if("error" in allocation)throw new Error(allocation.error);
+      const numbered={...parsed.data,number:allocation.number};
+      const bytes=await module.generateBillingPdf(numbered,fontBytes);
+      setDocumentNumber(allocation.number);
+      const name=`${kind==="invoice"?"facture":"devis"}-${numbered.number.replace(/[^a-zA-Z0-9_-]/g,"-")}.pdf`;
       setDownload({bytes,name});saveFile(bytes,name);setSuccess("Votre PDF est prêt. Conservez le fichier téléchargé dans vos dossiers.");
     }catch(reason){setError(reason instanceof Error ? reason.message : "Impossible de générer le PDF.");}finally{setBusy(false);}
   }
-  return <form onSubmit={submit} className="mt-8 space-y-6" onChange={()=>{setSuccess("");setDownload(null);}}>
+  return <form onSubmit={submit} className="mt-8 space-y-6" onChange={()=>{setError("");setSuccess("");setDownload(null);setDocumentNumber("");}}>
     <div className="grid gap-3 sm:grid-cols-2" role="group" aria-label="Type de document">
-      {[{value:"quote" as const,label:"Créer un devis",hint:"Présentez votre offre au client",icon:FileText},{value:"invoice" as const,label:"Créer une facture",hint:"Facturez vos prestations",icon:Receipt}].map(({value,label,hint,icon:Icon})=><button key={value} type="button" disabled={busy} aria-pressed={kind===value} onClick={()=>{setKind(value);setDownload(null);setError("");setSuccess("");}} className={`flex items-center gap-4 rounded-2xl border-2 p-5 text-left ${kind===value?"border-primary bg-primary/5":"border-border bg-white hover:border-primary/40"}`}><Icon aria-hidden="true" className="h-6 w-6 shrink-0 text-primary"/><span><span className="block font-semibold">{label}</span><span className="mt-1 block text-xs text-muted-foreground">{hint}</span></span></button>)}
+      {[{value:"quote" as const,label:"Créer un devis",hint:"Présentez votre offre au client",icon:FileText},{value:"invoice" as const,label:"Créer une facture",hint:"Facturez vos prestations",icon:Receipt}].map(({value,label,hint,icon:Icon})=><button key={value} type="button" disabled={busy} aria-pressed={kind===value} onClick={()=>{setKind(value);setDocumentNumber("");setDownload(null);setError("");setSuccess("");}} className={`flex items-center gap-4 rounded-2xl border-2 p-5 text-left ${kind===value?"border-primary bg-primary/5":"border-border bg-white hover:border-primary/40"}`}><Icon aria-hidden="true" className="h-6 w-6 shrink-0 text-primary"/><span><span className="block font-semibold">{label}</span><span className="mt-1 block text-xs text-muted-foreground">{hint}</span></span></button>)}
     </div>
     <fieldset disabled={busy} className="min-w-0 space-y-6">
       <Section title="1. Votre entreprise"><div className="grid gap-4 sm:grid-cols-2">
@@ -70,7 +84,7 @@ export function BillingForm({issuer,initialKind="quote",prefill}: {issuer:Billin
         {clientType==="business"&&<><Field label="SIREN ou SIRET du client"><input className={inputClass} name="clientId" required pattern="[0-9]{9}([0-9]{5})?" maxLength={14}/></Field><Field label="TVA du client (si applicable)"><input className={inputClass} name="clientVat" maxLength={40}/></Field></>}
       </div></Section>
       <Section title="3. Référence et dates"><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Field label={kind==="invoice"?"Numéro de facture":"Référence du devis"} hint={kind==="invoice"?"Suivez votre séquence comptable continue et unique.":"Ex. : DEV-2026-001"}><input className={inputClass} name="number" required maxLength={50} placeholder={kind==="invoice"?"FAC-2026-001":"DEV-2026-001"}/></Field>
+        <Field label={kind==="invoice"?"Numéro de facture":"Numéro de devis"} hint="Attribué automatiquement à la génération du PDF. Les devis et factures ont chacun leur séquence."><input className={inputClass+" bg-muted/40"} name="number" readOnly value={documentNumber} placeholder={kind==="invoice"?"FAC-2026-0127, puis 0128…":"DEV-2026-0127, puis 0128…"}/></Field>
         <Field label="Date du document"><input className={inputClass} name="issuedOn" required type="date" defaultValue={today}/></Field>
         <Field label={kind==="invoice"?"Date de prestation":"Début prévu des travaux"}><input className={inputClass} name="serviceOn" required type="date" defaultValue={prefill?.serviceOn??today}/></Field>
         <Field label={kind==="invoice"?"Échéance de paiement":"Devis valable jusqu’au"}><input className={inputClass} name="deadline" required type="date" defaultValue={defaultDeadline.toISOString().slice(0,10)}/></Field>
@@ -84,7 +98,13 @@ export function BillingForm({issuer,initialKind="quote",prefill}: {issuer:Billin
         </div>
       </div>)}</div><Button type="button" variant="outline" disabled={lines.length>=50} className="mt-4 rounded-xl" onClick={()=>setLines(current=>[...current,newLine(nextId.current++)])}><Plus aria-hidden="true" className="mr-2 h-4 w-4"/>Ajouter une prestation</Button></Section>
       <Section title="5. Conditions et informations"><div className="space-y-4">
-        <Field label="Mode de paiement"><select className={inputClass} name="paymentMethod" required defaultValue=""><option value="" disabled>Choisir un mode de paiement</option>{Object.entries(PAYMENT_METHODS).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></Field>
+        {kind==="invoice"?<><Field label="Mode de paiement"><select className={inputClass} name="paymentMethod" required value={paymentMethod} onChange={event=>setPaymentMethod(event.target.value as typeof paymentMethod)}><option value="" disabled>Choisir un mode de paiement</option>{Object.entries(PAYMENT_METHODS).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></Field>
+        {paymentMethod==="transfer"?<div className="space-y-4 rounded-2xl border border-primary/15 bg-primary/5 p-4"><h3 className="font-semibold text-primary">Coordonnées bancaires pour le virement</h3><p className="text-xs leading-5 text-muted-foreground">Ces coordonnées figurent sur la facture pour que votre client puisse vous régler.</p><div className="grid min-w-0 gap-4 sm:grid-cols-2">
+          <Field label="Titulaire du compte"><input className={inputClass} name="bankAccountHolder" required maxLength={200} autoComplete="off" value={bank.holder} onChange={event=>setBank({...bank,holder:event.target.value})}/></Field>
+          <Field label="Banque (facultatif)"><input className={inputClass} name="bankName" maxLength={100} autoComplete="off" value={bank.name} onChange={event=>setBank({...bank,name:event.target.value})}/></Field>
+          <Field label="IBAN"><input className={inputClass} name="bankIban" required maxLength={50} autoComplete="off" autoCapitalize="characters" spellCheck={false} value={bank.iban} onChange={event=>setBank({...bank,iban:event.target.value})}/></Field>
+          <Field label="BIC / SWIFT (facultatif)"><input className={inputClass} name="bankBic" maxLength={11} autoComplete="off" autoCapitalize="characters" spellCheck={false} value={bank.bic} onChange={event=>setBank({...bank,bic:event.target.value})}/></Field>
+        </div></div>:null}</>:null}
         <div className={kind==="invoice"&&clientType==="business"?"":"hidden"}><Field label="Pénalités de retard (client professionnel)"><textarea className={areaClass} name="lateTerms" required rows={2} maxLength={400} defaultValue="Pénalités de retard : trois fois le taux d’intérêt légal, exigibles à compter du lendemain de l’échéance."/></Field></div>
         {kind==="quote"&&<Field label="Coût d’établissement du devis (€ TTC)" hint="0 pour un devis gratuit. Ce montant est indiqué séparément du prix des travaux."><input className={inputClass} name="quoteFee" required inputMode="decimal" defaultValue="0"/></Field>}
         <Field label="Informations complémentaires (facultatif)"><textarea className={areaClass} name="notes" rows={3} maxLength={1500} placeholder="Détails du chantier, conditions complémentaires, coordonnées de paiement…"/></Field>

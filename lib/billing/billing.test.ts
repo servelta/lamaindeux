@@ -1,14 +1,12 @@
 ﻿import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { PDFDocument } from "pdf-lib";
-import { billingSchema, calculateTotals, eurosToCents, parisToday, type BillingDocument } from "./model";
+import { vi } from "vitest";
+import { PDFDocument, PDFPage } from "pdf-lib";
+import { billingSchema, calculateTotals, eurosToCents, parisToday } from "./model";
 import { generateBillingPdf } from "./pdf";
 import { findRouteRule } from "@/lib/auth/roles";
-export const sample: BillingDocument = {
-  kind:"quote", number:"DEV-2026-001", issuedOn:"2026-10-07", serviceOn:"2026-10-10", deadline:"2026-11-07",
-  issuerName:"Électricité Martin",issuerAddress:"12 rue de l’Église, 75001 Paris",issuerId:"12345678900012",issuerEmail:"artisan@example.com",issuerPhone:"0600000000",vatNumber:"FR00123456789",clientName:"Élodie Dupont",clientAddress:"8 rue des Écoles, 75001 Paris",clientEmail:"",clientType:"individual",clientId:"",clientVat:"",taxMode:"vat",paymentMethod:"transfer",lateTerms:"Trois fois le taux d’intérêt légal.",notes:"",quoteFeeCents:0,
-  lines:[{description:"Pose et fournitures",priceCents:18518,vatRate:20,duration:"1 h 30"},{description:"Pièces",priceCents:1998,vatRate:5.5,duration:""}],
-};
+import { sample } from "./billing-fixture";
+
 describe("billing amounts and validation",()=>{
   it.each(["Facture 2026 001", "DEV.2026.001", "Devis n° 12 / été", "#FAC-2026-001", "FAC–2026–001"])("accepts common document reference %s",number=>expect(billingSchema.parse({...sample,number}).number).toBe(number));
   it("rejects multiline references with a specific error",()=>{expect(billingSchema.safeParse({...sample,number:"FAC\n001"}).success).toBe(false);});
@@ -25,9 +23,10 @@ describe("billing amounts and validation",()=>{
   it("protects the account tab for professionals only",()=>{expect(findRouteRule("/devis-factures")?.roles).toEqual(["professional"]);});
 });
 it.each(["card", "transfer", "cash", "cheque"])("accepts payment method %s",paymentMethod=>expect(billingSchema.safeParse({...sample,paymentMethod}).success).toBe(true));
-it("requires a valid payment choice",()=>expect(billingSchema.safeParse({...sample,paymentMethod:""}).success).toBe(false));
+it("requires a valid invoice payment choice",()=>expect(billingSchema.safeParse({...sample,kind:"invoice",paymentMethod:""}).success).toBe(false));
 describe("generated PDFs",()=>{
   const font=readFileSync("public/fonts/NotoSans-Regular.ttf");
+  it("omits payment methods and bank details on quotes but includes them on transfer invoices",async()=>{const spy=vi.spyOn(PDFPage.prototype,"drawText");try{await generateBillingPdf(sample,font);let text=spy.mock.calls.map(call=>call[0]).join(" ");expect(text).not.toContain("MODE DE PAIEMENT");expect(text).not.toContain(sample.bankAccountHolder);spy.mockClear();await generateBillingPdf({...sample,kind:"invoice"},font);text=spy.mock.calls.map(call=>call[0]).join(" ");expect(text).toContain("MODE DE PAIEMENT");expect(text).toContain(sample.bankAccountHolder);expect(text).toContain("FR14 2004 1010 0505 0001 3M02 606");expect(text).toContain("PSSTFRPPXXX");}finally{spy.mockRestore();}});
   it("produces a real French quote PDF with issuer metadata",async()=>{const bytes=await generateBillingPdf(sample,font);expect(Buffer.from(bytes).subarray(0,5).toString()).toBe("%PDF-");const parsed=await PDFDocument.load(bytes);expect(parsed.getTitle()).toBe("Devis DEV-2026-001");expect(parsed.getAuthor()).toBe(sample.issuerName);expect(parsed.getPageCount()).toBeGreaterThan(0);});
   it("accepts a booking client's phone and generates an invoice with their details",async()=>{const doc=billingSchema.parse({...sample,kind:"invoice",clientPhone:"0612345678"});expect(doc.clientPhone).toBe("0612345678");const pdf=await PDFDocument.load(await generateBillingPdf(doc,font));expect(pdf.getTitle()).toBe("Facture DEV-2026-001");expect(pdf.getPageCount()).toBeGreaterThan(0);});
   it("paginates fifty long invoice items without losing pages",async()=>{const doc={...sample,kind:"invoice" as const,number:"FAC-2026-001",lines:Array.from({length:50},(_,i)=>({...sample.lines[0],description:`Prestation ${i+1} : `+"Description détaillée des travaux. ".repeat(12)}))};const parsed=await PDFDocument.load(await generateBillingPdf(doc,font));expect(parsed.getPageCount()).toBeGreaterThan(5);expect(parsed.getTitle()).toBe("Facture FAC-2026-001");});

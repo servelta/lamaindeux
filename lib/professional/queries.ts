@@ -65,13 +65,3 @@ export async function getOwnAvailabilityExceptions(professionalId: string) {
     .order("date");
   return data ?? [];
 }
-
-export async function getOwnDocuments(professionalId: string) {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("professional_documents")
-    .select("*")
-    .eq("professional_id", professionalId)
-    .order("uploaded_at", { ascending: false });
-  return data ?? [];
-}

@@ -1,4 +1,5 @@
 ﻿import { z } from "zod";
+import { normalizeIban, validIban, validBic } from "./bank-details";
 const text = (max = 200) => z.string().trim().max(max);
 const required = (max = 200) => text(max).min(1, "Ce champ est obligatoire.");
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide.").refine(value => {
@@ -15,10 +16,17 @@ export const billingSchema = z.object({
   clientName: required(), clientAddress: required(400), clientEmail: z.union([z.literal(""), z.string().trim().email()]),
   clientPhone: text(40).optional(),
   clientType: z.enum(["individual", "business"]), clientId: text(14), clientVat: text(40),
-  taxMode: z.enum(["vat", "exempt"]), paymentMethod: z.enum(["card", "transfer", "cash", "cheque"]), lateTerms: required(400), notes: text(1500),
+  taxMode: z.enum(["vat", "exempt"]), paymentMethod: z.enum(["card", "transfer", "cash", "cheque"]).optional(), lateTerms: required(400), notes: text(1500),
+  bankAccountHolder: text(200).optional(), bankIban: text(50).transform(normalizeIban).optional(), bankBic: text(11).transform(value=>value.toUpperCase()).optional(), bankName: text(100).optional(),
   quoteFeeCents: z.number().int().min(0).max(10000000),
   lines: z.array(z.object({ description: required(500), priceCents: z.number().int().min(0).max(100000000), vatRate: z.union([z.literal(0), z.literal(5.5), z.literal(10), z.literal(20)]), duration: text(100) })).min(1).max(50),
 }).superRefine((data, ctx) => {
+  if (data.kind === "invoice" && !data.paymentMethod) ctx.addIssue({code:"custom",path:["paymentMethod"],message:"Choisissez un mode de paiement."});
+  if (data.kind === "invoice" && data.paymentMethod === "transfer") {
+    if (!data.bankAccountHolder) ctx.addIssue({code:"custom",path:["bankAccountHolder"],message:"Renseignez le titulaire du compte bancaire."});
+    if (!data.bankIban || !validIban(data.bankIban)) ctx.addIssue({code:"custom",path:["bankIban"],message:"Renseignez un IBAN valide."});
+    if (data.bankBic && !validBic(data.bankBic)) ctx.addIssue({code:"custom",path:["bankBic"],message:"Le BIC doit contenir 8 ou 11 caractères valides."});
+  }
   if (data.deadline < data.issuedOn) ctx.addIssue({ code: "custom", path: ["deadline"], message: "La date limite doit être postérieure ou égale à la date du document." });
   if (data.taxMode === "vat" && !data.vatNumber) ctx.addIssue({ code: "custom", path: ["vatNumber"], message: "Renseignez votre numéro de TVA." });
   if (data.clientType === "business" && !/^\d{9}(\d{5})?$/.test(data.clientId)) ctx.addIssue({ code: "custom", path: ["clientId"], message: "Renseignez le SIREN ou SIRET du client professionnel." });

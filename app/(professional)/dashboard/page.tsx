@@ -49,7 +49,7 @@ export default async function ProfessionalDashboardPage() {
             <CardTitle className="text-base">Statut du compte</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1 text-sm">
-            <p>Vérification : <strong>{professional?.status}</strong></p>
+            <p>Statut : <strong>{professional?.status}</strong></p>
             <p>Contrat : <strong>{professional?.contract_status === "signed" ? "Signé" : "Non signé"}</strong></p>
             <p>Paiement : <strong>{professional?.payment_status === "received" ? "Reçu" : "Non reçu"}</strong></p>
           </CardContent>
@@ -90,10 +90,10 @@ export default async function ProfessionalDashboardPage() {
 
       {!isActive && (
         <p className="mt-6 rounded-md bg-secondary p-4 text-sm">
-          Votre profil n'est pas encore actif. Une fois votre dossier vérifié
-          (onglet <Link href="/documents" className="underline">Documents</Link>),
-          votre contrat signé et votre abonnement réglé, votre profil
-          apparaîtra dans les résultats de recherche.
+          Votre profil n'est pas encore actif. Notre équipe examine les informations
+          de votre entreprise, sans demander de pièce d’identité. Après validation,
+          signature du contrat et règlement de l’abonnement, votre profil apparaîtra
+          dans les résultats de recherche.
         </p>
       )}
     </div>
