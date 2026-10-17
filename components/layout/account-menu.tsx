@@ -11,7 +11,7 @@ type AccountMenuProps = {
   role: string;
 };
 
-const roleLinks: Record<string, { href: string; label: string }[]> = {
+export const roleLinks: Record<string, { href: string; label: string }[]> = {
   customer: [
     { href: "/mon-compte", label: "Mon compte" },
     { href: "/mes-reservations", label: "Mes réservations" },
@@ -20,8 +20,22 @@ const roleLinks: Record<string, { href: string; label: string }[]> = {
   professional: [
     { href: "/dashboard", label: "Tableau de bord" },
     { href: "/profil", label: "Mon profil" },
+    { href: "/reservations", label: "Réservations" },
+    { href: "/mes-services", label: "Mes services" },
+    { href: "/calendrier", label: "Calendrier" },
+    { href: "/devis-factures", label: "Devis et factures" },
+    { href: "/documents", label: "Documents" },
   ],
-  admin: [{ href: "/admin", label: "Administration" }],
+  admin: [
+    { href: "/admin", label: "Administration" },
+    { href: "/admin/professionnels", label: "Professionnels" },
+    { href: "/admin/clients", label: "Clients" },
+    { href: "/admin/reservations", label: "Réservations" },
+    { href: "/admin/avis", label: "Avis" },
+    { href: "/admin/services", label: "Services" },
+    { href: "/admin/villes", label: "Villes" },
+    { href: "/admin/parametres", label: "Paramètres" },
+  ],
 };
 
 export function AccountMenu({ firstName, avatarUrl, role }: AccountMenuProps) {
@@ -47,7 +61,7 @@ export function AccountMenu({ firstName, avatarUrl, role }: AccountMenuProps) {
         onClick={() => setOpen((value) => !value)}
         aria-label="Ouvrir le menu du compte"
         aria-expanded={open}
-        className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-secondary text-sm font-semibold text-primary hover:ring-2 hover:ring-primary/30"
+        className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-secondary text-sm font-semibold text-primary hover:ring-2 hover:ring-primary/30"
       >
         {avatarUrl ? (
           <Image src={avatarUrl} alt="Photo de profil" width={40} height={40} className="h-full w-full object-cover" />
@@ -57,7 +71,7 @@ export function AccountMenu({ firstName, avatarUrl, role }: AccountMenuProps) {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-56 rounded-lg border border-border bg-card py-1 shadow-lg">
+        <div className="absolute right-0 z-50 mt-2 max-h-[calc(100dvh-112px)] w-56 overflow-y-auto overscroll-contain rounded-lg border border-border bg-card py-1 shadow-lg">
           {(roleLinks[role] ?? []).map((link) => (
             <Link
               key={link.href}

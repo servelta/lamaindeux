@@ -21,7 +21,7 @@ type Notification = {
 };
 
 /** basePath: "/mes-reservations" for customers, "/reservations" for professionals — where a related booking links to. */
-export function NotificationBell({ basePath }: { basePath: string }) {
+export function NotificationBell({ basePath, inline = false }: { basePath: string; inline?: boolean }) {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [, startTransition] = useTransition();
@@ -50,13 +50,14 @@ export function NotificationBell({ basePath }: { basePath: string }) {
   }
 
   return (
-    <div className="relative">
+    <div className={inline ? "w-full" : "relative"}>
       <button
         onClick={handleOpen}
         aria-label="Notifications"
-        className="relative rounded-full p-2 hover:bg-secondary"
+        className={inline ? "relative flex min-h-11 w-full items-center gap-2 rounded-md px-2 hover:bg-secondary" : "relative rounded-full p-2 hover:bg-secondary"}
       >
         <Bell className="h-5 w-5" />
+        {inline ? <span className="text-sm font-medium">Notifications</span> : null}
         {unreadCount > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-medium text-accent-foreground">
             {unreadCount > 9 ? "9+" : unreadCount}
@@ -65,7 +66,7 @@ export function NotificationBell({ basePath }: { basePath: string }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-80 rounded-lg border border-border bg-card shadow-lg">
+        <div className={cn("mt-2 rounded-lg border border-border bg-card shadow-lg", inline ? "w-full" : "absolute right-0 z-50 w-80")}>
           <div className="flex items-center justify-between border-b border-border px-4 py-2">
             <span className="text-sm font-semibold">Notifications</span>
             {unreadCount > 0 && (

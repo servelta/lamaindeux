@@ -6,7 +6,6 @@ import { LayoutDashboard, Wrench as WrenchIcon, Users, CalendarClock, ListChecks
 import { cn } from "@/lib/utils/cn";
 import { logoutAction } from "@/lib/auth/actions";
 import { Button } from "@/components/ui/button";
-import { BrandLogo } from "@/components/layout/brand-logo";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Vue d'ensemble", icon: LayoutDashboard, exact: true },
@@ -23,10 +22,7 @@ export function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex gap-1 overflow-x-auto border-b border-border/60 bg-card px-4 sm:min-h-screen sm:w-64 sm:flex-col sm:gap-0.5 sm:overflow-visible sm:border-b-0 sm:border-r sm:px-3 sm:py-4">
-      <div className="flex shrink-0 items-center px-1 sm:px-3 sm:pb-3">
-        <BrandLogo />
-      </div>
+    <nav aria-label="Navigation administration" className="hidden w-64 shrink-0 flex-col gap-0.5 border-r border-border/60 bg-card px-3 py-4 sm:flex">
       <div className="hidden px-3 pb-3 sm:block">
         <span className="font-display text-sm font-semibold text-primary">Administration</span>
       </div>
