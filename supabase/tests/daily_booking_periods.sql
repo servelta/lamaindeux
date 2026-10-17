@@ -14,6 +14,14 @@ begin
   perform set_config('request.jwt.claims',jsonb_build_object('role','authenticated','sub',pro)::text,true);
   execute 'set local role authenticated';
   insert into public.daily_availability values(pro,'2036-03-11',true,false,true);
+  insert into public.daily_availability values(pro,'2036-03-20',true,true,true);
+  insert into public.daily_availability(professional_id,date,morning,afternoon,evening)
+    select pro, d::date, false, false, false
+    from generate_series(date '2036-03-20',date '2036-03-22',interval '1 day') d
+    on conflict(professional_id,date) do update set morning=false,afternoon=false,evening=false;
+  select count(*) into n from public.daily_availability where professional_id=pro
+    and date between '2036-03-20' and '2036-03-22' and not morning and not afternoon and not evening;
+  if n<>3 then raise exception 'FAIL: inclusive bulk range block';end if;
   perform set_config('request.jwt.claims',jsonb_build_object('role','authenticated','sub',c2)::text,true);
   rejected:=false; begin update public.daily_availability set morning=false where professional_id=pro and date='2036-03-11'; get diagnostics n=row_count; rejected:=n=0; exception when insufficient_privilege then rejected:=true; end;
   if not rejected then raise exception 'FAIL: foreign user changed availability'; end if;
@@ -41,7 +49,7 @@ begin
   select count(*) into n from public.bookings where professional_id=pro;
   if n<>0 then raise exception 'FAIL: anonymous booking disclosure'; end if;
   select count(*) into n from public.daily_availability where professional_id=pro;
-  if n<>1 then raise exception 'FAIL: public availability inaccessible'; end if;
+  if n<>4 then raise exception 'FAIL: public availability inaccessible'; end if;
   rejected:=false;begin delete from public.daily_availability where professional_id=pro;exception when insufficient_privilege then rejected:=true;end;
   if not rejected then raise exception 'FAIL: anonymous availability mutation';end if;
   execute 'reset role';

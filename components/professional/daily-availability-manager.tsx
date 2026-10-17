@@ -13,6 +13,7 @@ import {
 import {
   getOwnDayPeriodsAction,
   saveDayPeriodsAction,
+  blockDayRangeAction,
 } from "@/lib/professional/day-availability-actions";
 import {
   parisToday,
@@ -34,6 +35,11 @@ export function DailyAvailabilityManager() {
     [saving, setSaving] = useState(false),
     [message, setMessage] = useState(""),
     [error, setError] = useState("");
+  const [rangeStart, setRangeStart] = useState(parisToday);
+  const [rangeEnd, setRangeEnd] = useState(parisToday);
+  const [refresh, setRefresh] = useState(0);
+  const [rangeMessage, setRangeMessage] = useState("");
+  const [rangeError, setRangeError] = useState("");
   function chooseDate(next: string) {
     if (next === date) return;
     setPeriods(null);
@@ -71,7 +77,31 @@ export function DailyAvailabilityManager() {
       clearInterval(timer);
       window.removeEventListener("focus", load);
     };
-  }, [date]);
+  }, [date, refresh]);
+  async function blockRange(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (savingRef.current) return;
+    savingRef.current = true;
+    loadVersion.current++;
+    setSaving(true);
+    setRangeError("");
+    setRangeMessage("");
+    try {
+      const result = await blockDayRangeAction(rangeStart, rangeEnd);
+      if (result.error) {
+        setRangeError(result.error);
+        return;
+      }
+      setRangeMessage(result.success ?? "Période bloquée.");
+      chooseDate(rangeStart);
+      setRefresh((value) => value + 1);
+    } catch {
+      setRangeError("Impossible de bloquer cette période. Réessayez.");
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
+  }
   async function toggle(period: DayPeriod) {
     if (!periods || saving || period.booked || period.past) return;
     const previous = periods;
@@ -227,6 +257,83 @@ export function DailyAvailabilityManager() {
           {error}
         </p>
       ) : null}
+      <form
+        onSubmit={blockRange}
+        className="space-y-4 border-t border-border pt-5"
+      >
+        <div>
+          <h3 className="font-semibold text-primary">Dates bloquées</h3>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            Choisissez une période d’absence. Les dates de début et de fin sont
+            incluses.
+          </p>
+        </div>
+        <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+          <div className="min-w-0 space-y-2">
+            <label htmlFor="blocked-from" className="block text-sm font-medium">
+              Du
+            </label>
+            <Input
+              id="blocked-from"
+              name="startDate"
+              type="date"
+              required
+              min={parisToday()}
+              value={rangeStart}
+              disabled={saving}
+              onChange={(event) => {
+                const value = event.target.value;
+                setRangeStart(value);
+                if (value > rangeEnd) setRangeEnd(value);
+                setRangeMessage("");
+              }}
+              className="min-h-11 min-w-0 text-base"
+            />
+          </div>
+          <div className="min-w-0 space-y-2">
+            <label htmlFor="blocked-to" className="block text-sm font-medium">
+              Au
+            </label>
+            <Input
+              id="blocked-to"
+              name="endDate"
+              type="date"
+              required
+              min={rangeStart || parisToday()}
+              max={rangeStart ? shift(rangeStart, 365) : undefined}
+              value={rangeEnd}
+              disabled={saving}
+              onChange={(event) => {
+                setRangeEnd(event.target.value);
+                setRangeMessage("");
+              }}
+              className="min-h-11 min-w-0 text-base"
+            />
+          </div>
+        </div>
+        <button
+          type="submit"
+          disabled={saving}
+          className="min-h-11 w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50 sm:w-auto"
+        >
+          {saving ? "Enregistrement…" : "Bloquer cette période"}
+        </button>
+        <div aria-live="polite">
+          {rangeMessage ? (
+            <p className="text-sm text-primary">{rangeMessage}</p>
+          ) : null}
+        </div>
+        {rangeError ? (
+          <p role="alert" className="text-sm text-destructive">
+            {rangeError}
+          </p>
+        ) : null}
+        <p className="text-xs leading-5 text-muted-foreground">
+          Les trois plages sont fermées pour chaque journée choisie. Vos
+          rendez-vous existants sont conservés. Pour rouvrir une journée,
+          choisissez sa date ci-dessus et touchez les plages souhaitées.
+        </p>
+      </form>
       <p className="text-xs leading-5 text-muted-foreground">
         Une plage réservée n’est plus proposée aux autres clients, quel que soit
         le service choisi. Une annulation libère la place si vous l’avez laissée
