@@ -61,6 +61,8 @@ export default async function AdminProfessionalDetailPage({ params }: Props) {
         <p className="mt-2 rounded-md bg-secondary p-3 text-sm">Motif : {professional.status_reason}</p>
       )}
 
+      <Link href={`/admin/performance/${id}`} className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-primary underline">Voir les performances de cet artisan</Link>
+
       <AccountDetails account={account} accountId={id} name={[profile?.first_name, profile?.last_name].filter(Boolean).join(" ")} phone={profile?.phone ?? null} />
 
       <div className="mt-6">

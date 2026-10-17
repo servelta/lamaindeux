@@ -3,6 +3,9 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createHash } from "node:crypto";
+import { z } from "zod";
+import { findBookingSubmission, saveBookingSubmission, submissionActorHash } from "@/lib/booking/submission";
+import type { Database } from "@/types/database";
 import { createGuestCustomer } from "@/lib/booking/guest-customer";
 import { createReceiptToken, receiptCookieName } from "@/lib/booking/receipt-token";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
@@ -45,6 +48,31 @@ export async function createBookingAction(
         "Seul un compte client peut effectuer une réservation. Connectez-vous avec un compte client.",
     };
   }
+
+  async function finish(booking: Database["public"]["Tables"]["bookings"]["Row"], inserted = false, serviceName = "Service"): Promise<never> {
+    let guestConfirmationUrl: string | undefined;
+    if (!user) {
+        const receipt = createReceiptToken(booking.id, booking.booking_number, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+        (await cookies()).set(receiptCookieName(booking.booking_number), receipt, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: `/reservation-confirmee/${booking.booking_number}`, maxAge: 30 * 24 * 60 * 60 });
+        guestConfirmationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://lamaindeux.vercel.app"}/reservation-confirmee/${booking.booking_number}?receipt=${encodeURIComponent(receipt)}`;
+    }
+
+    if (inserted) {
+      try { await notifyBookingCreated(booking, serviceName, { isGuest: !user, customerBookingUrl: guestConfirmationUrl }); }
+      catch { console.error("Booking notification delivery failed."); }
+    }
+    revalidatePath("/calendrier"); revalidatePath("/reservations"); revalidatePath("/artisan/[slug]/reserver", "page");
+    redirect(`/reservation-confirmee/${booking.booking_number}`);
+  }
+
+  const intent = z.object({ id: z.string().uuid(), secret: z.string().uuid() }).safeParse({ id: formData.get("requestId"), secret: formData.get("requestSecret") });
+  if (!intent.success) return { error: "Rechargez le formulaire avant d’envoyer votre réservation." };
+  let actorHash: string;
+  try { actorHash = submissionActorHash(intent.data.secret, user?.id); }
+  catch { return { error: "La réservation est momentanément indisponible." }; }
+  const existing = await findBookingSubmission(intent.data.id, actorHash);
+  if (existing.error) return { error: "Impossible de vérifier cette demande. Réessayez sans recharger le formulaire." };
+  if (existing.booking) return finish(existing.booking);
 
   const ip = await getClientIp();
   const [userOk, ipOk] = await Promise.all([
@@ -150,9 +178,7 @@ export async function createBookingAction(
     photoUrls.push(path);
   }
 
-  const { data: booking, error } = await bookingClient
-    .from("bookings")
-    .insert({
+  const { booking, inserted, error } = await saveBookingSubmission(intent.data.id, actorHash, {
       customer_id: customerId,
       professional_id: service.professional_id,
       professional_service_id: service.id,
@@ -171,37 +197,25 @@ export async function createBookingAction(
       photo_urls: photoUrls,
       price_cents: isQuoteRequest ? null : service.price_cents,
       is_quote_request: isQuoteRequest,
-    })
-    .select(
-      "id, booking_number, customer_id, professional_id, scheduled_date, scheduled_time, booking_period, contact_first_name, contact_last_name, contact_email, contact_phone, address_line, postcode, city, description, photo_urls, price_cents, is_quote_request"
-    )
-    .single();
+    });
 
-  if (error) {
-    await removeUploadedPhotos();
-    if (error.code === "23505" || error.code === "23514") {
+  if (error || !booking) {
+    // A lost response may follow a committed insert. The lookup takes the same
+    // database lock, so it waits for an in-flight save before deciding.
+    const recovered = await findBookingSubmission(intent.data.id, actorHash);
+    if (recovered.booking) {
+      if (recovered.booking.customer_id !== customerId) await removeUploadedPhotos();
+      return finish(recovered.booking);
+    }
+    if (!recovered.error || error?.code === "23505" || error?.code === "23514") await removeUploadedPhotos();
+    if (error?.code === "23505" || error?.code === "23514") {
       return { error: "Cette plage n’est plus disponible. Merci d’en choisir une autre." };
     }
     console.error("createBookingAction:", error);
     return { error: "Impossible de créer la réservation." };
   }
 
-  const serviceName = Array.isArray(service.services) ? service.services[0]?.name : (service.services as any)?.name;
-  let guestConfirmationUrl: string | undefined;
-  if (!user) {
-    const receipt = createReceiptToken(booking.id, booking.booking_number, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-    (await cookies()).set(receiptCookieName(booking.booking_number), receipt, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: `/reservation-confirmee/${booking.booking_number}`, maxAge: 30 * 24 * 60 * 60 });
-    guestConfirmationUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "https://lamaindeux.vercel.app"}/reservation-confirmee/${booking.booking_number}?receipt=${encodeURIComponent(receipt)}`;
-  }
-
-  // Notification failures must never block the booking itself — the
-  // booking already succeeded by this point.
-  try {
-    await notifyBookingCreated(booking, serviceName ?? "Service", { isGuest: !user, customerBookingUrl: guestConfirmationUrl });
-  } catch (err) {
-    console.error("notifyBookingCreated failed:", err);
-  }
-
-  revalidatePath("/calendrier");revalidatePath("/reservations");revalidatePath("/artisan/[slug]/reserver","page");
-  redirect(`/reservation-confirmee/${booking.booking_number}`);
+  if (!inserted) await removeUploadedPhotos();
+  const serviceName = Array.isArray(service.services) ? service.services[0]?.name : (service.services as { name?: string } | null)?.name;
+  return finish(booking, inserted, serviceName ?? "Service");
 }

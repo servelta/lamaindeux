@@ -92,6 +92,7 @@ export const privacy: LegalDocument = {
       "Artisans : entreprise, SIRET ou SIREN renseigné, métier, présentation, adresse professionnelle, zones d’intervention, téléphone, email de contact privé, photos, services, tarifs et disponibilités, ainsi que les informations de suivi du contrat et de l’abonnement.",
       "Réservations : identité et coordonnées du contact, adresse d’intervention, besoin décrit, photos éventuelles, artisan et service choisis, date, plage horaire, référence, prix ou demande de devis et historique des statuts.",
       "Avis et assistance : note et commentaire, contenu des formulaires et, si vous demandez une réponse personnelle depuis le chatbot, les extraits de conversation transmis et les coordonnées saisies.",
+      "Statistiques des artisans : événements de clic sur « Appeler » associés au professionnel, avec date et emplacement du bouton, et décompte des réservations déjà enregistrées. Aucun nom, téléphone, adresse IP brute ou identifiant de visiteur n’est collecté par ce compteur. Il n’atteste ni un appel répondu ni une mise en relation téléphonique effective. Les données de réservation suivent les règles décrites séparément.",
       "Fonctionnement technique : adresse IP et informations de requête utiles à la sécurité, compteurs de limitation des tentatives, journaux techniques et cookies nécessaires. Nous ne demandons pas de pièce d’identité pour ouvrir un compte artisan.",
     ] },
     { id: "finalites", title: "3. Finalités et bases juridiques", paragraphs: [
@@ -100,6 +101,7 @@ export const privacy: LegalDocument = {
       "Créer et gérer un compte, publier le profil professionnel, transmettre une réservation et suivre un rendez-vous : exécution du service demandé ou mesures précontractuelles, y compris lorsque le client réserve sans compte.",
       "Gérer la relation professionnelle avec l’artisan, le contrat, l’abonnement et leurs justificatifs : exécution du contrat et obligations légales applicables.",
       "Répondre à une question et gérer une réclamation : préparation ou exécution du service selon le contexte ; intérêt légitime à assurer le suivi pour les demandes générales. Lorsqu’une démarche facultative repose sur votre consentement, vous pouvez le retirer pour l’avenir.",
+      "Évaluer l’utilisation des boutons d’appel et des outils de réservation par artisan : intérêt légitime à mesurer le service fourni aux professionnels. Ces compteurs sont réservés aux administrateurs autorisés, sans profilage des visiteurs ni suivi entre sites.",
       "Sécuriser les accès, limiter les envois abusifs et traiter les incidents : intérêt légitime à protéger les utilisateurs et la plateforme, en tenant compte de leurs droits.",
       "Traiter l’exercice des droits, répondre à une demande légalement fondée d’une autorité et respecter une obligation de conservation : obligation légale. Conserver les éléments strictement utiles à la défense d’un droit : intérêt légitime correspondant.",
     ], links: [{ label: "Bases juridiques prévues par le RGPD", href: "https://www.cnil.fr/fr/reglement-europeen-protection-donnees/chapitre2" }] },
@@ -152,7 +154,7 @@ export const cookies: LegalDocument = {
   sections: [
     { id: "definition", title: "1. À quoi servent les cookies ?", paragraphs: [
       "Un cookie est une petite information enregistrée par le navigateur pour reconnaître une session ou conserver un état technique. LaMain2 en utilise pour les fonctions demandées, notamment la connexion et l’accès à une confirmation de réservation sans compte. Un cookie ne permet pas à lui seul de lire les autres fichiers de votre appareil.",
-      "Cette page couvre aussi les mécanismes similaires de stockage côté navigateur lorsqu’ils sont utilisés par le site. La configuration applicative actuelle n’intègre ni outil publicitaire, ni pixel de réseau social, ni outil de mesure d’audience tel que Google Analytics.",
+      "Cette page couvre aussi les mécanismes similaires de stockage côté navigateur lorsqu’ils sont utilisés par le site. La configuration applicative actuelle n’intègre ni outil publicitaire, ni pixel de réseau social, ni outil de mesure d’audience utilisant des traceurs tel que Google Analytics. Le compteur interne des clics sur « Appeler » ne dépose aucun cookie et n’utilise ni stockage local ni identifiant de visiteur.",
     ] },
     { id: "inventaire", title: "2. Cookies utilisés par les fonctionnalités", paragraphs: [
       "Les noms peuvent varier selon le projet technique ou la référence de réservation. Un cookie long peut être réparti en plusieurs fragments portant un suffixe numérique.",

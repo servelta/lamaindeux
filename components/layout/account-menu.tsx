@@ -27,6 +27,7 @@ export const roleLinks: Record<string, { href: string; label: string }[]> = {
   ],
   admin: [
     { href: "/admin", label: "Administration" },
+    { href: "/admin/performance", label: "Performance des artisans" },
     { href: "/admin/professionnels", label: "Professionnels" },
     { href: "/admin/clients", label: "Clients" },
     { href: "/admin/reservations", label: "Réservations" },

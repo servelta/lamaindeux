@@ -26,6 +26,8 @@ export default async function AdminProfessionalsPage({ searchParams }: Props) {
     <div className="mx-auto max-w-4xl px-4 py-10">
       <h1 className="font-display text-2xl font-bold">Professionnels</h1>
 
+      <Link href="/admin/performance" className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground">Performance des artisans</Link>
+
       <form className="mt-6 flex flex-wrap gap-2">
         <input
           type="text"

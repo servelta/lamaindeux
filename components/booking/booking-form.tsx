@@ -50,7 +50,14 @@ export function BookingForm({
   initialDate,
   initialTime,
 }: BookingFormProps) {
-  const [state, formAction] = useActionState<ActionResult, FormData>(createBookingAction, undefined);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [state, formAction] = useActionState<ActionResult, FormData>(async (previous, data) => {
+    data.delete("photos");
+    for (const file of photoFiles) data.append("photos", file);
+    return createBookingAction(previous, data);
+  }, undefined);
+  const [intent, setIntent] = useState<{ id: string; secret: string } | null>(null);
+  useEffect(() => { setIntent({ id: crypto.randomUUID(), secret: crypto.randomUUID() }); }, [professionalServiceId]);
   const [date, setDate] = useState(initialDate ?? "");
   const [time, setTime] = useState(initialTime ?? "");
   const [slots, setSlots] = useState<DayPeriod[] | null>(null);
@@ -58,6 +65,8 @@ export function BookingForm({
   const [slotError, setSlotError] = useState("");
   const [photoError, setPhotoError] = useState("");
   const [photoNames, setPhotoNames] = useState<string[]>([]);
+  const [details, setDetails] = useState({ fullName: prefill?.fullName ?? "", phone: prefill?.phone ?? "", email: prefill?.email ?? "", address: "", description: "" });
+  function updateDetail(field: keyof typeof details, value: string) { setDetails(current => ({ ...current, [field]: value })); }
 
   useEffect(() => {
     let cancelled = false;
@@ -80,6 +89,8 @@ export function BookingForm({
 
   return (
     <form action={formAction} onReset={event=>event.preventDefault()} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <input type="hidden" name="requestId" value={intent?.id ?? ""} />
+      <input type="hidden" name="requestSecret" value={intent?.secret ?? ""} />
       <input type="hidden" name="bookingPeriod" value={slots?.find(p=>p.start===time&&p.available)?.id ?? ""} />
       <input type="hidden" name="professionalServiceId" value={professionalServiceId} />
       <input type="hidden" name="returnTo" value={currentReturn.pathname + currentReturn.search} />
@@ -119,15 +130,15 @@ export function BookingForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="fullName">Nom et prénom</Label>
-          <Input id="fullName" name="fullName" autoComplete="name" defaultValue={prefill?.fullName} required />
+          <Input id="fullName" name="fullName" autoComplete="name" value={details.fullName} onChange={e => updateDetail("fullName", e.target.value)} required />
         </div>
         <div className="space-y-2">
           <Label htmlFor="phone">Téléphone</Label>
-          <Input id="phone" name="phone" type="tel" autoComplete="tel" defaultValue={prefill?.phone} required placeholder="06 12 34 56 78" />
+          <Input id="phone" name="phone" type="tel" autoComplete="tel" value={details.phone} onChange={e => updateDetail("phone", e.target.value)} required placeholder="06 12 34 56 78" />
         </div>
         <div className="space-y-2 sm:col-span-2">
           <Label htmlFor="email">E-mail</Label>
-          <Input id="email" name="email" type="email" autoComplete="email" defaultValue={prefill?.email} required />
+          <Input id="email" name="email" type="email" autoComplete="email" value={details.email} onChange={e => updateDetail("email", e.target.value)} required />
         </div>
       </div>
       </section>
@@ -137,12 +148,12 @@ export function BookingForm({
 
       <div className="space-y-2">
         <Label htmlFor="address">Adresse</Label>
-        <Input id="address" name="address" autoComplete="street-address" required placeholder="15 rue de la Paix, 75015 Paris" />
+        <Input id="address" name="address" autoComplete="street-address" value={details.address} onChange={e => updateDetail("address", e.target.value)} required placeholder="15 rue de la Paix, 75015 Paris" />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="description">Décrivez votre problème (optionnel)</Label>
-        <Textarea id="description" name="description" rows={4} maxLength={2000} placeholder="Que se passe-t-il ? Depuis quand ? Ajoutez les détails utiles à l’artisan." />
+        <Textarea id="description" name="description" value={details.description} onChange={e => updateDetail("description", e.target.value)} rows={4} maxLength={2000} placeholder="Que se passe-t-il ? Depuis quand ? Ajoutez les détails utiles à l’artisan." />
       </div>
 
       <div className="space-y-3 rounded-2xl border border-dashed border-primary/25 bg-primary/[0.025] p-4">
@@ -155,7 +166,7 @@ export function BookingForm({
           accept="image/jpeg,image/png,image/webp"
           multiple
           aria-describedby="photo-help photo-status"
-          onChange={(e) => { const files = Array.from(e.target.files ?? []); const error = validateBookingPhotos(files); e.target.setCustomValidity(error ?? ""); setPhotoError(error ?? ""); setPhotoNames(files.map((file) => file.name)); }}
+          onChange={(e) => { const files = Array.from(e.target.files ?? []); const error = validateBookingPhotos(files); e.target.setCustomValidity(error ?? ""); setPhotoError(error ?? ""); setPhotoNames(files.map((file) => file.name)); setPhotoFiles(error ? [] : files); }}
           className="block w-full min-w-0 text-sm text-muted-foreground file:mr-3 file:rounded-full file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:font-medium file:text-primary"
         />
         <div id="photo-status" aria-live="polite" className="break-words text-sm">{photoError ? <p className="text-destructive">{photoError}</p> : photoNames.map((name, i) => <p key={`${i}-${name}`} className="text-primary">✓ {name}</p>)}</div>
@@ -177,7 +188,7 @@ export function BookingForm({
         </p>
       )}
 
-      <SubmitButton size="lg" disabled={Boolean(photoError) || !date || !time || isPending || !slots?.some(p=>p.available&&p.start===time)} className="h-auto min-h-12 w-full whitespace-normal rounded-xl py-3" pendingText="Envoi en cours…">
+      <SubmitButton size="lg" disabled={!intent || Boolean(photoError) || !date || !time || isPending || !slots?.some(p=>p.available&&p.start===time)} className="h-auto min-h-12 w-full whitespace-normal rounded-xl py-3" pendingText="Envoi en cours…">
         {isQuoteRequest ? "Envoyer ma demande de devis" : "Confirmer la réservation"}
       </SubmitButton>
       <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground"><ShieldCheck aria-hidden="true" className="h-4 w-4" />Aucun paiement en ligne</p>

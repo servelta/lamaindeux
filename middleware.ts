@@ -3,6 +3,7 @@ import { updateSession } from "@/lib/supabase/middleware";
 import { findRouteRule } from "@/lib/auth/roles";
 
 export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname === "/api/analytics/call-click") return NextResponse.next();
   const { supabaseResponse, user, supabase } = await updateSession(request);
   const { pathname } = request.nextUrl;
 

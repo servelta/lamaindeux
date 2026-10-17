@@ -1,3 +1,4 @@
+import { ArtisanCallLink } from "@/components/analytics/artisan-call-link";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -33,7 +34,6 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
   const trade = pro.trade_name_singular ?? "Professionnel";
   const bookingUrl = `/artisan/${pro.slug}/reserver`;
   const defaultService = profile.services.find(item => { const service = Array.isArray(item.services) ? item.services[0] : item.services; return service?.name === "Intervention classique"; }) ?? profile.services[0];
-  const phoneUrl = `tel:${pro.public_phone}`;
   const address = formatAddress(
     pro.business_address,
     pro.business_postcode,
@@ -151,7 +151,7 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
             {(address || pro.public_phone) ? (
               <div aria-label="Coordonnées de l’artisan" className="mt-4 max-w-md space-y-2 text-xs leading-5 text-white/85">
                 {address ? <p className="flex items-start gap-2"><MapPin aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-secondary" /><span>{address}</span></p> : null}
-                {pro.public_phone ? <a href={phoneUrl} className="inline-flex items-center gap-2 rounded-md font-semibold text-white underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"><Phone aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-secondary" />{pro.public_phone}</a> : null}
+                {pro.public_phone ? <ArtisanCallLink professionalId={pro.profile_id} phone={pro.public_phone} source="profile-contact" className="inline-flex items-center gap-2 rounded-md font-semibold text-white underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"><Phone aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-secondary" />{pro.public_phone}</ArtisanCallLink> : null}
               </div>
             ) : null}
             {hours.length ? <details className="group mt-4 max-w-md rounded-xl border border-white/15 bg-white/[0.06]">
@@ -187,10 +187,10 @@ export function PublicProfileLanding({ profile }: { profile: Profile }) {
                   variant="outline"
                   className="border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
                 >
-                  <a href={phoneUrl}>
+                  <ArtisanCallLink professionalId={pro.profile_id} phone={pro.public_phone} source="profile-call">
                     <Phone aria-hidden="true" className="mr-2 h-4 w-4" />
                     Appeler
-                  </a>
+                  </ArtisanCallLink>
                 </Button>
               ) : null}
             </div>

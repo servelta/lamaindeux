@@ -1,0 +1,78 @@
+begin;
+select '1..1';
+do $test$
+declare pro uuid:=gen_random_uuid(); other_pro uuid:=gen_random_uuid(); customer uuid:=gen_random_uuid(); admin_id uuid:=gen_random_uuid(); svc uuid:=gen_random_uuid(); req uuid:=gen_random_uuid(); event uuid:=gen_random_uuid(); b uuid; response jsonb; payload jsonb; report jsonb; denied boolean; n integer; trade uuid;
+begin
+ insert into auth.users(id,email,raw_user_meta_data) values
+ (pro,'performance-'||pro||'@example.invalid','{"role":"professional","company_name":"Performance fixture","trade_slug":"plombier"}'),
+ (other_pro,'performance-'||other_pro||'@example.invalid','{"role":"professional","company_name":"Zero fixture","trade_slug":"electricien"}'),
+ (customer,'performance-'||customer||'@example.invalid','{"role":"customer"}'),
+ (admin_id,'performance-'||admin_id||'@example.invalid','{"role":"customer"}');
+ update public.profiles set role='admin' where id=admin_id;
+ perform set_config('request.jwt.claims',jsonb_build_object('role','authenticated','sub',admin_id)::text,true);
+ update public.professionals set status='ACTIVE',business_city='Paris' where profile_id=pro;
+ select trade_id into trade from public.professionals where profile_id=pro;
+ select id into svc from public.professional_services where professional_id=pro limit 1;
+ update public.professional_services set pricing_type='quote',price_cents=null,duration_minutes=60,active=true where id=svc;
+ insert into public.daily_availability(professional_id,date,morning,afternoon,evening) values(pro,'2030-12-12',true,true,true),(pro,'2030-12-13',true,true,true);
+ payload:=jsonb_build_object('customer_id',customer,'professional_id',pro,'professional_service_id',svc,'status','PENDING','scheduled_date','2030-12-12','scheduled_time','10:00','booking_period','morning','contact_first_name','Test','contact_last_name','Client','contact_phone','0600000000','contact_email','test@example.invalid','address_line','Adresse test','postcode','75001','city','Paris','description','Fixture','photo_urls','[]'::jsonb,'price_cents',null,'is_quote_request',true);
+ perform set_config('request.jwt.claims','{"role":"service_role"}',true);execute 'set local role service_role';
+ denied:=false;begin perform public.save_booking_submission(gen_random_uuid(),repeat('a',64),jsonb_set(payload,'{professional_service_id}',to_jsonb(gen_random_uuid())));exception when foreign_key_violation then denied:=true;end;
+ if not denied or (select count(*) from private.booking_submissions where booking_id in(select id from public.bookings where professional_id=pro))<>0 then raise exception 'FAIL failed insert counted';end if;
+ response:=public.save_booking_submission(req,repeat('a',64),payload); b:=(response->'booking'->>'id')::uuid;
+ if not (response->>'inserted')::boolean then raise exception 'FAIL initial booking'; end if;
+ response:=public.save_booking_submission(req,repeat('a',64),payload);
+ if (response->>'inserted')::boolean or (response->'booking'->>'id')::uuid<>b then raise exception 'FAIL booking retry inflated'; end if;
+ if public.find_booking_submission(req,repeat('a',64))->>'id'<>b::text then raise exception 'FAIL retry lookup'; end if;
+ denied:=false;begin perform public.find_booking_submission(req,repeat('b',64));exception when invalid_parameter_value then denied:=true;end;
+ if not denied then raise exception 'FAIL foreign booking intent';end if;
+ perform public.record_artisan_call_click(event,pro,'profile-call');perform public.record_artisan_call_click(event,pro,'profile-call');
+ if (select count(*) from public.artisan_call_clicks where professional_id=pro)<>1 then raise exception 'FAIL click dedup';end if;
+ denied:=false;begin perform public.record_artisan_call_click(gen_random_uuid(),pro,'bad');exception when invalid_parameter_value then denied:=true;end;
+ if not denied then raise exception 'FAIL invalid source';end if;
+ execute 'reset role';
+ update public.bookings set scheduled_date='2030-12-13',status='COMPLETED' where id=b;
+ denied:=false;begin update public.bookings set created_at=created_at+interval '1 day' where id=b;exception when check_violation then denied:=true;end;
+ if not denied then raise exception 'FAIL editable booking creation time';end if;
+ perform set_config('request.jwt.claims',jsonb_build_object('role','authenticated','sub',admin_id)::text,true);execute 'set local role authenticated';
+ report:=public.admin_artisan_performance(null,null,pro,null,null,null,true);
+ if (report->'totals'->>'appointments')::int<>1 or (report->'totals'->>'clicks')::int<>1 or (report->'totals'->'statuses'->>'COMPLETED')::int<>1 then raise exception 'FAIL totals or statuses %',report;end if;
+ if (select sum((r->>'appointments')::int) from jsonb_array_elements(report->'daily') r)<>1 then raise exception 'FAIL daily agreement';end if;
+ report:=public.admin_artisan_performance('2030-12-12','2030-12-14',pro);
+ if (report->'totals'->>'appointments')::int<>0 then raise exception 'FAIL scheduled date counted instead of created';end if;
+ report:=public.admin_artisan_performance(null,null,other_pro);
+ if jsonb_array_length(report->'rows')<>1 or (report->'totals'->>'appointments')::int<>0 then raise exception 'FAIL zero artisan';end if;
+ execute 'reset role';
+ update public.bookings set status='CANCELLED_BY_CUSTOMER' where id=b;
+ perform set_config('request.jwt.claims',jsonb_build_object('role','authenticated','sub',admin_id)::text,true);execute 'set local role authenticated';
+ report:=public.admin_artisan_performance(null,null,pro);
+ if (report->'totals'->>'appointments')::int<>1 or (report->'totals'->'statuses'->>'CANCELLED_BY_CUSTOMER')::int<>1 then raise exception 'FAIL cancellation';end if;
+ execute 'reset role';
+ update public.artisan_call_clicks set created_at='2026-03-28T23:30:00Z' where event_id=event;
+ insert into public.artisan_call_clicks(event_id,professional_id,source,created_at) values(gen_random_uuid(),pro,'profile-contact','2026-03-29T22:30:00Z');
+ perform set_config('request.jwt.claims',jsonb_build_object('role','authenticated','sub',admin_id)::text,true);execute 'set local role authenticated';
+ report:=public.admin_artisan_performance('2026-03-29','2026-03-29',pro,null,null,null,true);
+ if (report->'totals'->>'clicks')::int<>1 or jsonb_array_length(report->'daily')<>1 or (report->'daily'->0->>'clicks')::int<>1 then raise exception 'FAIL Paris DST boundary %',report;end if;
+ report:=public.admin_artisan_performance(null,null,pro,null,'No matching city',null,true);
+ if (report->'totals'->>'clicks')::int<>0 or (select coalesce(sum((r->>'clicks')::int),0) from jsonb_array_elements(report->'daily') r)<>0 then raise exception 'FAIL daily active filters';end if;
+ perform set_config('request.jwt.claims',jsonb_build_object('role','authenticated','sub',customer)::text,true);
+ denied:=false;begin update public.profiles set role='admin' where id=customer;exception when insufficient_privilege then denied:=true;end;if not denied then raise exception 'FAIL customer self-admin';end if;
+ update public.profiles set phone='0612345678' where id=customer;
+ if (select phone from public.profiles where id=customer)<>'0612345678' then raise exception 'FAIL contact editing regression';end if;
+ denied:=false;begin perform public.admin_artisan_performance();exception when insufficient_privilege then denied:=true;end;if not denied then raise exception 'FAIL customer analytics access';end if;
+ select count(*) into n from public.artisan_call_clicks;if n<>0 then raise exception 'FAIL customer click table access';end if;
+ denied:=false;begin insert into public.artisan_call_clicks(event_id,professional_id,source) values(gen_random_uuid(),pro,'listing');exception when insufficient_privilege then denied:=true;end;if not denied then raise exception 'FAIL public click insertion';end if;
+ denied:=false;begin perform public.save_booking_submission(gen_random_uuid(),repeat('a',64),payload);exception when insufficient_privilege then denied:=true;end;if not denied then raise exception 'FAIL public booking RPC';end if;
+ denied:=false;begin update public.artisan_call_clicks set source='listing';exception when insufficient_privilege then denied:=true;end;if not denied then raise exception 'FAIL customer event update';end if;
+ denied:=false;begin delete from public.artisan_call_clicks;exception when insufficient_privilege then denied:=true;end;if not denied then raise exception 'FAIL customer event delete';end if;
+ denied:=false;begin perform public.record_artisan_call_click(gen_random_uuid(),pro,'listing');exception when insufficient_privilege then denied:=true;end;if not denied then raise exception 'FAIL public collector RPC';end if;
+ denied:=false;begin perform 1 from private.booking_submissions;exception when insufficient_privilege then denied:=true;end;if not denied then raise exception 'FAIL submission registry access';end if;
+ perform set_config('request.jwt.claims',jsonb_build_object('role','authenticated','sub',pro)::text,true);
+ denied:=false;begin perform public.admin_artisan_performance();exception when insufficient_privilege then denied:=true;end;if not denied then raise exception 'FAIL artisan analytics access';end if;
+ execute 'reset role';perform set_config('request.jwt.claims','{}',true);execute 'set local role anon';
+ denied:=false;begin perform public.admin_artisan_performance();exception when insufficient_privilege then denied:=true;end;if not denied then raise exception 'FAIL anonymous analytics access';end if;
+ execute 'reset role';
+end;
+$test$;
+rollback;
+select 'ok 1 - booking idempotency, click deduplication, status/cancellation/reschedule counts, zero artisans, daily agreement, immutable identity, date basis and role isolation; fixtures rolled back' as verification;

@@ -1,0 +1,1 @@
+export default function Loading() { return <div role="status" aria-busy="true" className="p-6"><h1 className="font-display text-2xl text-primary">Performance des artisans</h1><p className="mt-4 animate-pulse text-muted-foreground">Chargement des performances…</p></div>; }

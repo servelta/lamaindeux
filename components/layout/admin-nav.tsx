@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Vue d'ensemble", icon: LayoutDashboard, exact: true },
+  { href: "/admin/performance", label: "Performance des artisans", icon: CalendarClock },
   { href: "/admin/professionnels", label: "Professionnels", icon: WrenchIcon },
   { href: "/admin/clients", label: "Clients", icon: Users },
   { href: "/admin/reservations", label: "Réservations", icon: CalendarClock },

@@ -1,0 +1,3 @@
+"use client";
+import Link from "next/link";
+export default function Error({ reset }: { reset: () => void }) { return <div role="alert" className="p-6"><h1 className="font-display text-2xl text-primary">Performance des artisans</h1><p className="mt-4">Impossible de charger les performances. Les données n’ont pas été remplacées par des zéros.</p><button onClick={reset} className="mt-4 min-h-11 rounded-lg bg-primary px-5 text-primary-foreground">Réessayer</button><Link href="/admin/performance" className="ml-4 inline-flex min-h-11 items-center text-primary underline">Réinitialiser les filtres</Link></div>; }

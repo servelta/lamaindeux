@@ -52,6 +52,64 @@ export type Database = {
           },
         ]
       }
+      artisan_analytics_settings: {
+        Row: {
+          call_tracking_started_at: string
+          id: boolean
+        }
+        Insert: {
+          call_tracking_started_at?: string
+          id?: boolean
+        }
+        Update: {
+          call_tracking_started_at?: string
+          id?: boolean
+        }
+        Relationships: []
+      }
+      artisan_call_clicks: {
+        Row: {
+          created_at: string
+          event_id: string
+          professional_id: string
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          professional_id: string
+          source: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          professional_id?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artisan_call_clicks_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "active_professionals"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "artisan_call_clicks_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "artisan_call_clicks_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "public_professional_profiles"
+            referencedColumns: ["profile_id"]
+          },
+        ]
+      }
       availability: {
         Row: {
           created_at: string
@@ -1361,6 +1419,18 @@ export type Database = {
       }
     }
     Functions: {
+      admin_artisan_performance: {
+        Args: {
+          p_city?: string
+          p_daily?: boolean
+          p_from?: string
+          p_professional_id?: string
+          p_search?: string
+          p_to?: string
+          p_trade_id?: string
+        }
+        Returns: Json
+      }
       allocate_billing_number: {
         Args: {
           p_kind: string
@@ -1382,8 +1452,24 @@ export type Database = {
         Args: { p_key: string; p_limit: number; p_window_seconds: number }
         Returns: boolean
       }
+      find_booking_submission: {
+        Args: { p_actor_hash: string; p_request_id: string }
+        Returns: Json
+      }
       generate_booking_number: { Args: never; Returns: string }
       is_admin: { Args: never; Returns: boolean }
+      record_artisan_call_click: {
+        Args: {
+          p_event_id: string
+          p_professional_id: string
+          p_source: string
+        }
+        Returns: undefined
+      }
+      save_booking_submission: {
+        Args: { p_actor_hash: string; p_booking: Json; p_request_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       booking_status:

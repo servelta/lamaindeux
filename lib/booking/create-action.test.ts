@@ -1,6 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  existing: vi.fn(), save: vi.fn(),
   user: null as { id: string } | null,
   role: "customer",
   suspended: false,
@@ -43,6 +44,7 @@ vi.mock("@/lib/supabase/server", () => {
   return { createClient: async () => client, createAdminClient: () => client };
 });
 
+vi.mock("@/lib/booking/submission",()=>({findBookingSubmission:mocks.existing,saveBookingSubmission:mocks.save,submissionActorHash:()=>"a".repeat(64)}));
 import { createBookingAction } from "./create-action";
 import { verifyReceiptToken } from "./receipt-token";
 const oldSecret = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -50,13 +52,14 @@ afterAll(() => { if (oldSecret === undefined) delete process.env.SUPABASE_SERVIC
 
 function form(mode = "guest") {
   const data = new FormData();
-  for (const [key, value] of Object.entries({ bookingMode: mode, professionalServiceId: serviceId, date: "2030-12-12", time: "09:00", fullName: "Jean Dupont", phone: "06 12 34 56 78", email: "guest@example.com", address: "15 rue de Paris, 75015 Paris", description: "Fuite sous évier" })) data.set(key, value);
+  for (const [key, value] of Object.entries({ requestId:"00000000-0000-4000-8000-000000000010",requestSecret:"00000000-0000-4000-8000-000000000011",bookingMode: mode, professionalServiceId: serviceId, date: "2030-12-12", time: "09:00", fullName: "Jean Dupont", phone: "06 12 34 56 78", email: "guest@example.com", address: "15 rue de Paris, 75015 Paris", description: "Fuite sous évier" })) data.set(key, value);
   return data;
 }
 
 describe("account and guest booking submission", () => {
   beforeEach(() => {
     vi.clearAllMocks(); mocks.user = null; mocks.role = "customer"; mocks.suspended = false; mocks.pricing = "quote"; mocks.insertError = null;
+    mocks.existing.mockResolvedValue({booking:null,error:null}); mocks.save.mockImplementation(async (_id,_hash,values)=>{mocks.insert(values);return {booking:mocks.insertError?null:booking,inserted:!mocks.insertError,error:mocks.insertError};});
     mocks.guest.mockResolvedValue(guestId); mocks.rate.mockResolvedValue(true); mocks.upload.mockResolvedValue({ error: null }); mocks.slots.mockResolvedValue(["09:00"]); mocks.periods.mockResolvedValue([{id:"morning",start:"10:00",available:true}]);
     process.env.SUPABASE_SERVICE_ROLE_KEY = "test-only-secret";
   });
@@ -122,6 +125,19 @@ describe("account and guest booking submission", () => {
   });
   it("reports a competing database reservation and cleans up the unused guest",async()=>{
     mocks.insertError={code:"23505"};const f=form();f.set("bookingPeriod","morning");f.set("time","10:00");expect(await createBookingAction(undefined,f)).toEqual({error:"Cette plage n’est plus disponible. Merci d’en choisir une autre."});expect(mocks.deleteUser).toHaveBeenCalled();expect(mocks.notify).not.toHaveBeenCalled();
+  });
+
+  it("returns the saved confirmation on retry without availability checks, a new guest, insert, or notification",async()=>{
+    mocks.existing.mockResolvedValue({booking,error:null});
+    const f=form();f.set("time","");
+    await expect(createBookingAction(undefined,f)).rejects.toThrow("redirect:/reservation-confirmee/PB-123");
+    expect(mocks.save).not.toHaveBeenCalled();expect(mocks.guest).not.toHaveBeenCalled();expect(mocks.notify).not.toHaveBeenCalled();expect(mocks.rate).not.toHaveBeenCalled();
+  });
+  it("recovers a committed booking after a lost save response without deleting its photos or guest",async()=>{
+    mocks.existing.mockResolvedValueOnce({booking:null,error:null}).mockResolvedValueOnce({booking,error:null});
+    mocks.save.mockResolvedValue({booking:null,inserted:false,error:{code:"NETWORK"}});
+    await expect(createBookingAction(undefined,form())).rejects.toThrow("redirect:/reservation-confirmee/PB-123");
+    expect(mocks.remove).not.toHaveBeenCalled();expect(mocks.deleteUser).not.toHaveBeenCalled();expect(mocks.notify).not.toHaveBeenCalled();
   });
 
 });
