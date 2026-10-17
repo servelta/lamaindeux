@@ -33,6 +33,24 @@ describe("contact delivery", () => {
     expect(result?.success).toBeUndefined();
     expect(result?.error).toBeTruthy();
   });
+  it("accepts a GDPR request without phone or consent and routes it to support", async () => {
+    const data = form();
+    data.set("reason", "Données personnelles / RGPD");
+    data.set("phone", "");
+    data.delete("consent");
+    expect((await contactAction(undefined, data))?.success).toBeTruthy();
+    expect(mocks.send.mock.calls[0][1]).toContain("Données personnelles / RGPD");
+    expect(mocks.send.mock.calls[0][3]).toBe("claire@example.com");
+  });
+  it("still requires a phone for general support and validates an optional GDPR phone", async () => {
+    const data = form();
+    data.set("phone", "");
+    expect((await contactAction(undefined, data))?.error).toBeTruthy();
+    data.set("reason", "Données personnelles / RGPD");
+    data.set("phone", "invalid");
+    expect((await contactAction(undefined, data))?.error).toBeTruthy();
+    expect(mocks.send).not.toHaveBeenCalled();
+  });
   it("requires consent and rejects bots and unknown reasons", async () => {
     for (const [key, value] of [["consent", ""], ["website", "spam"], ["reason", "<script>"]]) {
       const data = form(); data.set(key, value);

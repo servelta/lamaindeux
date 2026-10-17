@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { contactAction, type ActionResult } from "@/lib/contact/actions";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ const roleReasons: Record<"client" | "artisan", string[]> = {
     "Réclamation",
     "Question sur une réservation",
     "Autre",
+    "Données personnelles / RGPD",
   ],
   artisan: [
     "Question technique",
@@ -21,11 +22,14 @@ const roleReasons: Record<"client" | "artisan", string[]> = {
     "Question sur une réservation",
     "Question sur mon abonnement",
     "Autre",
+    "Données personnelles / RGPD",
   ],
 };
 
-export function ContactForm({ role }: { role: "client" | "artisan" }) {
+export function ContactForm({ role, privacyRequest = false }: { role: "client" | "artisan"; privacyRequest?: boolean }) {
   const [state, formAction] = useActionState<ActionResult, FormData>(contactAction, undefined);
+  const [reason, setReason] = useState(privacyRequest ? "Données personnelles / RGPD" : "");
+  const isPrivacyRequest = reason === "Données personnelles / RGPD";
 
   return (
     <form action={formAction} className="space-y-5">
@@ -38,8 +42,9 @@ export function ContactForm({ role }: { role: "client" | "artisan" }) {
           id="reason"
           name="reason"
           required
-          defaultValue=""
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          value={reason}
+          onChange={event => setReason(event.target.value)}
+          className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <option value="" disabled>
             Sélectionnez un motif
@@ -64,8 +69,8 @@ export function ContactForm({ role }: { role: "client" | "artisan" }) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="phone">Téléphone</Label>
-        <Input id="phone" name="phone" type="tel" required placeholder="06 12 34 56 78" />
+        <Label htmlFor="phone">Téléphone{isPrivacyRequest ? " (optionnel)" : ""}</Label>
+        <Input id="phone" name="phone" type="tel" required={!isPrivacyRequest} placeholder="06 12 34 56 78" />
       </div>
 
       <div className="space-y-2">
@@ -85,7 +90,7 @@ export function ContactForm({ role }: { role: "client" | "artisan" }) {
         />
       </div>
 
-      <div className="flex items-start gap-3 rounded-md border border-border bg-secondary/30 p-3 text-sm text-muted-foreground">
+      {isPrivacyRequest ? <p className="text-sm leading-6 text-muted-foreground">Les informations saisies servent à traiter votre demande relative à vos données. Aucun consentement commercial n’est requis. N’envoyez pas de pièce d’identité spontanément. <Link href="/confidentialite" className="text-primary underline underline-offset-4">Politique de confidentialité</Link></p> : <div className="flex items-start gap-3 rounded-md border border-border bg-secondary/30 p-3 text-sm text-muted-foreground">
         <input
           id="consent"
           name="consent"
@@ -100,7 +105,7 @@ export function ContactForm({ role }: { role: "client" | "artisan" }) {
           </Link>
           .
         </Label>
-      </div>
+      </div>}
 
       {state?.error && (
         <p className="text-sm text-destructive" role="alert">
