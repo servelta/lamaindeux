@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { professionalSignUpAction, type ActionResult } from "@/lib/auth/actions";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import {
 type Trade = { slug_singular: string; name_singular: string };
 
 export function ProfessionalSignUpForm({ trades }: { trades: Trade[] }) {
+  const [phone, setPhone] = useState("+33 ");
   const [state, formAction] = useActionState<ActionResult, FormData>(
     professionalSignUpAction,
     undefined
@@ -72,7 +73,8 @@ export function ProfessionalSignUpForm({ trades }: { trades: Trade[] }) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Téléphone</Label>
-              <Input id="phone" name="phone" type="tel" required placeholder="06 12 34 56 78" />
+              <Input id="phone" name="phone" type="tel" inputMode="tel" autoComplete="tel" required maxLength={64} value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="+33 6 12 34 56 78" aria-describedby="phone-hint" />
+              <p id="phone-hint" className="text-xs text-muted-foreground">+33 par défaut. Pour un autre pays, remplacez +33 par votre indicatif international.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Mot de passe</Label>

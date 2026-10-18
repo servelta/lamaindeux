@@ -81,6 +81,24 @@ describe("professionalSignUpSchema", () => {
     expect(professionalSignUpSchema.safeParse(base).success).toBe(true);
   });
 
+  it.each([
+    ["06 12 34 56 78", "+33612345678"],
+    ["6 12 34 56 78", "+33612345678"],
+    ["+33 06 12 34 56 78", "+33612345678"],
+    ["+33 (0)6 12 34 56 78", "+33612345678"],
+    ["+44 20 7946 0958", "+442079460958"],
+    ["+212 6 12 34 56 78", "+212612345678"],
+    ["+1 (202) 555-0123", "+12025550123"],
+    ["00971 50 123 4567", "+971501234567"],
+    ["+49 30 123456", "+4930123456"],
+  ])("normalizes %s for registration and phone links", (phone, expected) => {
+    expect(professionalSignUpSchema.parse({ ...base, phone }).phone).toBe(expected);
+  });
+
+  it.each(["", "+33 ", "12345", "+0123456789", "+3312345678901234", "++33612345678", "+33612abc5678", "tel:+33612345678"])("rejects malformed phone input %s", (phone) => {
+    expect(professionalSignUpSchema.safeParse({ ...base, phone }).success).toBe(false);
+  });
+
   it("rejects when no trade is selected", () => {
     expect(
       professionalSignUpSchema.safeParse({ ...base, tradeSlug: "" }).success

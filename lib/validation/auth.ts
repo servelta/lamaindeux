@@ -28,13 +28,25 @@ export const customerSignUpSchema = z.object({
 
 export type CustomerSignUpInput = z.infer<typeof customerSignUpSchema>;
 
+const professionalPhoneSchema = z.string().trim().max(64, "Numéro de téléphone trop long.")
+  .regex(/^[+\d\s().-]+$/, "Indiquez un numéro de téléphone avec son indicatif international (ex. +33, +44, +212).")
+  .transform((value) => {
+    let phone = value.replace(/[\s().-]/g, "");
+    if (phone.startsWith("00")) phone = "+" + phone.slice(2);
+    // France remains the default for numbers entered without a country code.
+    if (/^0[1-9]\d{8}$/.test(phone)) phone = "+33" + phone.slice(1);
+    else if (/^[1-9]\d{8}$/.test(phone)) phone = "+33" + phone;
+    // Accept the common +33 (0)6... notation and the local zero after +33.
+    if (/^\+330[1-9]\d{8}$/.test(phone)) phone = "+33" + phone.slice(4);
+    return phone;
+  })
+  .pipe(z.string().regex(/^\+[1-9]\d{6,14}$/, "Indiquez un numéro de téléphone valide avec son indicatif international (ex. +33 6 12 34 56 78)."));
+
 export const professionalSignUpSchema = z.object({
   firstName: z.string().min(1, "Le prénom est requis."),
   lastName: z.string().min(1, "Le nom est requis."),
   email: z.string().email("Adresse e-mail invalide."),
-  phone: z
-    .string()
-    .regex(/^(0|\+33)[1-9](\d{2}){4}$/, "Numéro de téléphone français invalide."),
+  phone: professionalPhoneSchema,
   password: passwordRule,
   tradeSlug: z.string().min(1, "Le métier est requis."),
   companyName: z.string().min(1, "Le nom de l'entreprise est requis."),
