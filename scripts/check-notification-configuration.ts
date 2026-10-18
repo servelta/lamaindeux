@@ -1,4 +1,5 @@
 import { createProvisioningClient } from "../lib/professional/provision-plumbing-services";
+import { getProviderReadiness } from "../lib/notifications/provider-readiness";
 
 async function main() {
   if (process.env.VERCEL_ENV !== "production") return;
@@ -12,6 +13,10 @@ async function main() {
   const smsConfigured = Boolean(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER);
   // Report switches and credential presence only; never print secrets or recipient details.
   console.log(`[notifications] Email: ${settings?.email_enabled ? "enabled" : "disabled"}; credentials ${emailConfigured ? "present" : "missing"}. SMS: ${settings?.sms_enabled ? "enabled" : "disabled"}; credentials ${smsConfigured ? "present" : "missing"}.`);
+  if (settings) {
+    const readiness = await getProviderReadiness(settings);
+    for (const [channel, result] of Object.entries(readiness)) console.log(`[notifications] ${channel}: ${result.status}; ${result.code}. ${result.message}`);
+  }
 }
 
 main().catch(() => console.warn("[notifications] Configuration verification unavailable."));

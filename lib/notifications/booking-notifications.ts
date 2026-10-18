@@ -37,7 +37,10 @@ type BookingLike = {
 
 /** Called right after a booking is created. Notifies the professional (always) and confirms to the customer. */
 export async function notifyBookingCreated(booking: BookingLike, serviceName: string, options: { isGuest?: boolean; customerBookingUrl?: string } = {}) {
-  const professional = await getProfessionalContact(booking.professional_id);
+  const professional = await getProfessionalContact(booking.professional_id).catch(() => {
+    console.error("[notifications] Artisan contact lookup failed.", { bookingId: booking.id });
+    return { email: null, phone: null, companyName: "Votre artisan" };
+  });
   const date = formatDateFr(booking.scheduled_date);
   const time = bookingPeriodText(booking);
   let photoLinks: string[] = [];
@@ -73,13 +76,17 @@ export async function notifyBookingCreated(booking: BookingLike, serviceName: st
     isQuoteRequest: booking.is_quote_request,
   };
 
-  // To the professional
+  // Every channel runs independently. A provider/settings failure must not
+  // prevent the artisan's in-app notification or another channel's attempt.
+  const deliveries: { channel: string; send: () => Promise<unknown> }[] = [];
   if (professional.email) {
     const { subject, html } = newBookingPlumberEmail(emailData);
-    await sendEmail(professional.email, subject, html);
+    deliveries.push({ channel: "artisan-email", send: () => sendEmail(professional.email!, subject, html) });
+  } else {
+    console.error("[notifications] Artisan email unavailable.", { bookingId: booking.id });
   }
   if (professional.phone) {
-    await sendSms(toE164France(professional.phone), newBookingSmsBody(serviceName, {
+    const smsBody = newBookingSmsBody(serviceName, {
       bookingNumber: booking.booking_number,
       customerName: emailData.customerFullName,
       phone: booking.contact_phone,
@@ -87,29 +94,42 @@ export async function notifyBookingCreated(booking: BookingLike, serviceName: st
       time: booking.is_quote_request && !booking.booking_period ? undefined : time,
       isQuoteRequest: booking.is_quote_request,
       bookingUrl,
-    }));
+    });
+    deliveries.push({ channel: "artisan-sms", send: () => sendSms(toE164France(professional.phone!), smsBody) });
+  } else {
+    console.error("[notifications] Artisan phone unavailable.", { bookingId: booking.id });
   }
-  await createNotification({
+  deliveries.push({ channel: "artisan-in-app", send: () => createNotification({
     userId: booking.professional_id,
     type: "booking_new",
-    title: "Nouvelle réservation",
+    title: booking.is_quote_request ? "Nouvelle demande de devis" : "Nouvelle réservation",
     body: `${serviceName} — ${booking.contact_first_name} ${booking.contact_phone}`,
     relatedBookingId: booking.id,
-  });
+  }) });
 
   // To the customer
   const { subject: custSubject, html: custHtml } = bookingConfirmationCustomerEmail(emailData);
-  await sendEmail(booking.contact_email, custSubject, custHtml);
+  deliveries.push({ channel: "customer-email", send: () => sendEmail(booking.contact_email, custSubject, custHtml) });
   if (!booking.is_quote_request) {
-    await sendSms(toE164France(booking.contact_phone), bookingConfirmedSmsBody(booking.booking_number));
+    deliveries.push({ channel: "customer-sms", send: () => sendSms(toE164France(booking.contact_phone), bookingConfirmedSmsBody(booking.booking_number)) });
   }
-  if (!options.isGuest) await createNotification({
+  if (!options.isGuest) deliveries.push({ channel: "customer-in-app", send: () => createNotification({
     userId: booking.customer_id,
     type: "booking_confirmed",
     title: booking.is_quote_request ? "Demande de devis envoyée" : "Réservation confirmée",
     body: serviceName,
     relatedBookingId: booking.id,
-  });
+  }) });
+  await Promise.all(deliveries.map(async ({ channel, send }) => {
+    try {
+      const result = await send();
+      if (result && typeof result === "object" && "status" in result && result.status !== "accepted") {
+        console.warn("[notifications] Booking channel not accepted.", { bookingId: booking.id, channel, ...result });
+      }
+    } catch {
+      console.error("[notifications] Booking channel failed.", { bookingId: booking.id, channel });
+    }
+  }));
 }
 
 export async function notifyBookingCancelled(
