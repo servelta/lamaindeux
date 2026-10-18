@@ -4,6 +4,7 @@ import { sendEmail } from "../lib/email/send";
 import { getPlatformSettings } from "../lib/notifications/platform-settings";
 import { getProviderReadiness } from "../lib/notifications/provider-readiness";
 import { deliveryErrorCode } from "../lib/notifications/delivery-result";
+import { setTimeout as delay } from "node:timers/promises";
 
 async function main() {
   const settings = await getPlatformSettings();
@@ -15,7 +16,12 @@ async function main() {
     return;
   }
   const recipient = "delivered+lamain2-transactional-audit@resend.dev";
-  const buildId = process.env.VERCEL_GIT_COMMIT_SHA || new Date().toISOString().slice(0, 10);
+  const existingTest = process.env.EMAIL_SMOKE_TEST_ID;
+  if (existingTest && !/^[a-f0-9]{40}$/i.test(existingTest)) throw new Error("invalid_test_id");
+  const buildId = existingTest || process.env.VERCEL_GIT_COMMIT_SHA || new Date().toISOString().slice(0, 10);
+  // Leave room between account inspection, sending and event lookup so the
+  // verification itself does not exceed the provider's per-second API limits.
+  await delay(1100);
   const result = await sendEmail(recipient, "[TEST] LaMain2 — configuration transactionnelle", "<p>Test contrôlé LaMain2. Expéditeur et réponses : contact@lamain2.com.</p>", { idempotencyKey: `lamain2-email-audit/${buildId}` });
   if (result.status !== "accepted") {
     console.log(`[email-test] FAILED: ${result.reason}. No delivery confirmed.`);
@@ -23,10 +29,11 @@ async function main() {
     return;
   }
   console.log("[email-test] ACCEPTED by Resend for its controlled test address. This does not prove OVH inbox delivery.");
+  await delay(1100);
   const { data, error } = await new Resend(process.env.RESEND_API_KEY).emails.get(result.providerId);
   const events = ["queued", "sent", "delivered", "delivery_delayed", "bounced", "failed", "suppressed", "canceled"];
   if (error || !data || !events.includes(data.last_event)) {
-    console.log("[email-test] Provider delivery event not verified; inspect the Resend test record.");
+    console.log("[email-test] Provider delivery event not verified; inspect the Resend test record.", { code: deliveryErrorCode(error) });
     process.exitCode = 2;
   } else {
     console.log(`[email-test] Provider test event: ${data.last_event}. This address simulates events; an actual OVH receipt/reply test is still required.`);

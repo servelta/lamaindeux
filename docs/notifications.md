@@ -144,6 +144,10 @@ production build check, temporarily enable `EMAIL_SMOKE_TEST=true` in Vercel,
 deploy, inspect `[email-test]` logs, then remove that flag. Only the build helper
 uses this opt-in flag; no customer recipient can be supplied. A green website
 build is not evidence that an email test passed: inspect the explicit test result.
+To inspect/reuse the same controlled test across redeployments, set
+`EMAIL_SMOKE_TEST_ID` to the original test build's 40-character commit SHA.
+The message stays identical and Resend's idempotency window applies. Remove
+both temporary test variables after verification.
 
 References: [Resend SMTP](https://resend.com/docs/send-with-smtp),
 [Supabase custom SMTP](https://supabase.com/docs/guides/auth/auth-smtp),
