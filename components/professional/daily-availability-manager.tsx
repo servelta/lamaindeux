@@ -27,7 +27,7 @@ function shift(date: string, days: number) {
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
 }
-export function DailyAvailabilityManager() {
+export function DailyAvailabilityManager({ loadAction = getOwnDayPeriodsAction, saveAction = saveDayPeriodsAction, blockAction = blockDayRangeAction, bookingsHref = "/reservations" }: { loadAction?: typeof getOwnDayPeriodsAction; saveAction?: (date: string, periods: Record<BookingPeriodId, boolean>) => Promise<{ error?: string; success?: string }>; blockAction?: (from: string, to: string) => Promise<{ error?: string; success?: string }>; bookingsHref?: string }) {
   const savingRef = useRef(false);
   const loadVersion = useRef(0);
   const [date, setDate] = useState(parisToday),
@@ -55,7 +55,7 @@ export function DailyAvailabilityManager() {
     const load = () => {
       if (savingRef.current) return Promise.resolve();
       const version = ++loadVersion.current;
-      return getOwnDayPeriodsAction(date)
+      return loadAction(date)
         .then((result) => {
           if (active && version === loadVersion.current && !savingRef.current) {
             setPeriods(result);
@@ -77,7 +77,7 @@ export function DailyAvailabilityManager() {
       clearInterval(timer);
       window.removeEventListener("focus", load);
     };
-  }, [date, refresh]);
+  }, [date, refresh, loadAction]);
   async function blockRange(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (savingRef.current) return;
@@ -87,7 +87,7 @@ export function DailyAvailabilityManager() {
     setRangeError("");
     setRangeMessage("");
     try {
-      const result = await blockDayRangeAction(rangeStart, rangeEnd);
+      const result = await blockAction(rangeStart, rangeEnd);
       if (result.error) {
         setRangeError(result.error);
         return;
@@ -120,13 +120,13 @@ export function DailyAvailabilityManager() {
       const values = Object.fromEntries(
         next.map((p) => [p.id, p.enabled]),
       ) as Record<BookingPeriodId, boolean>;
-      const result = await saveDayPeriodsAction(date, values);
+      const result = await saveAction(date, values);
       if (result.error) {
         setPeriods(previous);
         setError(result.error);
         return;
       }
-      setPeriods(await getOwnDayPeriodsAction(date));
+      setPeriods(await loadAction(date));
       setMessage(result.success ?? "Enregistré.");
     } catch {
       setPeriods(previous);
@@ -339,7 +339,7 @@ export function DailyAvailabilityManager() {
         le service choisi. Une annulation libère la place si vous l’avez laissée
         ouverte.{" "}
         <Link
-          href="/reservations"
+          href={bookingsHref}
           className="font-medium text-primary underline"
         >
           Voir mes réservations

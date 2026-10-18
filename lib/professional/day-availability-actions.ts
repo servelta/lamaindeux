@@ -1,15 +1,16 @@
 ﻿"use server";
+import { requireProfessionalEditor } from "@/lib/admin/artisan-edit-context";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { requireUserId, getOwnProfessional } from "@/lib/professional/queries";
+import { getOwnProfessional } from "@/lib/professional/queries";
 import { getDayPeriods } from "@/lib/booking/day-availability";
 import {
   parisToday,
   validBookingDate,
   type BookingPeriodId,
 } from "@/lib/booking/periods";
-export async function getOwnDayPeriodsAction(date: string) {
-  const id = await requireUserId();
+export async function getOwnDayPeriodsAction(date: string, adminTarget?: string) {
+  const id = await requireProfessionalEditor(adminTarget);
   if (!(await getOwnProfessional(id)))
     throw new Error("Accès réservé aux artisans.");
   return getDayPeriods(id, date);
@@ -17,8 +18,9 @@ export async function getOwnDayPeriodsAction(date: string) {
 export async function saveDayPeriodsAction(
   date: string,
   periods: Record<BookingPeriodId, boolean>,
+  adminTarget?: string,
 ) {
-  const id = await requireUserId();
+  const id = await requireProfessionalEditor(adminTarget);
   if (!(await getOwnProfessional(id)))
     return { error: "Accès réservé aux artisans." };
   if (
@@ -47,8 +49,8 @@ export async function saveDayPeriodsAction(
   return { success: "Disponibilités enregistrées." };
 }
 
-export async function blockDayRangeAction(startDate: string, endDate: string) {
-  const id = await requireUserId();
+export async function blockDayRangeAction(startDate: string, endDate: string, adminTarget?: string) {
+  const id = await requireProfessionalEditor(adminTarget);
   if (!(await getOwnProfessional(id)))
     return { error: "Accès réservé aux artisans." };
   if (

@@ -1,8 +1,8 @@
 "use server";
+import { requireProfessionalEditor } from "@/lib/admin/artisan-edit-context";
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { requireUserId } from "@/lib/professional/queries";
 import { addServiceAreaSchema } from "@/lib/professional/validation";
 import type { ActionResult } from "@/lib/professional/profile-actions";
 
@@ -11,9 +11,10 @@ export type { ActionResult };
 
 export async function addServiceAreaAction(
   _prev: ActionResult,
-  formData: FormData
+  formData: FormData,
+  adminTarget?: string
 ): Promise<ActionResult> {
-  const professionalId = await requireUserId();
+  const professionalId = await requireProfessionalEditor(adminTarget);
 
   const parsed = addServiceAreaSchema.safeParse({
     cityId: formData.get("cityId"),
@@ -47,8 +48,8 @@ export async function addServiceAreaAction(
   return { success: "Zone d'intervention ajoutée." };
 }
 
-export async function removeServiceAreaAction(areaId: string) {
-  const professionalId = await requireUserId();
+export async function removeServiceAreaAction(areaId: string, adminTarget?: string) {
+  const professionalId = await requireProfessionalEditor(adminTarget);
   const supabase = await createClient();
 
   const { error } = await supabase

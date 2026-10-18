@@ -65,6 +65,8 @@ export default async function AdminProfessionalDetailPage({ params }: Props) {
 
       <AccountDetails account={account} accountId={id} name={[profile?.first_name, profile?.last_name].filter(Boolean).join(" ")} phone={profile?.phone ?? null} />
 
+      <Link href={`/admin/professionnels/${id}/modifier`} className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90">Modifier l’artisan · profil, images et disponibilités</Link>
+
       <div className="mt-6">
         <ProfessionalActionsPanel professional={professional} />
       </div>

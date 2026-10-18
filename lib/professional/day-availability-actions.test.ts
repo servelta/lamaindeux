@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("server-only", () => ({}));
 const mocks = vi.hoisted(() => ({
   upsert: vi.fn(),
   professional: vi.fn(),

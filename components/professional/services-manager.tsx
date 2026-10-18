@@ -23,10 +23,15 @@ const serviceName = (item: Service) =>
   (Array.isArray(item.services) ? item.services[0] : item.services)?.name ??
   "Service";
 
+type ServiceActions = { add: typeof addProfessionalServiceAction; update: typeof updateProfessionalServiceAction; toggle: typeof toggleProfessionalServiceAction };
+const defaultActions: ServiceActions = { add: addProfessionalServiceAction, update: updateProfessionalServiceAction, toggle: toggleProfessionalServiceAction };
+
 export function ServiceList({
   services,
   catalog,
+  actions = defaultActions,
 }: {
+  actions?: ServiceActions;
   services: Service[];
   catalog: Catalog;
 }) {
@@ -45,6 +50,7 @@ export function ServiceList({
     <ServiceCard
       key={item.id}
       item={item}
+      toggleAction={actions.toggle}
       onEdit={() => {
         setMessage("");
         setEditor(item);
@@ -74,6 +80,7 @@ export function ServiceList({
           key={editor === "new" ? "new" : editor.id}
           item={editor === "new" ? undefined : editor}
           catalog={available}
+          actions={actions}
           onSaved={saved}
           onCancel={() => setEditor(null)}
         />
@@ -98,7 +105,7 @@ export function ServiceList({
     </div>
   );
 }
-function ServiceCard({ item, onEdit }: { item: Service; onEdit: () => void }) {
+function ServiceCard({ item, onEdit, toggleAction }: { item: Service; onEdit: () => void; toggleAction: ServiceActions["toggle"] }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const name = serviceName(item);
@@ -141,7 +148,7 @@ function ServiceCard({ item, onEdit }: { item: Service; onEdit: () => void }) {
             startTransition(async () => {
               setError("");
               try {
-                const result = await toggleProfessionalServiceAction(
+                const result = await toggleAction(
                   item.id,
                   !item.active,
                 );
@@ -192,15 +199,17 @@ function ServiceEditor({
   catalog,
   onSaved,
   onCancel,
+  actions,
 }: {
+  actions: ServiceActions;
   item?: Service;
   catalog: Catalog;
   onSaved: (message: string) => void;
   onCancel: () => void;
 }) {
   const action = item
-    ? updateProfessionalServiceAction.bind(null, item.id)
-    : addProfessionalServiceAction;
+    ? actions.update.bind(null, item.id)
+    : actions.add;
   const [state, formAction, pending] = useActionState<ActionResult, FormData>(
     action,
     undefined,
@@ -345,9 +354,7 @@ function ServiceEditor({
               />
             </div>
           </div>
-          {item?.description ? (
-            <input type="hidden" name="description" value={item.description} />
-          ) : null}
+          <div className="space-y-2"><label htmlFor="service-description" className="block text-sm font-medium">Description (optionnel)</label><textarea id="service-description" name="description" defaultValue={item?.description ?? ""} maxLength={500} rows={3} className="w-full rounded-xl border border-input bg-background p-3 text-base" /></div>
           {state?.error ? (
             <p role="alert" className="text-sm text-destructive">
               {state.error}

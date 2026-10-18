@@ -1,8 +1,8 @@
 "use server";
+import { requireProfessionalEditor } from "@/lib/admin/artisan-edit-context";
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { requireUserId } from "@/lib/professional/queries";
 import {
   availabilitySlotSchema,
   availabilityExceptionSchema,
@@ -14,9 +14,10 @@ export type { ActionResult };
 
 export async function addAvailabilitySlotAction(
   _prev: ActionResult,
-  formData: FormData
+  formData: FormData,
+  adminTarget?: string
 ): Promise<ActionResult> {
-  const professionalId = await requireUserId();
+  const professionalId = await requireProfessionalEditor(adminTarget);
 
   const parsed = availabilitySlotSchema.safeParse({
     weekday: formData.get("weekday"),
@@ -47,8 +48,8 @@ export async function addAvailabilitySlotAction(
   return { success: "Créneau ajouté." };
 }
 
-export async function removeAvailabilitySlotAction(slotId: string) {
-  const professionalId = await requireUserId();
+export async function removeAvailabilitySlotAction(slotId: string, adminTarget?: string) {
+  const professionalId = await requireProfessionalEditor(adminTarget);
   const supabase = await createClient();
 
   const { error } = await supabase
@@ -69,9 +70,10 @@ export async function removeAvailabilitySlotAction(slotId: string) {
 
 export async function addAvailabilityExceptionAction(
   _prev: ActionResult,
-  formData: FormData
+  formData: FormData,
+  adminTarget?: string
 ): Promise<ActionResult> {
-  const professionalId = await requireUserId();
+  const professionalId = await requireProfessionalEditor(adminTarget);
 
   const parsed = availabilityExceptionSchema.safeParse({
     date: formData.get("date"),
@@ -102,8 +104,8 @@ export async function addAvailabilityExceptionAction(
   return { success: "Date bloquée." };
 }
 
-export async function removeAvailabilityExceptionAction(exceptionId: string) {
-  const professionalId = await requireUserId();
+export async function removeAvailabilityExceptionAction(exceptionId: string, adminTarget?: string) {
+  const professionalId = await requireProfessionalEditor(adminTarget);
   const supabase = await createClient();
 
   const { error } = await supabase

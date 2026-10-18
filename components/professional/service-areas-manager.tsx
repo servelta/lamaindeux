@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useTransition } from "react";
 import { X } from "lucide-react";
 import { addServiceAreaAction, removeServiceAreaAction, type ActionResult } from "@/lib/professional/area-actions";
@@ -17,9 +17,10 @@ type Area = {
 
 type City = { id: string; name: string; slug: string };
 
-export function ServiceAreasManager({ areas, cities, profileCity }: { areas: Area[]; cities: City[]; profileCity: string | null }) {
-  const [state, formAction] = useActionState<ActionResult, FormData>(addServiceAreaAction, undefined);
-  const [, startTransition] = useTransition();
+export function ServiceAreasManager({ areas, cities, profileCity, addAction = addServiceAreaAction, removeAction = removeServiceAreaAction }: { areas: Area[]; cities: City[]; profileCity: string | null; addAction?: typeof addServiceAreaAction; removeAction?: (id: string) => Promise<ActionResult> }) {
+  const [state, formAction] = useActionState<ActionResult, FormData>(addAction, undefined);
+  const [removePending, startTransition] = useTransition();
+  const [removeError, setRemoveError] = useState("");
   const primaryCity = findProfileCity(cities, profileCity);
 
   return (
@@ -48,9 +49,11 @@ export function ServiceAreasManager({ areas, cities, profileCity }: { areas: Are
               {city?.id !== primaryCity?.id && <button
                 type="button"
                 onClick={() => startTransition(async () => {
-                  await removeServiceAreaAction(area.id);
+                  setRemoveError("");
+                    try { const result = await removeAction(area.id); if (result?.error) setRemoveError(result.error); } catch { setRemoveError("Suppression impossible. Réessayez."); }
                 })}
-                className="text-muted-foreground hover:text-destructive"
+                disabled={removePending}
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-destructive disabled:opacity-50"
                 aria-label="Supprimer cette zone"
               >
                 <X className="h-4 w-4" />
@@ -91,6 +94,7 @@ export function ServiceAreasManager({ areas, cities, profileCity }: { areas: Are
       </form>
       </details>
 
+      {removeError && <p role="alert" className="text-sm text-destructive">{removeError}</p>}
       {state?.error && <p role="alert" className="text-sm text-destructive">{state.error}</p>}
       {state?.success && <p role="status" className="text-sm text-verified">{state.success}</p>}
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useTransition } from "react";
 import { X } from "lucide-react";
 import {
@@ -27,12 +27,13 @@ const WEEKDAYS = [
 type Slot = { id: string; weekday: number; start_time: string; end_time: string };
 type Exception = { id: string; date: string; reason: string | null };
 
-export function WeeklyAvailabilityManager({ slots }: { slots: Slot[] }) {
+export function WeeklyAvailabilityManager({ slots, addAction = addAvailabilitySlotAction, removeAction = removeAvailabilitySlotAction }: { slots: Slot[]; addAction?: typeof addAvailabilitySlotAction; removeAction?: (id: string) => Promise<ActionResult> }) {
   const [state, formAction] = useActionState<ActionResult, FormData>(
-    addAvailabilitySlotAction,
+    addAction,
     undefined
   );
-  const [, startTransition] = useTransition();
+  const [removePending, startTransition] = useTransition();
+  const [removeError, setRemoveError] = useState("");
 
   const byDay = WEEKDAYS.map((_, weekday) => ({
     weekday,
@@ -58,8 +59,11 @@ export function WeeklyAvailabilityManager({ slots }: { slots: Slot[] }) {
                 <button
                   type="button"
                   onClick={() => startTransition(async () => {
-                    await removeAvailabilitySlotAction(s.id);
+                    setRemoveError("");
+                    try { const result = await removeAction(s.id); if (result?.error) setRemoveError(result.error); } catch { setRemoveError("Suppression impossible. Réessayez."); }
                   })}
+                  disabled={removePending}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full disabled:opacity-50"
                   aria-label="Supprimer ce créneau"
                 >
                   <X className="h-3 w-3" />
@@ -90,6 +94,7 @@ export function WeeklyAvailabilityManager({ slots }: { slots: Slot[] }) {
         <SubmitButton className="w-auto">Ajouter</SubmitButton>
       </form>
 
+      {removeError && <p role="alert" className="text-sm text-destructive">{removeError}</p>}
       {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
     </div>
   );

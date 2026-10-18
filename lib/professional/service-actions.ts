@@ -1,7 +1,8 @@
 ﻿"use server";
+import { requireProfessionalEditor } from "@/lib/admin/artisan-edit-context";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireUserId, getOwnProfessional } from "@/lib/professional/queries";
+import { getOwnProfessional } from "@/lib/professional/queries";
 import { createClient } from "@/lib/supabase/server";
 import { addProfessionalServiceSchema } from "@/lib/professional/validation";
 import type { ActionResult } from "@/lib/professional/profile-actions";
@@ -28,16 +29,17 @@ function refreshServices() {
   revalidatePath("/[trade]", "page");
   revalidatePath("/[trade]/[city]", "page");
 }
-async function ownerContext() {
-  const id = await requireUserId();
+async function ownerContext(adminTarget?: string) {
+  const id = await requireProfessionalEditor(adminTarget);
   const professional = await getOwnProfessional(id);
   return { id, professional, client: await createClient() };
 }
 export async function addProfessionalServiceAction(
   _previous: ActionResult,
   form: FormData,
+  adminTarget?: string,
 ): Promise<ActionResult> {
-  const { id, professional, client } = await ownerContext();
+  const { id, professional, client } = await ownerContext(adminTarget);
   if (!professional) return { error: "Accès réservé aux artisans." };
   const parsed = readService(form);
   if (!parsed.success)
@@ -88,8 +90,9 @@ export async function updateProfessionalServiceAction(
   serviceId: string,
   _previous: ActionResult,
   form: FormData,
+  adminTarget?: string,
 ): Promise<ActionResult> {
-  const { id, professional, client } = await ownerContext();
+  const { id, professional, client } = await ownerContext(adminTarget);
   if (!professional || !z.string().uuid().safeParse(serviceId).success)
     return { error: "Service introuvable." };
   const parsed = readService(form);
@@ -116,8 +119,9 @@ export async function updateProfessionalServiceAction(
 export async function toggleProfessionalServiceAction(
   serviceId: string,
   active: boolean,
+  adminTarget?: string,
 ): Promise<ActionResult> {
-  const { id, professional, client } = await ownerContext();
+  const { id, professional, client } = await ownerContext(adminTarget);
   if (
     !professional ||
     typeof active !== "boolean" ||
