@@ -58,7 +58,7 @@ export async function contactAction(_prev: ActionResult, formData: FormData): Pr
       </div>
     `);
 
-    const sent = await sendRequiredEmail(supportEmail, subject, html, email);
+    const sent = await sendRequiredEmail(supportEmail, subject, html);
     if (!sent) return { error: "Votre message n’a pas été envoyé. Merci de réessayer." };
     return { success: "Votre message a bien été envoyé. Notre équipe vous répondra personnellement." };
   } catch {

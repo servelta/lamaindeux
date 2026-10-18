@@ -1,33 +1,41 @@
 // Server/build checks only. Return safe configuration metadata, never secrets.
+import { getTransactionalEmailConfig, TRANSACTIONAL_EMAIL_DOMAIN } from "../email/config";
 export type ProviderReadiness = { status: "ready" | "warning" | "blocked"; code: string; message: string };
 type Switches = { email_enabled: boolean; sms_enabled: boolean };
 
 async function emailReadiness(enabled: boolean): Promise<ProviderReadiness> {
   if (!enabled) return { status: "blocked", code: "disabled", message: "Les notifications e-mail sont désactivées." };
   const key = process.env.RESEND_API_KEY;
-  const sender = process.env.EMAIL_FROM;
-  if (!key || !sender) return { status: "blocked", code: "missing_config", message: "Renseignez RESEND_API_KEY et EMAIL_FROM dans Vercel, puis redéployez." };
-  const address = (sender.match(/<([^<>]+)>/)?.[1] ?? sender).trim();
-  const domain = address.split("@")[1]?.toLowerCase();
-  if (!domain || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)) return { status: "blocked", code: "invalid_sender", message: "EMAIL_FROM doit contenir une adresse e-mail valide." };
-  const testSender = domain === "resend.dev" || domain.endsWith(".resend.dev");
-  const testSenderResult: ProviderReadiness = { status: "blocked", code: "test_sender", message: "Expéditeur Resend de test : les artisans ne peuvent pas recevoir ces e-mails. Vérifiez lamain2.com dans Resend, utilisez une adresse de ce domaine dans EMAIL_FROM et redéployez." };
+  if (!key) return { status: "blocked", code: "missing_config", message: "Renseignez RESEND_API_KEY côté serveur dans Vercel, puis redéployez." };
+  if (!getTransactionalEmailConfig().ok) return { status: "blocked", code: "sender_configuration_mismatch", message: "Utilisez EMAIL_FROM=LaMain2 <contact@lamain2.com> et EMAIL_REPLY_TO=contact@lamain2.com dans Vercel. Aucun expéditeur de test n’est autorisé." };
   try {
     const response = await fetch("https://api.resend.com/domains?limit=100", { headers: { Authorization: `Bearer ${key}` }, cache: "no-store", signal: AbortSignal.timeout(5000) });
     if (response.status === 401) return { status: "blocked", code: "invalid_credentials", message: "Resend refuse la clé API. Mettez à jour RESEND_API_KEY dans Vercel." };
-    if (response.status === 403) return testSender ? testSenderResult : { status: "warning", code: "verification_unavailable", message: "Clé limitée à l’envoi : vérifiez le domaine de EMAIL_FROM dans Resend. La livraison ne peut pas être confirmée par ce contrôle." };
+    if (response.status === 403) return { status: "warning", code: "verification_unavailable", message: "Clé limitée à l’envoi : vérifiez lamain2.com dans le compte Resend associé à cette clé. La vérification du domaine ne peut pas être confirmée par ce contrôle." };
     if (!response.ok) throw new Error("provider_unavailable");
     const body = await response.json();
-    if (testSender) {
-      const verified = Array.isArray(body.data) && body.data.some((item: { name: string; status: string }) => item.name === "lamain2.com" && item.status === "verified");
-      return verified ? { status: "blocked", code: "test_sender_verified_domain", message: "lamain2.com est vérifié dans Resend, mais EMAIL_FROM utilise encore l’expéditeur de test. Utilisez LaMain2 <notifications@lamain2.com> dans Vercel et redéployez." } : testSenderResult;
+    const senderDomain = Array.isArray(body.data) ? body.data.find((item: { name: string }) => item.name?.toLowerCase() === TRANSACTIONAL_EMAIL_DOMAIN) : null;
+    if (senderDomain?.status === "verified" && senderDomain.capabilities?.sending === "enabled") return { status: "ready", code: "verified", message: "lamain2.com est vérifié pour l’envoi dans le compte de la clé déployée. Expéditeur et réponses : contact@lamain2.com. Acceptation, livraison et réception en boîte OVH restent des contrôles distincts." };
+    if (!senderDomain && body.has_more) return { status: "warning", code: "verification_unavailable", message: "Domaine absent de la première page du contrôle. Vérifiez lamain2.com dans le compte Resend associé à cette clé." };
+    if (!senderDomain) return { status: "blocked", code: "domain_missing", message: "lamain2.com est absent du compte/équipe de la clé déployée. Utilisez la clé de l’équipe qui possède ce domaine ou ajoutez-le à cette équipe, puis terminez la vérification DNS d’envoi. Conservez les MX racine OVH et laissez Resend Receiving désactivé." };
+    if (senderDomain.capabilities?.sending === "disabled") return { status: "blocked", code: "sending_disabled", message: "Le domaine existe dans ce compte Resend, mais sa fonction d’envoi est désactivée. Activez uniquement Sending ; conservez la réception chez OVH." };
+    if (senderDomain.status === "verified") return { status: "warning", code: "sending_unconfirmed", message: "Le domaine est vérifié, mais l’API ne confirme pas sa capacité Sending. Contrôlez cette fonction dans Resend avant de conclure que l’envoi est prêt." };
+    const domainStatus = ["pending", "not_started", "failed", "temporary_failure"].includes(senderDomain.status) ? senderDomain.status : "unverified";
+    let missingRecords = "";
+    if (typeof senderDomain.id === "string" && /^[\da-f-]{36}$/i.test(senderDomain.id)) {
+      try {
+        const details = await fetch(`https://api.resend.com/domains/${senderDomain.id}`, { headers: { Authorization: `Bearer ${key}` }, cache: "no-store", signal: AbortSignal.timeout(5000) });
+        if (details.ok) {
+          const domain = await details.json();
+          const records = Array.isArray(domain.records) ? domain.records : [];
+          const pending = records.filter((record: { record: string; status: string; type: string; name: string }) => ["DKIM", "SPF"].includes(record.record) && record.status !== "verified" && ["TXT", "MX", "CNAME"].includes(record.type) && /^[\w.@-]{1,254}$/.test(record.name) && !(record.type === "MX" && ["@", TRANSACTIONAL_EMAIL_DOMAIN].includes(record.name)));
+          missingRecords = pending.length ? " Enregistrements d’envoi à vérifier : " + pending.map((record: { type: string; name: string }) => `${record.type} ${record.name}`).join(", ") + "." : "";
+        }
+      } catch { /* Domain status is still known; details remain unavailable. */ }
     }
-    const senderDomain = Array.isArray(body.data) ? body.data.find((item: { name: string }) => item.name?.toLowerCase() === domain) : null;
-    if (senderDomain?.status === "verified") return { status: "ready", code: "verified", message: "Le domaine de l’expéditeur est vérifié dans Resend. Les réceptions restent à contrôler dans les journaux Resend." };
-    if (!senderDomain && body.has_more) return { status: "warning", code: "verification_unavailable", message: "Domaine absent de la première page du contrôle. Vérifiez EMAIL_FROM dans Resend." };
-    return { status: "blocked", code: "unverified_domain", message: "Le domaine de EMAIL_FROM n’est pas vérifié dans ce compte Resend. Terminez la vérification DNS avant d’envoyer aux artisans." };
+    return { status: "blocked", code: "unverified_domain", message: `lamain2.com existe dans ce compte Resend mais son statut est ${domainStatus}.${missingRecords} Terminez la vérification Sending dans Resend. Ne remplacez pas les MX racine OVH et n’activez pas Receiving.` };
   } catch {
-    return testSender ? testSenderResult : { status: "warning", code: "provider_unavailable", message: "Contrôle Resend indisponible. Consultez le tableau de bord Resend avant de conclure à une livraison." };
+    return { status: "warning", code: "provider_unavailable", message: "Contrôle Resend indisponible. Consultez le tableau de bord Resend avant de conclure à une livraison." };
   }
 }
 

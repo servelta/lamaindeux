@@ -1,21 +1,14 @@
-import { Resend } from "resend";
+import "server-only";
+import { Resend, type Attachment } from "resend";
 import { getPlatformSettings } from "@/lib/notifications/platform-settings";
 import { deliveryErrorCode, type DeliveryResult } from "@/lib/notifications/delivery-result";
+import { getTransactionalEmailConfig } from "@/lib/email/config";
 
 let resendClient: Resend | null = null;
 
 /** Contact requests have no saved booking to fall back on: report provider failure. */
-export async function sendRequiredEmail(to: string, subject: string, html: string, replyTo: string): Promise<boolean> {
-  const settings = await getPlatformSettings();
-  const client = getResendClient();
-  if (settings?.email_enabled === false || !client) return false;
-  try {
-    const { data, error } = await client.emails.send({
-      from: (process.env.EMAIL_FROM ?? "LaMain2 <onboarding@resend.dev>").replace(/^\s*(?:LaMainDeux|Plan b|Le Plan b)(?=\s*<)/i, "LaMain2"),
-      to, subject, html, replyTo,
-    });
-    return !error && Boolean(data?.id);
-  } catch { return false; }
+export async function sendRequiredEmail(to: string, subject: string, html: string): Promise<boolean> {
+  return (await sendEmail(to, subject, html)).status === "accepted";
 }
 
 function getResendClient(): Resend | null {
@@ -30,23 +23,34 @@ function getResendClient(): Resend | null {
  * reason instead, matching the spec's requirement that the app runs fine
  * in development without paid APIs configured.
  */
-export async function sendEmail(to: string, subject: string, html: string): Promise<DeliveryResult> {
+export type EmailOptions = { attachments?: Attachment[]; idempotencyKey?: string };
+
+export async function sendEmail(to: string, subject: string, html: string, options?: EmailOptions): Promise<DeliveryResult> {
   try {
+    const sender = getTransactionalEmailConfig();
+    if (!sender.ok) {
+      console.error("[email] Invalid transactional sender configuration.");
+      return { status: "failed", reason: sender.reason };
+    }
     const settings = await getPlatformSettings();
-    if (!settings) return { status: "failed", reason: "settings_unavailable" };
+    if (!settings) {
+      console.error("[email] Platform email settings unavailable.");
+      return { status: "failed", reason: "settings_unavailable" };
+    }
     if (!settings.email_enabled) return { status: "skipped", reason: "disabled" };
     const client = getResendClient();
     if (!client) {
       console.error("[email] Provider not configured.");
-      return { status: "skipped", reason: "not_configured" };
+      return { status: "failed", reason: "not_configured" };
     }
     const { data, error } = await client.emails.send({
-      from: (process.env.EMAIL_FROM ?? "LaMain2 <onboarding@resend.dev>")
-        .replace(/^\s*(?:LaMainDeux|Plan b|Le Plan b)(?=\s*<)/i, "LaMain2"),
+      from: sender.from,
+      replyTo: sender.replyTo,
       to,
       subject,
       html,
-    });
+      ...(options?.attachments ? { attachments: options.attachments } : {}),
+    }, options?.idempotencyKey ? { idempotencyKey: options.idempotencyKey } : undefined);
     if (error || !data?.id) {
       const code = deliveryErrorCode(error);
       console.error("[email] Provider rejected delivery.", { code });

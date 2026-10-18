@@ -18,11 +18,12 @@ beforeEach(() => {
   vi.stubEnv("SUPPORT_EMAIL", "");
 });
 describe("contact delivery", () => {
-  it("accepts formatted phone numbers, escapes input and sets reply-to", async () => {
+  it("accepts formatted phone numbers and preserves the visitor email in the content", async () => {
     expect((await contactAction(undefined, form()))?.success).toBeTruthy();
-    const [to, , html, replyTo] = mocks.send.mock.calls[0];
+    const [to, , html] = mocks.send.mock.calls[0];
     expect(to).toBe("support@example.com");
-    expect(replyTo).toBe("claire@example.com");
+    expect(html).toContain("claire@example.com");
+    expect(mocks.send.mock.calls[0]).toHaveLength(3);
     expect(html).toContain("0612345678");
     expect(html).toContain("&lt;script&gt;");
     expect(html).not.toContain("<img src=x>");
@@ -40,7 +41,7 @@ describe("contact delivery", () => {
     data.delete("consent");
     expect((await contactAction(undefined, data))?.success).toBeTruthy();
     expect(mocks.send.mock.calls[0][1]).toContain("Données personnelles / RGPD");
-    expect(mocks.send.mock.calls[0][3]).toBe("claire@example.com");
+    expect(mocks.send.mock.calls[0][2]).toContain("claire@example.com");
   });
   it("still requires a phone for general support and validates an optional GDPR phone", async () => {
     const data = form();

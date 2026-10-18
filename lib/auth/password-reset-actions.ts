@@ -4,10 +4,12 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 import { getClientIp } from "@/lib/security/get-client-ip";
+import { deliveryErrorCode } from "@/lib/notifications/delivery-result";
 
 export type ActionResult = { error?: string; success?: string } | void;
 
 const emailSchema = z.object({ email: z.string().email("Adresse e-mail invalide.") });
+const RESET_REQUEST_MESSAGE = "Si un compte existe avec cette adresse, la demande de réinitialisation est prise en compte. Si vous ne recevez rien, réessayez plus tard ou contactez-nous.";
 
 export async function requestPasswordResetAction(
   _prev: ActionResult,
@@ -25,18 +27,19 @@ export async function requestPasswordResetAction(
   ]);
   if (!accountOk || !ipOk) {
     // Same generic message as success below — see note there on why.
-    return { success: "Si un compte existe avec cette adresse, un e-mail a été envoyé." };
+    return { success: RESET_REQUEST_MESSAGE };
   }
 
   const supabase = await createClient();
-  await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
     redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || ""}/auth/callback?next=/reinitialiser-mot-de-passe`,
   });
+  if (error) console.error("[auth-email] Recovery request failed.", { code: deliveryErrorCode(error) });
 
   // Always return the same success message whether or not the email is
   // registered — confirming or denying account existence here would let
   // an attacker enumerate valid emails.
-  return { success: "Si un compte existe avec cette adresse, un e-mail a été envoyé." };
+  return { success: RESET_REQUEST_MESSAGE };
 }
 
 const passwordSchema = z.object({

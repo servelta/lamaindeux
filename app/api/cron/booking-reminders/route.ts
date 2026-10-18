@@ -1,4 +1,5 @@
 import { bookingPeriodText } from "@/lib/booking/periods";
+import { createHash } from "node:crypto";
 import { provisionDefaultHours } from "@/lib/professional/provision-default-hours";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server";
@@ -56,7 +57,15 @@ export async function GET(request: Request) {
     );
   }
 
-  let sent = 0;
+  let accepted = 0, failed = 0, emailRequestsAccepted = 0, emailRequestsFailed = 0;
+  async function notifyOnce(userId: string, bookingId: string, body: string) {
+    const { data, error: notificationError } = await supabase.from("notifications").select("id")
+      .eq("user_id", userId).eq("related_booking_id", bookingId).eq("type", "booking_reminder").limit(1);
+    if (notificationError) { console.error("[reminders] Notification lookup failed."); return false; }
+    if (data?.length) return false;
+    await createNotification({ userId, type: "booking_reminder", title: "Rendez-vous demain", body, relatedBookingId: bookingId });
+    return true;
+  }
   for (const booking of bookings ?? []) {
     const ps = Array.isArray(booking.professional_services)
       ? booking.professional_services[0]
@@ -76,7 +85,8 @@ export async function GET(request: Request) {
       addressLine: booking.address_line,
       postcode: booking.postcode,
       city: booking.city,
-      customerBookingUrl: await customerBookingLink(booking),
+      // Keep the signed guest link stable across retries of this day's reminder.
+      customerBookingUrl: await customerBookingLink(booking, Date.parse(`${booking.scheduled_date}T00:00:00Z`) - 86400000),
     };
 
     // Customer
@@ -84,45 +94,44 @@ export async function GET(request: Request) {
       emailData,
       true,
     );
-    await sendEmail(booking.contact_email, custSubject, custHtml);
-    await sendSms(
+    const key = (recipient: string, role: string, html: string) => `reminder/${booking.id}/${role}/${createHash("sha256").update(recipient + "\0" + html).digest("hex")}`;
+    const customerEmail = await sendEmail(booking.contact_email, custSubject, custHtml, { idempotencyKey: key(booking.contact_email, "customer", custHtml) });
+    const customerNoticeCreated = await notifyOnce(booking.customer_id, booking.id, `${serviceName} à ${emailData.time}`);
+    if (customerNoticeCreated) await sendSms(
       toE164France(booking.contact_phone),
       bookingReminderSmsBody(emailData.time),
     );
-    await createNotification({
-      userId: booking.customer_id,
-      type: "booking_reminder",
-      title: "Rendez-vous demain",
-      body: `${serviceName} à ${emailData.time}`,
-      relatedBookingId: booking.id,
-    });
 
     // Professional
-    const professional = await getProfessionalContact(booking.professional_id);
+    const professional = await getProfessionalContact(booking.professional_id).catch(() => ({ email: null }));
+    let professionalEmailAccepted = false;
     if (professional.email) {
       const { subject: professionalSubject, html: professionalHtml } =
         bookingReminderEmail(emailData, false);
-      await sendEmail(
+      const result = await sendEmail(
         professional.email,
         professionalSubject,
         professionalHtml,
+        { idempotencyKey: key(professional.email, "professional", professionalHtml) },
       );
+      professionalEmailAccepted = result.status === "accepted";
     }
-    await createNotification({
-      userId: booking.professional_id,
-      type: "booking_reminder",
-      title: "Rendez-vous demain",
-      body: `${serviceName} à ${emailData.time}`,
-      relatedBookingId: booking.id,
-    });
-
-    await supabase
+    await notifyOnce(booking.professional_id, booking.id, `${serviceName} à ${emailData.time}`);
+    const count = Number(customerEmail.status === "accepted") + Number(professionalEmailAccepted);
+    emailRequestsAccepted += count; emailRequestsFailed += 2 - count;
+    if (count !== 2) {
+      failed++;
+      console.error("[reminders] Required email request not accepted.", { bookingId: booking.id });
+      continue;
+    }
+    const { error: updateError } = await supabase
       .from("bookings")
       .update({ reminder_sent_at: new Date().toISOString() })
       .eq("id", booking.id);
 
-    sent++;
+    if (updateError) { failed++; console.error("[reminders] Could not record accepted reminder.", { bookingId: booking.id }); }
+    else accepted++;
   }
 
-  return NextResponse.json({ ok: true, remindersSent: sent });
+  return NextResponse.json({ ok: failed === 0, remindersAccepted: accepted, remindersFailed: failed, emailRequestsAccepted, emailRequestsFailed }, { status: failed ? 502 : 200 });
 }
