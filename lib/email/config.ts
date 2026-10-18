@@ -1,6 +1,8 @@
+import { CONTACT_EMAIL } from "@/lib/contact/config";
+
 /** Shared sending identity; incoming mail remains with the existing OVH mailbox. */
-export const TRANSACTIONAL_EMAIL_FROM = "LaMain2 <contact@lamain2.com>";
-export const TRANSACTIONAL_EMAIL_REPLY_TO = "contact@lamain2.com";
+export const TRANSACTIONAL_EMAIL_FROM = `LaMain2 <${CONTACT_EMAIL}>`;
+export const TRANSACTIONAL_EMAIL_REPLY_TO = CONTACT_EMAIL;
 export const TRANSACTIONAL_EMAIL_DOMAIN = "lamain2.com";
 
 export function getTransactionalEmailConfig() {

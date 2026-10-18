@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Mail } from "lucide-react";
+import { CONTACT_EMAIL, CONTACT_EMAIL_HREF } from "@/lib/contact/config";
 
 export const metadata = { title: "Contact" };
 
@@ -36,6 +37,10 @@ export default function ContactPage() {
         <p className="mt-4 text-muted-foreground">
           Sélectionnez votre profil pour nous transmettre votre demande. Nous vous répondrons rapidement.
         </p>
+        <a href={CONTACT_EMAIL_HREF} className="mt-4 inline-flex min-h-11 max-w-full items-center gap-2 rounded-md px-3 text-sm font-semibold text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+          <Mail aria-hidden="true" className="h-4 w-4 shrink-0" />
+          <span className="break-all">{CONTACT_EMAIL}</span>
+        </a>
       </div>
 
       <div className="mt-10 grid gap-6 md:grid-cols-2">

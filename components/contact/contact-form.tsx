@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SubmitButton } from "@/components/auth/submit-button";
+import { CONTACT_EMAIL, CONTACT_EMAIL_HREF } from "@/lib/contact/config";
 
 const roleReasons: Record<"client" | "artisan", string[]> = {
   client: [
@@ -33,6 +34,10 @@ export function ContactForm({ role, privacyRequest = false }: { role: "client" |
 
   return (
     <form action={formAction} className="space-y-5">
+      <p className="text-sm leading-6 text-muted-foreground">
+        Vous pouvez aussi nous écrire directement :{" "}
+        <a href={CONTACT_EMAIL_HREF} className="inline-flex min-h-11 items-center rounded-sm font-medium text-primary underline underline-offset-4 [overflow-wrap:anywhere] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{CONTACT_EMAIL}</a>.
+      </p>
       <input type="hidden" name="role" value={role} />
       <div className="hidden" aria-hidden="true"><input name="website" tabIndex={-1} autoComplete="off" /></div>
 

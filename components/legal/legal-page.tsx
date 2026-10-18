@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import type { LegalDocument } from "@/lib/legal/content";
+import { CONTACT_EMAIL, CONTACT_EMAIL_HREF } from "@/lib/contact/config";
 
 const pages = [
   { href: "/conditions-utilisation", label: "Conditions d’utilisation" },
@@ -15,7 +16,7 @@ export function LegalPage({ document }: { document: LegalDocument }) {
         <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary"><ShieldCheck aria-hidden="true" className="h-4 w-4" />Informations légales · 2026</p>
         <h1 className="mt-4 font-display text-3xl font-bold tracking-tight text-primary sm:text-4xl">{document.title}</h1>
         <p className="mt-4 leading-7 text-muted-foreground">{document.description}</p>
-        <p className="mt-4 text-xs text-muted-foreground">Dernière mise à jour : <time dateTime="2026-10-17">17 octobre 2026</time></p>
+        <p className="mt-4 text-xs text-muted-foreground">Dernière mise à jour : <time dateTime="2026-10-18">18 octobre 2026</time></p>
       </header>
       <ul aria-label="Les points essentiels" className="mt-8 grid gap-3 sm:grid-cols-3">
         {document.highlights.map(text => <li key={text} className="rounded-xl border border-primary/10 bg-secondary/40 p-4 text-sm font-medium leading-6 text-primary">{text}</li>)}
@@ -35,6 +36,10 @@ export function LegalPage({ document }: { document: LegalDocument }) {
         </section>)}
       </div>
       <nav aria-label="Autres informations légales" className="mt-12 flex flex-wrap gap-x-6 gap-y-1 border-t border-border pt-5">{pages.map(page => <Link key={page.href} href={page.href} className="inline-flex min-h-11 items-center text-sm font-medium text-primary underline-offset-4 hover:underline">{page.label}</Link>)}</nav>
+      <p className="mt-6 text-sm leading-7 text-muted-foreground">
+        Pour toute question sur la plateforme ou vos données personnelles :{" "}
+        <a href={CONTACT_EMAIL_HREF} className="inline-flex min-h-11 items-center rounded-sm font-medium text-primary underline underline-offset-4 [overflow-wrap:anywhere] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{CONTACT_EMAIL}</a>.
+      </p>
       <p className="mt-6 text-xs text-muted-foreground">© 2026 LaMain2. Tous droits réservés.</p>
     </article>
   );

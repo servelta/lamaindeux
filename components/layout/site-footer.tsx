@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Mail } from "lucide-react";
+import { CONTACT_EMAIL, CONTACT_EMAIL_HREF } from "@/lib/contact/config";
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { getActiveTrades } from "@/lib/queries/search";
 
@@ -23,6 +25,10 @@ export async function SiteFooter() {
             Trouvez un artisan vérifié près de chez vous. Réservation
             gratuite, sans commission sur les interventions.
           </p>
+          <a href={CONTACT_EMAIL_HREF} className="mt-3 inline-flex min-h-11 max-w-full items-center gap-2 rounded-md text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+            <Mail aria-hidden="true" className="h-4 w-4 shrink-0" />
+            <span className="break-all">{CONTACT_EMAIL}</span>
+          </a>
         </div>
 
         {primaryTrade && (

@@ -1,3 +1,5 @@
+import { CONTACT_EMAIL, CONTACT_EMAIL_HREF } from "@/lib/contact/config";
+
 /**
  * Transactional emails need inline CSS — email clients don't run Tailwind
  * or even reliably load external stylesheets. This wraps every email in a
@@ -24,6 +26,7 @@ export function wrapEmail(bodyHtml: string): string {
             <tr>
               <td style="padding:16px 32px;background-color:#F5F6F5;color:#6b7280;font-size:12px;">
                 LaMain2 — Le paiement de l'intervention se règle directement avec le professionnel.
+                <br />Une question ? <a href="${CONTACT_EMAIL_HREF}" style="color:#1D4E5C;">${CONTACT_EMAIL}</a>
               </td>
             </tr>
           </table>
