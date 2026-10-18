@@ -20,6 +20,8 @@ describe("booking confirmation handoff", () => {
     const html = renderToStaticMarkup(await ConfirmationPage(props()));
     expect(html).toContain("https://wa.me/33678399361?text=");
     expect(html).toContain("appuyez sur Envoyer");
+    expect(html).toContain("Pour une réponse plus rapide");
+    expect(html.indexOf("Pour une réponse plus rapide")).toBeLessThan(html.indexOf(">Statut<"));
     expect(html).toContain("Voir mes réservations");
     expect(html).not.toContain("private-receipt");
     expect(mocks.guest).not.toHaveBeenCalled();
@@ -28,8 +30,15 @@ describe("booking confirmation handoff", () => {
     mocks.own.mockResolvedValue(null); mocks.guest.mockResolvedValue(booking);
     const html = renderToStaticMarkup(await ConfirmationPage(props()));
     expect(mocks.guest).toHaveBeenCalledWith("PB-TEST", "private-receipt");
-    expect(html).toContain("Envoyer aussi sur WhatsApp");
+    expect(html).toContain("Envoyer sur WhatsApp");
     expect(html).toContain("Retour à l’accueil");
+  });
+  it("does not display a WhatsApp action when no public phone number is available", async () => {
+    mocks.own.mockResolvedValue({ ...booking, professionals: { ...booking.professionals, public_phone: null } });
+    const html = renderToStaticMarkup(await ConfirmationPage(props()));
+    expect(html).not.toContain("wa.me/");
+    expect(html).not.toContain("Pour une réponse plus rapide");
+    expect(html).toContain("PB-TEST");
   });
   it("returns not found before rendering when neither ownership nor receipt authorizes access", async () => {
     mocks.own.mockResolvedValue(null);

@@ -4,11 +4,12 @@ import { formatDateFr } from "@/lib/utils/date-fr";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import Link from "next/link";
-import { CheckCircle2, MessageCircle } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { getBookingByNumber, getGuestBookingByNumber } from "@/lib/booking/queries";
 import { receiptCookieName } from "@/lib/booking/receipt-token";
 import { Button } from "@/components/ui/button";
 import { BookingStatusBadge } from "@/components/booking/status-badge";
+import { WhatsAppHandoff } from "@/components/booking/whatsapp-handoff";
 
 type Props = { params: Promise<{ bookingNumber: string }>; searchParams: Promise<{ receipt?: string }> };
 
@@ -41,6 +42,8 @@ export default async function ReservationConfirmeePage({ params, searchParams }:
         {booking.is_quote_request ? "Votre demande de devis a été envoyée." : "Votre réservation est confirmée."}
       </h1>
       <p className="mt-1 font-mono-data text-sm text-muted-foreground">{booking.booking_number}</p>
+
+      {whatsappUrl ? <WhatsAppHandoff href={whatsappUrl} recipientName={professional?.company_name} /> : null}
 
       <div className="mt-8 space-y-2 rounded-lg border border-border bg-card p-6 text-left text-sm">
         <div className="flex justify-between gap-4">
@@ -80,13 +83,6 @@ export default async function ReservationConfirmeePage({ params, searchParams }:
       <p className="mt-6 text-sm text-muted-foreground">
         {guestBooking ? "Votre demande est enregistrée. Conservez votre référence et le lien privé de confirmation envoyé par e-mail. L’artisan vous recontactera grâce aux coordonnées renseignées." : "Retrouvez votre demande et ses détails à tout moment dans votre espace client. L’artisan peut vous recontacter grâce aux coordonnées renseignées."}
       </p>
-
-      {whatsappUrl ? <div className="mt-6 rounded-2xl border border-primary/15 bg-primary/[0.04] p-4">
-        <Button asChild variant="outline" className="w-full gap-2">
-          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"><MessageCircle aria-hidden="true" className="h-4 w-4" />Envoyer aussi sur WhatsApp</a>
-        </Button>
-        <p className="mt-2 text-xs leading-5 text-muted-foreground">Votre message reprend les informations de votre demande. WhatsApp s’ouvre : appuyez sur Envoyer pour le transmettre à l’artisan, s’il utilise WhatsApp.</p>
-      </div> : null}
 
       <Button asChild className="mt-6">
         <Link href={guestBooking ? "/" : "/mes-reservations"}>{guestBooking ? "Retour à l’accueil" : "Voir mes réservations"}</Link>
