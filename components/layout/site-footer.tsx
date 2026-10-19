@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Mail } from "lucide-react";
 import { CONTACT_EMAIL, CONTACT_EMAIL_HREF } from "@/lib/contact/config";
 import { BrandLogo } from "@/components/layout/brand-logo";
+import { FooterSocialLinks } from "@/components/layout/footer-social-links";
 import { getActiveTrades } from "@/lib/queries/search";
 
 const popularCities = [
@@ -29,6 +30,7 @@ export async function SiteFooter() {
             <Mail aria-hidden="true" className="h-4 w-4 shrink-0" />
             <span className="break-all">{CONTACT_EMAIL}</span>
           </a>
+          <FooterSocialLinks />
         </div>
 
         {primaryTrade && (
